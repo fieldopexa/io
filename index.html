@@ -3706,11 +3706,11 @@ table tbody tr:hover{background:#ffffff03!important}
     </select>
   </div>
   <div class="movement-summary site-status-summary">
-    <div class="movement-card"><div class="n" id="sites-total">0</div><div class="l">Current sites</div></div>
-    <div class="movement-card"><div class="n" id="sites-cabinets">0</div><div class="l">Cabinets</div></div>
+    <div class="movement-card"><div class="n" id="sites-total">0</div><div class="l">Total venues (excludes closed)</div></div>
+    <div class="movement-card"><div class="n" id="sites-cabinets">0</div><div class="l">Registered cabinets</div></div>
     <div class="movement-card"><div class="n" id="sites-operational">0</div><div class="l">Operational Sites</div></div>
-    <div class="movement-card"><div class="n" id="sites-nonoperational">0</div><div class="l">Non-Operational</div></div>
-    <div class="movement-card"><div class="n" id="sites-open">0</div><div class="l">Open Concerns</div></div>
+    <div class="movement-card" title="Current venues only. Closed sites are counted separately."><div class="n" id="sites-nonoperational">0</div><div class="l">Non-Operational (excludes closed)</div></div>
+    <div class="movement-card"><div class="n" id="sites-closed-total">0</div><div class="l">Closed sites</div></div><span id="sites-open" hidden></span>
   </div>
   <div class="sites-grid" id="sites-grid"></div>
     </div>
@@ -3728,7 +3728,7 @@ table tbody tr:hover{background:#ffffff03!important}
     <div class="inventory-form" id="inventory-form">
       <input type="hidden" id="inv-id">
       <div class="inventory-form-grid">
-        <div class="field"><label>Site / Location</label><input id="inv-site" list="inv-site-list" placeholder="Select site or type warehouse/location"><datalist id="inv-site-list"></datalist></div>
+        <div class="field"><label for="inv-site">Site / Location</label><select id="inv-site"><option value="">Select a site or warehouse</option></select><datalist id="inv-site-list"></datalist></div>
         <div class="field"><label>Quantity</label><input id="inv-qty" type="number" min="1" value="1"></div>
         <div class="field"><label>Deployment status</label><select id="inv-deploy-status"><option>Deployed</option><option>Ready to Deploy</option><option>Warehouse / Stock</option><option>For Repair</option><option>For Pull-out</option><option>Other</option></select></div>
         <div class="field"><label>Operational status</label><select id="inv-op-status"><option>Operational</option><option>Non-Operational</option><option>Ready</option><option>For Assessment</option><option>N/A</option></select></div>
@@ -5011,6 +5011,10 @@ document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{
 
 document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const site=canonicalSiteName(document.getElementById('f-site').value);
+  if(site==='Others'&&!document.getElementById('f-notes').value.trim()){
+    showToast('Location required','Enter where you went in Remarks / visit notes.','bad');
+    document.getElementById('f-notes').focus();return;
+  }
   const err=document.getElementById('err-msg');
   if(!site||!selectedCat){err.style.display='block';return;}
   err.style.display='none';
@@ -5242,6 +5246,11 @@ function allKnownSites(){
     if(!key || byKey.has(key))return;
     byKey.set(key,display);
   });
+  // Include internal locations already present in cabinet or inventory records.
+  [...(cabinetRows||[]).map(r=>r.site),(inventoryRows||[]).map(r=>r.site)].flat().forEach(name=>{
+    const display=cleanSiteDisplayName(name||'');const key=normalizeSiteKey(display);
+    if(key&&!byKey.has(key))byKey.set(key,display);
+  });
 
   return [...byKey.values()]
     .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
@@ -5320,6 +5329,8 @@ function siteOperationalState(siteName){
 }
 
 function siteIsClosed(name){return String(lifecycleRecordForSite(name)?.status||'').trim().toLowerCase()==='closed';}
+function siteIsWarehouse(name){return /\b(carmona|endlessmotion)\b/i.test(String(name||'').normalize('NFKC'));}
+function registeredCabinetRows(){return cabinetRows.filter(c=>!siteIsClosed(c.site));}
 
 function renderSites(){
   const grid=document.getElementById('sites-grid'); if(!grid)return;
@@ -5327,12 +5338,13 @@ function renderSites(){
   const statusFilter=document.getElementById('sites-status-filter')?.value||'All';
   const known=allKnownSites();
   (window.__lifecycleSites||[]).forEach(r=>{if(r.name&&!known.some(n=>normalizeSiteKey(n)===normalizeSiteKey(r.name)))known.push(r.name);});
-  const activeNames=known.filter(name=>!siteIsClosed(name));
-  const closedNames=known.filter(siteIsClosed);
+  const activeNames=known.filter(name=>!siteIsClosed(name)&&!siteIsWarehouse(name));
+  const warehouseNames=known.filter(name=>!siteIsClosed(name)&&siteIsWarehouse(name));
+  const closedNames=known.filter(name=>siteIsClosed(name)&&!siteIsWarehouse(name));
   const isClosedView=window.siteDirectoryView==='closed';
-  const siteNames=isClosedView?closedNames:activeNames;
+  const siteNames=isClosedView?closedNames:[...warehouseNames,...activeNames];
   const activeButton=document.getElementById('sites-active-view'),closedButton=document.getElementById('sites-closed-view');
-  if(activeButton){activeButton.textContent='Current sites · '+activeNames.length;activeButton.setAttribute('aria-pressed',String(!isClosedView));}
+  if(activeButton){activeButton.textContent=activeNames.length+' client sites · '+warehouseNames.length+' warehouse'+(warehouseNames.length===1?'':'s');activeButton.setAttribute('aria-pressed',String(!isClosedView));}
   if(closedButton){closedButton.textContent='Closed sites · '+closedNames.length;closedButton.setAttribute('aria-pressed',String(isClosedView));}
   document.getElementById('sites-status-filter').disabled=isClosedView;
 
@@ -5356,16 +5368,17 @@ function renderSites(){
 
   const allData=activeNames.map(site=>({site,status:siteOperationalState(site)}));
   document.getElementById('sites-total').textContent=activeNames.length;
-  document.getElementById('sites-cabinets').textContent=cabinetRows.filter(c=>activeNames.some(n=>normalizeSiteKey(n)===normalizeSiteKey(canonicalSiteName(c.site)))).length;
+  document.getElementById('sites-cabinets').textContent=registeredCabinetRows().length;
+  document.getElementById('sites-closed-total').textContent=closedNames.length;
   document.getElementById('sites-operational').textContent=allData.filter(x=>x.status==='Operational').length;
-  document.getElementById('sites-nonoperational').textContent=allData.filter(x=>x.status==='Non-Operational').length;
+  document.getElementById('sites-nonoperational').textContent=allData.filter(x=>!siteIsClosed(x.site)&&x.status==='Non-Operational').length;
   document.getElementById('sites-open').textContent=activeNames.reduce((n,site)=>{
     const key=normalizeSiteKey(site);
     return n+entries.filter(r=>normalizeSiteKey(canonicalSiteName(r.site))===key&&!['resolved','closed','completed'].includes(normalizeSiteKey(r.status))).length;
   },0);
 
   grid.innerHTML=data.length?data.map(x=>`<div class="site-directory-card site-simple-row">
-    <div class="site-simple-main"><button type="button" class="site-simple-name" onclick="openSiteProfile('${escapeJs(x.site)}')">${escapeHtml(x.site)}</button><span class="site-simple-last">${x.last?.date?'Last visit '+escapeHtml(x.last.date):'No visits recorded'}</span></div>
+    <div class="site-simple-main"><button type="button" class="site-simple-name" onclick="openSiteProfile('${escapeJs(x.site)}')">${escapeHtml(x.site)}</button>${siteIsWarehouse(x.site)?'<span class="warehouse-directory-badge">Warehouse</span>':''}<span class="site-simple-last">${x.last?.date?'Last visit '+escapeHtml(x.last.date):'No visits recorded'}</span></div>
     <div><span class="site-operation-pill ${x.siteStatus==='Operational'?'is-operational':x.siteStatus==='Non-Operational'?'is-nonoperational':'is-unknown'}">${escapeHtml(x.siteStatus)}</span>${currentUser?.role==='management'&&!isClosedView?'<button type="button" class="site-status-edit" data-site-status="'+escapeHtml(x.site)+'">Edit status</button>':''}
     ${currentUser?.role==='management'?'<button type="button" class="site-status-edit site-lifecycle-edit" data-site-lifecycle="'+escapeHtml(x.site)+'">'+(isClosedView?'Edit / reopen':'Manage closure')+'</button>':''}</div>
     <div class="site-simple-count"><b>${x.cabinets}</b> cabinets</div><div class="site-simple-count ${x.open?'has-open':''}"><b>${x.open}</b> open</div>
@@ -5925,7 +5938,7 @@ function renderManagementOverview(){
     <div class="mgmt-kpi primary"><span>Field Visits</span><b>${period.length}</b><small>${activeSites} active site${activeSites===1?'':'s'}</small></div>
     <div class="mgmt-kpi"><span>Open Concerns</span><b>${open}</b><small>${resolved} resolved</small></div>
     <div class="mgmt-kpi"><span>Critical / High</span><b>${critical}</b><small>Priority activity</small></div>
-    <div class="mgmt-kpi"><span>Deployed Cabinets</span><b>${deployed||cabinetRows.length}</b><small>${operational} registered operational</small></div>
+    <div class="mgmt-kpi"><span>Registered Cabinets</span><b>${deployed||registeredCabinetRows().length}</b><small>${operational} registered operational</small></div>
     <div class="mgmt-kpi"><span>Cabinets Attention</span><b>${attention}</b><small>Repair / assessment / pull-out</small></div>
   `;
 
@@ -5944,7 +5957,7 @@ function renderManagementOverview(){
   };
   const totalCab=Math.max(1,cabinetRows.length);
   const health=document.getElementById('mgmt-cabinet-health');
-  if(health) health.innerHTML=`<div class="mgmt-health-main"><b>${cabinetRows.length}</b><span>Registered Cabinets</span></div>`+
+  if(health) health.innerHTML=`<div class="mgmt-health-main"><b>${registeredCabinetRows().length}</b><span>Registered Cabinets</span></div>`+
     Object.entries(healthCounts).map(([k,v])=>`<div class="mgmt-health-row"><span>${k}</span><div><i style="width:${v/totalCab*100}%"></i></div><b>${v}</b></div>`).join('');
 
   const siteMap={};
@@ -6067,7 +6080,7 @@ async function loadInventory(){
 function inventorySummary(){
   const deployed=inventoryRows.filter(r=>r.deploymentStatus==='Deployed').reduce((s,r)=>s+Number(r.quantity||0),0);
   const ready=inventoryRows.filter(r=>r.deploymentStatus==='Ready to Deploy').reduce((s,r)=>s+Number(r.quantity||0),0);
-  const nonop=inventoryRows.filter(r=>r.operationalStatus==='Non-Operational').reduce((s,r)=>s+Number(r.quantity||0),0);
+  const nonop=inventoryRows.filter(r=>!siteIsClosed(r.site)&&r.operationalStatus==='Non-Operational').reduce((s,r)=>s+Number(r.quantity||0),0);
   const total=inventoryRows.reduce((sum,r)=>sum+Number(r.quantity||0),0);
   const other=inventoryRows.filter(r=>!['Deployed','Ready to Deploy'].includes(r.deploymentStatus)).reduce((sum,r)=>sum+Number(r.quantity||0),0);
   return {total,deployed,ready,nonop,other};
@@ -6114,7 +6127,17 @@ function renderInventory(){
   }).join(''):`<tr><td colspan="7" class="inventory-empty">No inventory records found.</td></tr>`;
 }
 function clearInventoryForm(){['inv-id','inv-site','inv-remarks'].forEach(id=>document.getElementById(id).value='');document.getElementById('inv-qty').value='1';document.getElementById('inv-deploy-status').value='Deployed';document.getElementById('inv-op-status').value='Operational';document.getElementById('inventory-err').style.display='none';}
-function openInventoryForm(){document.getElementById('inventory-form').classList.add('open');}
+function populateAllocationSites(){
+ const select=document.getElementById('inv-site'),current=select.value;
+ const names=allKnownSites().concat((window.__lifecycleSites||[]).map(r=>r.name),inventoryRows.map(r=>r.site)).filter(Boolean);
+ if(!names.some(siteIsWarehouse))names.push('Carmona Cavite Warehouse');
+ const unique=new Map();names.forEach(name=>{const value=canonicalSiteName(name).trim();const key=value.normalize('NFKC').replace(/\s+/g,' ').toLowerCase();if(value&&!unique.has(key))unique.set(key,value);});
+ select.replaceChildren(new Option('Select a site or warehouse',''));
+ Array.from(unique.values()).sort((a,b)=>a.localeCompare(b)).forEach(name=>select.add(new Option(name+(siteIsWarehouse(name)?' · Warehouse':''),name)));
+ if(current&&!Array.from(select.options).some(o=>o.value===current))select.add(new Option(current,current));
+ select.value=current;
+}
+function openInventoryForm(){populateAllocationSites();document.getElementById('inventory-form').classList.add('open');}
 function closeInventoryForm(){document.getElementById('inventory-form').classList.remove('open');clearInventoryForm();}
 function editInventory(id){
   const r=inventoryRows.find(x=>String(x.id).trim()===String(id).trim());
@@ -6157,11 +6180,11 @@ function cabinetSiteUnavailable(c){
  const key=normalizeSiteKey(canonicalSiteName(c.site||''));if(!key)return false;
  return siteIsClosed(c.site)||inventoryRows.some(r=>normalizeSiteKey(canonicalSiteName(r.site))===key&&String(r.operationalStatus||'').trim().toLowerCase()==='non-operational');
 }
-function cabinetDisplayStatus(c){return cabinetSiteUnavailable(c)?'Non-Operational':c.status||'—';}
+function cabinetDisplayStatus(c){return siteIsClosed(c.site)?'Closed site — transfer pending':cabinetSiteUnavailable(c)?'Non-Operational':c.status||'—';}
 function cabinetStatusMarkup(c){return '<span class="inventory-status">'+escapeHtml(cabinetDisplayStatus(c))+'</span>'+(cabinetSiteUnavailable(c)?'<small class="cabinet-site-state-note">Site '+(siteIsClosed(c.site)?'closed':'non-operational')+' · Cabinet condition: '+escapeHtml(c.status||'Not recorded')+'</small>':'');}
 
 function cabinetSummary(){
-  const total=cabinetRows.length;
+  const total=registeredCabinetRows().length;
   const operational=cabinetRows.filter(r=>cabinetDisplayStatus(r)==='Operational').length;
   const nonop=cabinetRows.filter(r=>cabinetDisplayStatus(r)==='Non-Operational').length;
   const ready=cabinetRows.filter(r=>['Ready to Deploy','Warehouse / Stock'].includes(cabinetDisplayStatus(r))).length;
@@ -8422,19 +8445,19 @@ html{scrollbar-gutter:stable}
 (function(){
  const panel=document.getElementById('panel-inventory');
  const nav=panel.querySelector('.inventory-subnav');
- const groups=[['Sites & Cabinets',['sites','cabinets']],['Inventory',['overview','spares','requests']],['Movements',['movements']],['Maintenance',['maintenance']]];
+ const groups=[['Sites & Cabinets',['sites','cabinets','overview']],['Inventory',['spares','requests']],['Movements',['movements']],['Maintenance',['maintenance']]];
  const primary=document.createElement('nav');primary.id='asset-groups';primary.setAttribute('aria-label','Sites and assets sections');nav.before(primary);
  const originals=Array.from(nav.querySelectorAll('[data-inventory-view]'));
  const refresh=panel.querySelector('.asset-load-status');
  const refreshButton=refresh.querySelector('button');refreshButton.textContent='↻';refreshButton.title='Refresh asset data';refreshButton.setAttribute('aria-label','Refresh asset data');
- const stock=originals.find(b=>b.dataset.inventoryView==='overview');if(stock)stock.textContent='Stock';
+ const stock=originals.find(b=>b.dataset.inventoryView==='overview');if(stock)stock.textContent='Inventory Allocation';
  const buttons=groups.map(([title,views])=>{const b=document.createElement('button');b.type='button';b.textContent=title;b.addEventListener('click',()=>originals.find(x=>x.dataset.inventoryView===views[0])?.click());primary.append(b);return b;});
  function update(){
   const active=panel.querySelector('.inventory-subpanel.active');
   const view=active?active.id.replace('inventory-view-',''):inventoryView;
   const index=groups.findIndex(g=>g[1].includes(view));if(index<0)return;
   buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
-  originals.forEach(b=>b.hidden=!groups[index][1].includes(b.dataset.inventoryView));
+  originals.forEach(b=>b.hidden=b.dataset.inventoryView==='overview'||!groups[index][1].includes(b.dataset.inventoryView));
   nav.hidden=groups[index][1].length===1;
   const heading=active?.querySelector('.section-head');
   if(heading&&refresh.parentElement!==heading)heading.append(refresh);
@@ -8513,6 +8536,106 @@ html{scrollbar-gutter:stable}
 </body>
 <script>
 if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+<style id="visit-site-options-cleanup">
+#add-site-btn,#add-site-row{display:none!important}
+.warehouse-directory-badge{display:inline-block;width:fit-content;padding:2px 7px;margin:4px 0;border:1px solid var(--line);border-radius:5px;font-size:10px;color:var(--ink-soft);background:var(--accent-soft)}
+</style>
+<script id="unique-open-visit-sites">
+(function(){
+ const previous=renderSiteOptions;
+ const key=value=>String(value||'').normalize('NFKC').replace(/[\u200B-\u200D\uFEFF]/g,'').trim().replace(/\s+/g,' ').toLowerCase();
+ renderSiteOptions=function(value){
+  const select=document.getElementById('f-site');if(!select)return;
+  const selected=value===undefined?select.value:value;
+  previous(value);
+  const closed=new Set((window.__lifecycleSites||[]).filter(r=>String(r.status||'').trim().toLowerCase()==='closed').map(r=>key(r.name)));
+  const seen=new Set();const options=Array.from(select.options).filter(o=>{
+   const k=key(o.value);if(!k||seen.has(k)||closed.has(k)||siteIsClosed(o.value)||siteIsWarehouse(o.value))return false;
+   if(o.parentElement.label==='Outside Selected Date')return false;
+   seen.add(k);return true;
+  }).map(o=>({value:o.value.trim(),text:o.textContent.trim()}));
+  select.replaceChildren(new Option('Select a site',''));
+  const warehouse=(window.__lifecycleSites||[]).map(r=>r.name).concat(sites||[]).find(name=>siteIsWarehouse(name))||'Carmona Cavite Warehouse';
+  options.push({value:warehouse,text:'Carmona, Cavite Warehouse'});
+  if(!options.some(o=>key(o.value)==='others'))options.push({value:'Others',text:'Others — specify location in remarks'});
+  options.forEach(o=>select.add(new Option(o.text,o.value)));
+  const match=options.find(o=>key(o.value)===key(selected));
+  if(match)select.value=match.value;
+  else if(typeof editingEntryId!=='undefined'&&editingEntryId&&selected){
+   const historical=new Option(selected+' — recorded site',selected);historical.disabled=true;select.add(historical);select.value=selected;
+  }else select.value='';
+ };
+ if(currentUser)renderSiteOptions();
+})();
+</script>
+<script id="warehouse-allocation-label">
+(function(){
+ const original=renderInventory;
+ renderInventory=function(){original();document.querySelectorAll('#inventory-view-overview tbody tr').forEach(row=>{const cell=row.querySelector('td');const name=cell?.querySelector('b');if(name&&siteIsWarehouse(name.textContent)&&!cell.querySelector('.warehouse-label')){const label=document.createElement('small');label.className='muted warehouse-label';label.style.display='block';label.textContent='Warehouse · excluded from client-site totals';cell.append(label);}});};
+})();
+</script>
+<script id="other-visit-location-hint">
+(function(){
+ const site=document.getElementById('f-site'),notes=document.getElementById('f-notes');
+ const hint=document.createElement('small');hint.textContent='Others selected: include the venue or address you visited in your remarks.';hint.style.display='none';hint.style.color='var(--ink-soft)';notes.before(hint);
+ function update(){const other=site.value==='Others';hint.style.display=other?'block':'none';notes.required=other;if(other)notes.placeholder='Where did you go? Enter the venue or address and visit remarks.';else notes.placeholder='What happened on this visit';}
+ site.addEventListener('change',update);new MutationObserver(update).observe(site,{childList:true});update();
+})();
+</script>
+<script id="location-allocation-profile">
+(function(){
+ const prior=siteAssetOverview;
+ siteAssetOverview=function(site){
+  const rows=inventoryRows.filter(r=>normalizeSiteKey(canonicalSiteName(r.site))===normalizeSiteKey(canonicalSiteName(site)));
+  const total=rows.reduce((n,r)=>n+Number(r.quantity||0),0);
+  const edit=currentUser?.role==='management'?'<button type="button" class="btn-secondary" onclick="openLocationAllocation(this)" data-location="'+escapeHtml(site)+'">Manage allocation</button>':'';
+  return '<section class="site-section"><h3>Allocation</h3><p>'+total+' allocated units · '+rows.length+' allocation records</p>'+edit+'<div class="location-allocation-editor"></div></section>'+prior(site);
+ };
+ window.openLocationAllocation=function(button){
+  if(currentUser?.role!=='management')return;
+  const site=button.dataset.location,host=button.nextElementSibling;host.replaceChildren();
+  const records=inventoryRows.filter(r=>normalizeSiteKey(canonicalSiteName(r.site))===normalizeSiteKey(canonicalSiteName(site)));
+  [...records,{site,quantity:1,deploymentStatus:'Deployed',operationalStatus:'Operational',remarks:''}].forEach(record=>{
+   const form=document.createElement('form');form.className='planning-form';
+   const heading=document.createElement('strong');heading.textContent=record.id?'Edit allocation':'Add allocation';form.append(heading);
+   function field(name,title,options){const label=document.createElement('label');label.textContent=title;const input=document.createElement(options?'select':'input');input.name=name;if(options)options.forEach(value=>input.add(new Option(value,value)));else input.type=name==='quantity'?'number':'text';input.value=record[name]||'';if(name==='quantity'){input.min='1';input.step='1';input.required=true;}label.append(input);form.append(label);}
+   field('quantity','Quantity');field('deploymentStatus','Deployment',[...new Set([record.deploymentStatus,'Deployed','Warehouse / Stock','Ready to Deploy'].filter(Boolean))]);field('operationalStatus','Status',['Operational','Non-Operational','No Status']);field('remarks','Remarks');
+   const save=document.createElement('button');save.type='submit';save.className='btn-secondary';save.textContent='Save allocation';form.append(save);
+   form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{const values=Object.fromEntries(new FormData(form));await apiPost('saveInventory',{record:{...record,...values,site,quantity:Number(values.quantity)}});await loadInventory();openSiteProfile(site);showToast('Allocation saved',site);}catch(e){showToast('Could not save',e.message,'bad');}finally{save.disabled=false;}};host.append(form);
+  });
+ };
+ const summary=document.querySelector('.site-status-summary');if(summary){summary.querySelector('#sites-cabinets').nextElementSibling.textContent='Total cabinets';}
+ const tab=document.querySelector('[data-inventory-view="sites"]');if(tab)tab.textContent='Locations';
+})();
+</script>
+<style id="redundancy-cleanup">
+/* The Current/Closed toggle already handles location lifecycle; keep the toolbar focused. */
+#sites-status-filter{display:none!important}
+#sites-open{display:none!important}
+#inventory-view-sites .site-simple-count{display:none!important}
+#panel-inventory .asset-load-status [role="status"]{display:none!important}
+</style>
+<script id="quiet-refresh-controls">
+(function(){document.querySelectorAll('#panel-inventory .btn-secondary').forEach(b=>{if(/refresh planning/i.test(b.textContent)){b.textContent='↻';b.title='Refresh planning';b.setAttribute('aria-label','Refresh planning');}});})();
+</script>
+<style id="location-row-cleanup">
+.site-simple-open{display:none!important}
+.site-simple-row{cursor:pointer}
+.site-simple-row:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+<script id="location-row-click">
+(function(){
+ const grid=document.getElementById('sites-grid');if(!grid)return;
+ grid.addEventListener('click',event=>{
+  if(event.target.closest('button,a,input,select,textarea'))return;
+  const row=event.target.closest('.site-simple-row'),name=row?.querySelector('.site-simple-name');
+  if(name)name.click();
+ });
+ grid.addEventListener('keydown',event=>{if(event.key!=='Enter'&&event.key!==' ')return;if(event.target.closest('button,a,input,select,textarea'))return;const row=event.target.closest('.site-simple-row'),name=row?.querySelector('.site-simple-name');if(name){event.preventDefault();name.click();}});
+ const observer=new MutationObserver(()=>grid.querySelectorAll('.site-simple-row').forEach(row=>{if(!row.hasAttribute('tabindex'))row.tabIndex=0;}));
+ observer.observe(grid,{childList:true});grid.querySelectorAll('.site-simple-row').forEach(row=>row.tabIndex=0);
+})();
 </script>
 </html>
 
