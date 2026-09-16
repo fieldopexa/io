@@ -3357,6 +3357,29 @@ table tbody tr:hover{background:#ffffff03!important}
 .app-actions .loading-times-compact:focus-visible{outline:2px solid var(--accent,#a9baff);outline-offset:2px}
 @media(pointer:coarse){.app-actions .loading-times-compact{min-height:44px!important}}
 </style>
+<style id="report-action-polish">
+#panel-report .period-select{display:flex!important;align-items:center!important;gap:8px!important;padding:8px 10px!important;min-height:52px!important;border-radius:10px!important;background:#161b22!important}
+#panel-report .period-types{display:flex!important;gap:3px!important}.period-type-btn{padding:7px 9px!important;border-radius:6px!important;color:#8995a9!important;font-size:11px!important;cursor:pointer}.period-type-btn.active{background:#e8edf7!important;color:#172033!important}
+#panel-report #period-picker{height:34px!important;min-width:150px!important;padding:0 10px!important;font-size:11px!important}
+#panel-report .report-actions{display:flex!important;align-items:center!important;gap:5px!important;margin-left:auto!important;padding-left:10px!important;border-left:1px solid var(--line)!important}
+#panel-report .report-actions button{min-height:32px!important;padding:6px 9px!important;border-radius:6px!important;font-size:10px!important;white-space:nowrap!important}
+#panel-report .report-actions button:first-child{background:#dce6ff!important;color:#172033!important;border-color:#b7c9f3!important;font-weight:700!important}
+#panel-report .report-actions button:hover{transform:none!important;filter:brightness(1.08)}
+@media(max-width:760px){#panel-report .period-select{align-items:stretch!important;flex-wrap:wrap!important}#panel-report .report-actions{width:100%!important;margin-left:0!important;padding:7px 0 0!important;border-left:0!important;border-top:1px solid var(--line)!important}#panel-report .report-actions button{flex:1!important}}
+</style>
+<style id="report-icon-actions">
+#panel-report .period-select{gap:6px!important;padding:6px 8px!important;min-height:44px!important}
+#panel-report .period-types{gap:2px!important}.period-type-btn{padding:5px 7px!important;font-size:10px!important}
+#panel-report #period-picker{height:30px!important;min-width:132px!important;font-size:10px!important}
+#panel-report .report-actions{gap:3px!important;padding-left:7px!important}
+#panel-report .report-actions button{width:31px!important;min-width:31px!important;height:30px!important;min-height:30px!important;padding:0!important;font-size:0!important;line-height:1!important;display:inline-grid!important;place-items:center!important}
+#panel-report .report-actions button:before{font-size:14px!important;font-family:"Segoe UI Symbol",sans-serif!important}
+#panel-report .report-actions #print-btn:before{content:"⇩"}.report-actions #export-btn:before{content:"▤"}.report-actions #snapshot-btn:before{content:"◉"}
+#panel-report .report-actions button:first-child{width:auto!important;min-width:31px!important;padding:0 8px!important}
+#panel-report .report-actions button:first-child:before{content:"▶";font-size:11px!important}
+@media(max-width:760px){#panel-report .period-select{padding:6px!important}#panel-report .report-actions{gap:4px!important}}
+</style>
+<style id="report-print-quiet">#panel-report #print-btn{display:none!important}</style>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -4105,8 +4128,8 @@ table tbody tr:hover{background:#ffffff03!important}
       </div>
       <select id="period-picker"></select>
       <div class="report-actions">
-        <button class="btn-secondary" id="print-btn">Print / save as PDF</button>
-        <button class="btn-secondary" id="export-btn">Export to Excel</button>
+        <button class="btn-secondary" id="print-btn" title="Print or save this report as PDF">Print PDF</button>
+        <button class="btn-secondary" id="export-btn" title="Download report data as an Excel-compatible file">Export data</button>
       </div>
     </div>
 
@@ -8157,7 +8180,7 @@ function presentationMetrics(rows){
  const details=document.createElement('details');details.className='calm-disclosure report-appendix';details.innerHTML='<summary>Supporting charts & visit records</summary>';panel.append(details);
  ['#report-stats','.report-grid'].forEach(s=>details.append(panel.querySelector(s)));
  const trend=document.getElementById('trend-chart').closest('.chart-card');const table=document.getElementById('detail-table').closest('.chart-card');details.append(trend,table);table.style.overflowX='auto';
- const present=document.createElement('button');present.type='button';present.className='btn-secondary';present.textContent='Present report';present.setAttribute('aria-pressed','false');toolbar.querySelector('.report-actions').prepend(present);
+ const present=document.createElement('button');present.id='present-report-btn';present.type='button';present.className='btn-secondary';present.textContent='Present report';present.setAttribute('aria-pressed','false');toolbar.querySelector('.report-actions').prepend(present);
  function mode(on){document.body.classList.toggle('report-presenting',on);present.textContent=on?'Exit presentation':'Present report';present.setAttribute('aria-pressed',String(on));if(on)window.scrollTo(0,0);}
  present.addEventListener('click',()=>mode(!document.body.classList.contains('report-presenting')));
  document.addEventListener('keydown',e=>{if(e.key==='Escape')mode(false);});document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{if(t.dataset.tab!=='report')mode(false);}));
@@ -8391,7 +8414,7 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  }
  // Snapshots contain frozen markup and styling, never live scripts or backend tokens.
  const report=document.getElementById('panel-report');const archive=el('details',null,'calm-disclosure planning-snapshots');archive.append(el('summary','Saved report snapshots'));archive.append(el('p','Frozen copies saved in Sheets. Management can download them from any device.','planning-local-note'));const snapshots=el('div');archive.append(snapshots);report.append(archive);
- const snapshotButton=el('button','Save snapshot','btn-secondary');snapshotButton.type='button';report.querySelector('.report-actions').append(snapshotButton);
+ const snapshotButton=el('button','Save snapshot','btn-secondary');snapshotButton.id='snapshot-btn';snapshotButton.type='button';report.querySelector('.report-actions').append(snapshotButton);
  function snapshotList(){snapshots.replaceChildren();if(!data.snapshots.length){snapshots.append(el('p','No snapshots saved yet.','muted'));return;}data.snapshots.forEach(s=>{const row=el('div',null,'planning-row');const title=el('div');title.append(el('b',s.title),el('p',new Date(s.savedAt).toLocaleString()));const b=el('button','Download HTML','btn-secondary');b.type='button';b.addEventListener('click',async()=>{b.disabled=true;try{const result=await apiPost('planningSnapshot',{kind:'snapshots',id:s.id});download('opexa-report-'+s.period+'-'+s.id.slice(0,8)+'.html',result.html,'text/html');}catch(e){notifyError(e);}finally{b.disabled=false;}});row.append(title,b);snapshots.append(row);});}
  snapshotButton.addEventListener('click',async()=>{try{read();renderReport();const source=document.getElementById('presentation-report');if(!source?.textContent.trim())throw Error('Select a report period first.');const clone=source.cloneNode(true);clone.querySelectorAll('.report-page-away').forEach(n=>n.classList.remove('report-page-away'));clone.querySelectorAll('script,button').forEach(n=>n.remove());clone.querySelectorAll('*').forEach(n=>Array.from(n.attributes).forEach(a=>{if(a.name.startsWith('on'))n.removeAttribute(a.name);}));
    const period=document.getElementById('period-picker').value;const title=periodKeyFns().label(period);const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');const now=new Date().toISOString();
