@@ -3338,6 +3338,25 @@ table tbody tr:hover{background:#ffffff03!important}
 .cabinet-multi-picker label:focus-within{outline:2px solid #a9baff;outline-offset:2px}
 @media(pointer:coarse){.cabinet-multi-picker label{min-height:44px}.cabinet-multi-picker>div:first-child button{min-height:44px!important}}
 </style>
+<script id="request-timings-core">
+(function(){
+ const storageKey='opexa-request-timings-v1';let rows=[];try{rows=JSON.parse(sessionStorage.getItem(storageKey)||'[]');if(!Array.isArray(rows))rows=[];}catch(e){}
+ const pending=new Map();let serial=0;
+ window.opexaTiming={
+  start(operation){const id=++serial;pending.set(id,{operation,start:performance.now(),at:new Date().toISOString(),concurrent:pending.size});return id;},
+  headers(id){const r=pending.get(id);if(r)r.headers=performance.now()-r.start;},
+  end(id,outcome){const r=pending.get(id);if(!r)return;pending.delete(id);rows.push({operation:r.operation,at:r.at,ms:Math.round(performance.now()-r.start),headersMs:r.headers===undefined?null:Math.round(r.headers),outcome,concurrent:r.concurrent});rows=rows.slice(-150);try{sessionStorage.setItem(storageKey,JSON.stringify(rows));}catch(e){}window.dispatchEvent(new Event('opexa-timing'));},
+  rows:()=>rows.slice(),clear(){rows=[];try{sessionStorage.removeItem(storageKey);}catch(e){}window.dispatchEvent(new Event('opexa-timing'));}
+ };
+})();
+
+</script>
+<style id="compact-loading-times">
+.app-actions .loading-times-compact{grid-column:1/-1;justify-self:start;width:auto!important;min-width:0!important;min-height:28px!important;margin:2px 0 0!important;padding:4px 7px!important;border:1px solid transparent!important;border-radius:5px!important;background:transparent!important;box-shadow:none!important;color:var(--ink-soft)!important;font:500 10px/1.4 'Segoe UI',sans-serif!important;letter-spacing:0!important;cursor:pointer}
+.app-actions .loading-times-compact:hover{color:var(--ink)!important;background:rgba(169,186,255,.06)!important;border-color:rgba(169,186,255,.12)!important}
+.app-actions .loading-times-compact:focus-visible{outline:2px solid var(--accent,#a9baff);outline-offset:2px}
+@media(pointer:coarse){.app-actions .loading-times-compact{min-height:44px!important}}
+</style>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -3492,7 +3511,7 @@ table tbody tr:hover{background:#ffffff03!important}
         <div class="field">
           <label>Visit Type</label>
           <select id="f-visit-type">
-            <option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option>
+            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option>
             <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
             <option>Follow-up</option><option>Other</option>
           </select>
@@ -3629,7 +3648,7 @@ table tbody tr:hover{background:#ffffff03!important}
       <div class="err" id="err-msg">Fill in the site and category before logging.</div>
     </div>
 
-    <div class="stats" id="stats"></div>
+
 
   </div>
 
@@ -3808,7 +3827,7 @@ table tbody tr:hover{background:#ffffff03!important}
       <div class="err" id="cabinet-err" style="display:none"></div>
     </div>
     <div class="cabinet-toolbar">
-      <input id="cabinet-search" placeholder="Search cabinet, site, TeamViewer ID, serial..." style="min-width:280px;flex:1">
+      <input id="cabinet-search" placeholder="Search cabinet, site, TeamViewer ID, serial or token…" style="min-width:280px;flex:1">
       <select id="cabinet-status-filter"><option value="All">All statuses</option><option>Operational</option><option>Non-Operational</option><option>Ready to Deploy</option><option>Warehouse / Stock</option><option>For Repair</option><option>For Pull-out</option><option>For Assessment</option></select>
       <select id="cabinet-site-filter"><option value="All">All sites</option></select>
     </div>
@@ -4177,7 +4196,7 @@ const SITES_KEY = 'field-service-sites';
 const FSES_KEY = 'field-service-fses';
 const RESOLVABLE_CATS = ['Hardware','Software','Network','Backoffice'];
 const SLA_TARGETS = {Critical:120, High:240, Medium:480, Low:1440}; // minutes; adjust to company SLA
-const VISIT_TYPES = ['Breakdown / Incident','Preventive Maintenance','Installation','Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'];
+const VISIT_TYPES = ['Routine Visit','Breakdown / Incident','Preventive Maintenance','Installation','Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'];
 const catLabel = {Hardware:'Hardware', Software:'Software', Network:'Network', Backoffice:'Back Office', General:'General'};
 const catDesc = {
   Hardware: 'Physical cabinet, machine, peripheral, or component concerns.',
@@ -4614,26 +4633,32 @@ function updateSystemBar(){
 
 async function apiGet(type){
   const source=`GET:${type}`;
+  const measurement=window.opexaTiming.start(source);let timingOutcome="error";
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),30000);
   try{
     if(!authToken) throw new Error('Please sign in again.');
     const url=`${API_URL}?type=${encodeURIComponent(type)}&token=${encodeURIComponent(authToken)}`;
     const res=await fetch(url,{signal:controller.signal,cache:'no-store'});
+    window.opexaTiming.headers(measurement);
     if(!res.ok)throw new Error('Request failed: '+res.status);
     const data=await res.json();
     if(data&&data.status==='error')throw new Error(data.error||'Request failed.');
+    timingOutcome="ok";
     noteSyncSuccess(source);
     return data;
   }catch(err){
+    timingOutcome=err.name==='AbortError'?'timeout':'error';
     noteSyncFailure(source,`Unable to refresh ${type}: ${err.message||err}`,false);
     throw err;
   }finally{
+    window.opexaTiming.end(measurement,timingOutcome);
     clearTimeout(timeout);
   }
 }
 async function apiPost(action,payload={},options={}){
   const source=`POST:${action}`;
+  const measurement=window.opexaTiming.start(source);let timingOutcome="error";
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),45000);
   try{
@@ -4645,13 +4670,16 @@ async function apiPost(action,payload={},options={}){
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify(body)
     });
+    window.opexaTiming.headers(measurement);
     if(!res.ok)throw new Error('Request failed: '+res.status);
     const data=await res.json();
     if(data&&data.status==='error')throw new Error(data.error||'Request failed.');
+    timingOutcome="ok";
     noteSyncSuccess(source);
     if(['addEntry','updateEntry','archiveEntry','deleteEntry','saveSiteRecord','deleteSiteRecord','addSite','removeSite','addFse','removeFse','saveInventory','deleteInventory','saveCabinet','deleteCabinet','saveSparePart','deleteSparePart','useSparePart','updateRemovedPart','returnRemovedPartToStock','saveMovement','addUser','setUserStatus','resetPassword'].includes(action))auditLoadedOnce=false;
     return data;
   }catch(err){
+    timingOutcome=err.name==='AbortError'?'timeout':'error';
     // Login/logout failures are authentication events, not field-data sync failures.
     if(!options.authRequest && action!=='logout'){
       // Writes are important: a failed save/update is shown as a real sync error immediately.
@@ -4659,7 +4687,8 @@ async function apiPost(action,payload={},options={}){
     }
     if(err.name==='AbortError')throw new Error('The server did not confirm within 45 seconds. Refresh and check whether the record saved before trying again.');
     throw err;
-  }finally{clearTimeout(timeout);}
+  }finally{
+    window.opexaTiming.end(measurement,timingOutcome);clearTimeout(timeout);}
 }
 function normalizeTimeOrDate(val, isTime){
   if(typeof val !== 'string') return val || '';
@@ -4890,7 +4919,8 @@ document.querySelectorAll('.tab').forEach(t=>{
     t.classList.add('active');
     activeTab=t.dataset.tab;
     document.getElementById('panel-'+t.dataset.tab)?.classList.add('active');
-    renderActivePanel();
+    const requestedTab=activeTab;
+    requestAnimationFrame(()=>setTimeout(()=>{if(activeTab===requestedTab)renderActivePanel();},0));
   });
 });
 
@@ -5072,7 +5102,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   try{
     submitBtn.textContent=isEdit?'Saving changes…':'Saving visit…';
     await apiPost(isEdit?'updateEntry':'addEntry',{id:entry.id,entry});
-    window.dispatchEvent(new CustomEvent('visit-committed',{detail:{isEdit}}));
+    window.dispatchEvent(new CustomEvent('visit-committed',{detail:{isEdit,entry}}));
     if(!isEdit)window.dispatchEvent(new Event('visit-saved'));
     let spareWarning='';
     if(!isEdit&&trackedSpare.partId){
@@ -5669,16 +5699,6 @@ function renderActivePanel(){
 }
 
 function render(){
-  const counts = {Hardware:0, Software:0, Network:0, Backoffice:0, General:0};
-  entries.forEach(e=>{ if(counts[e.category]!==undefined) counts[e.category]++; });
-  document.getElementById('stats').innerHTML = `
-    <div class="stat"><div class="n">${entries.length}</div><div class="l">Total visits</div></div>
-    <div class="stat"><div class="n">${counts.Hardware}</div><div class="l">Hardware</div></div>
-    <div class="stat"><div class="n">${counts.Software}</div><div class="l">Software</div></div>
-    <div class="stat"><div class="n">${counts.Network}</div><div class="l">Network</div></div>
-    <div class="stat"><div class="n">${counts.Backoffice}</div><div class="l">Back Office</div></div>
-    <div class="stat"><div class="n">${counts.General}</div><div class="l">General</div></div>`;
-
   const from = document.getElementById('date-from').value;
   const to = document.getElementById('date-to').value;
   const q = (document.getElementById('global-search')?.value || '').trim().toLowerCase();
@@ -6436,6 +6456,16 @@ document.getElementById('f-site')?.addEventListener('change',()=>{
 });
 document.getElementById('f-issue-type')?.addEventListener('change',syncTechnicalFromSelectedCabinet);
 
+function cabinetMatchesSearch(r,site,query,management){
+  const text=value=>String(value??'').normalize('NFKC').toLowerCase().trim();
+  const compact=value=>text(value).replace(/[\s-]+/g,'');
+  const q=text(query);if(!q)return true;
+  const fields=[r.cabinetId,r.label,site,r.site,r.cabinetSerial,r.mpuSerial,r.bvModel,r.bvSerial,r.printerModel,r.printerSerial,r.networkNote];
+  if(management)fields.push(r.teamviewerId,r.token);
+  const cq=compact(q);
+  return fields.some(value=>text(value).includes(q)||(cq&&compact(value).includes(cq)));
+}
+
 function renderCabinets(){
   const body=document.getElementById('cabinet-body');if(!body)return;
   const s=cabinetSummary();
@@ -6486,10 +6516,7 @@ function renderCabinets(){
     if(st!=='All'&&cabinetDisplayStatus(r)!==st)return false;
     if(site!=='All'&&normalizeSiteKey(canonicalSite)!==normalizeSiteKey(site))return false;
     if(!q)return true;
-    return [
-      r.cabinetId,r.label,canonicalSite,r.site,r.cabinetSerial,r.mpuSerial,
-      r.bvModel,r.bvSerial,r.printerModel,r.printerSerial,r.networkNote
-    ].join(' ').toLowerCase().includes(q);
+    return cabinetMatchesSearch(r,canonicalSite,q,currentUser?.role==='management');
   });
 
   // Group by cabinet prefix, not by the raw site string. This merges aliases
@@ -7411,6 +7438,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   let assetsBootstrapInFlight=null;
   let assetsBootstrapLoaded=false;
   let lastAssetsPaint=0;
+  let lastAssetsFetch=0;
 
   function assetsCacheKey(){
     const role=currentUser?.role||'guest';
@@ -7511,7 +7539,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     }
 
     // Avoid refetching again immediately during the same page session.
-    if(!force && assetsBootstrapLoaded && Date.now()-lastAssetsPaint<15000){
+    if(!force && assetsBootstrapLoaded && Date.now()-lastAssetsFetch<60000){
       if(target==='sites' && typeof renderSites==='function')renderSites();
       paintCurrentAssets(target);
       return Promise.resolve();
@@ -7542,6 +7570,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
         }
         if(typeof window.setInventoryLoadState==='function')window.setInventoryLoadState('Updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+' · '+data.inventory.length+' inventory records',false);
         assetsBootstrapLoaded=true;
+        lastAssetsFetch=Date.now();
         writeAssetsCache(data);
         applyAssetsData(data,target);
         if(activeTab==='inventory')paintCurrentAssets('inventory');
@@ -7563,7 +7592,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 
   function openFastAssets(target){
     // Synchronous cache paint = immediate response to the click.
-    paintCachedAssets(target);
+    if(!assetsBootstrapLoaded)paintCachedAssets(target);
     // Network refresh happens after the page has already painted.
     requestAnimationFrame(()=>setTimeout(()=>refreshAssets(target,false),20));
   }
@@ -7578,7 +7607,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 
       if(target==='dashboard'){
         // Dashboard may use the same cached cabinet/inventory data.
-        paintCachedAssets('dashboard');
+        if(!assetsBootstrapLoaded)paintCachedAssets('dashboard');
         requestAnimationFrame(()=>setTimeout(()=>refreshAssets('dashboard',false),30));
       }
 
@@ -7958,7 +7987,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  const ids=['field-machine-component','field-asset','field-parts','visit-spare-box'];
  const first=document.getElementById(ids[0]);first.before(technical);ids.forEach(id=>technical.append(document.getElementById(id)));
  const badge=document.createElement('span');badge.className='calm-count';technical.firstChild.append(badge);
- function technicalState(){const visible=ids.some(id=>document.getElementById(id).style.display!=='none');technical.hidden=!visible;const filled=['f-machine','f-component','f-asset','f-parts','f-spare-part'].filter(id=>document.getElementById(id).value.trim()).length;badge.textContent=filled?filled+' filled':'';if(filled)technical.open=true;}
+ function technicalState(){const visible=ids.some(id=>document.getElementById(id).style.display!=='none');technical.hidden=selectedCat==='Backoffice'||!visible;const filled=['f-machine','f-component','f-asset','f-parts','f-spare-part'].filter(id=>document.getElementById(id).value.trim()).length;badge.textContent=filled?filled+' filled':'';if(filled)technical.open=true;}
  technical.addEventListener('input',technicalState);
  new MutationObserver(technicalState).observe(technical,{subtree:true,attributes:true,attributeFilter:['style']});
  document.getElementById('cat-picker').addEventListener('click',technicalState);technicalState();
@@ -8052,7 +8081,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
    else toast.hidden=true;
    return;
   }
-  const jobs=Array.from(pending.values());const job=jobs.find(j=>j.write)||jobs[0];const age=Date.now()-job.started;
+  const jobs=Array.from(pending.values());const job=jobs.find(j=>j.write);
+  if(!job){toast.hidden=true;timer=setTimeout(paint,1000);return;}
+ const age=Date.now()-job.started;
   toast.hidden=false;mark.hidden=false;dismiss.hidden=true;title.textContent=(labels[job.action]||(job.write?'Saving changes':'Loading data'))+'…';
   if(!navigator.onLine){title.textContent='Connection lost';detail.textContent='Waiting for the request to finish. Check your internet connection.';}
   else if(age>=8000){title.textContent='Still working…';detail.textContent=job.write?'Confirmation is taking longer than usual. Please don’t submit again.':'The connection is taking longer than usual. Your current view is still available.';}
@@ -8062,7 +8093,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  async function track(action,write,run){
   const id=++serial;if(!pending.size)lastError='';pending.set(id,{action,write,started:Date.now()});paint();
   try{return await run();}
-  catch(e){lastError=write?'The result was not confirmed. Check the record before submitting again.':'Unable to load the latest data. Check your connection and retry.';throw e;}
+  catch(e){if(write)lastError='The result was not confirmed. Check the record before submitting again.';throw e;}
   finally{pending.delete(id);paint();}
  }
  const get=apiGet,post=apiPost;
@@ -8072,7 +8103,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  const writes=new Map();
  apiPost=function(action,payload={},options={}){
   const key=JSON.stringify([authToken,action,payload,options]);if(writes.has(key))return writes.get(key);
-  const request=track(action,!['planningList','planningSnapshot','listUsers','assetsBootstrap'].includes(action),()=>post(action,payload,options));writes.set(key,request);
+  const request=track(action,!['planningList','planningSnapshot','listUsers','assetsBootstrap','me'].includes(action),()=>post(action,payload,options));writes.set(key,request);
   request.then(()=>writes.delete(key),()=>writes.delete(key));return request;
  };
  window.addEventListener('online',()=>{if(pending.size)paint();});window.addEventListener('offline',()=>{if(pending.size)paint();});
@@ -8243,10 +8274,20 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
   if(!requestNotice){requestNotice=document.createElement('div');requestNotice.className='utility-strip planning-request-notice';const text=document.createElement('span');const open=document.createElement('button');open.type='button';open.className='btn-secondary';open.textContent='Review requests';open.onclick=()=>{document.querySelector('.tab[data-tab="inventory"]')?.click();setTimeout(()=>document.querySelector('[data-inventory-view="requests"]')?.click(),0);};requestNotice.append(text,open);requestNotice._text=text;document.getElementById('panel-dashboard')?.prepend(requestNotice);}
   const count=(data.requests||[]).filter(r=>r.status==='Requested').length;requestNotice.hidden=count===0;requestNotice._text.textContent=count===1?'New parts request from an FSE.':count+' new parts requests from FSEs.';
  }
+ let maintenanceNotice;
+ function updateFseMaintenanceNotice(){
+  if(currentUser?.role!=='fse'){document.querySelectorAll('.fse-maintenance-notice').forEach(n=>n.hidden=true);return;}
+  const identity=String(currentUser.fse||currentUser.name||currentUser.username||'').trim().toLowerCase();
+  const assigned=(data.maintenance||[]).filter(r=>r.status==='Scheduled'&&String(r.technician||'').split(/[,;\n]+/).some(n=>String(n).trim().toLowerCase()===identity));
+  document.querySelectorAll('.fse-maintenance-notice').forEach(n=>n.remove());
+  if(!assigned.length)return;
+  ['panel-dashboard','panel-fieldlogs'].forEach(id=>{const box=document.createElement('div');box.className='utility-strip fse-maintenance-notice';box.innerHTML='<span>You have '+assigned.length+' scheduled maintenance visit'+(assigned.length===1?'':'s')+'.</span><button type="button" class="btn-secondary">View maintenance</button>';box.querySelector('button').onclick=()=>{document.querySelector('.tab[data-tab="inventory"]')?.click();setTimeout(()=>document.querySelector('[data-inventory-view="maintenance"]')?.click(),0);};document.getElementById(id)?.prepend(box);});
+ }
 
  function read(){if(loadedKey!==key()){data=blank();loadedKey=key();}}
  let saving=false;
- async function refresh(){read();const k=key();if(!k)return;try{const next=await apiPost('planningList');if(k!==key())return;data=next;Object.keys(tabs).forEach(render);snapshotList();tabs.maintenance.add.hidden=!management();updateRequestNotice();}catch(e){showToast('Planning unavailable',e.message||'Refresh and try again.','bad');}}
+ let planningFetchedAt=0,planningFetchedKey="";
+ async function refresh(){read();const k=key();if(!k)return;if(k===planningFetchedKey&&Date.now()-planningFetchedAt<30000)return;try{const next=await apiPost('planningList');if(k!==key())return;data=next;planningFetchedAt=Date.now();planningFetchedKey=k;Object.keys(tabs).forEach(render);snapshotList();tabs.maintenance.add.hidden=!management();updateRequestNotice();updateFseMaintenanceNotice();}catch(e){showToast('Planning unavailable',e.message||'Refresh and try again.','bad');}}
  async function commit(next){if(saving)throw Error('A save is already in progress.');if(!key())throw Error('Sign in first.');saving=true;const k=key();try{
   for(const kind of ['maintenance','requests','snapshots'])for(const r of next[kind]){const old=data[kind].find(x=>x.id===r.id);if(!old||JSON.stringify(old)!==JSON.stringify(r)){const response=await apiPost('planningSave',{kind,record:r});if(k!==key())throw Error('Account changed. Sign in again.');data={...data,[kind]:[response.record,...data[kind].filter(x=>x.id!==r.id)]};}}
  }finally{saving=false;}}
@@ -8297,12 +8338,54 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
    }catch(error){notifyError(error);}};
   form.querySelector('input,select')?.focus();
  }
+ let maintenanceVisit=null;
+ function startMaintenanceVisit(record){
+  if(!confirm('Start a maintenance visit? This will replace the current visit form.'))return;
+  const location=canonicalSiteName(record.site||'');
+  if(!location||siteIsClosed(location)){showToast('Location unavailable','Choose an open location before starting this check.','bad');return;}
+  document.querySelector('.tab[data-tab="log"]')?.click();cancelVisitEdit();
+  const names=String(record.technician||'').split(/[,;\n]+/).map(n=>n.trim()).filter(Boolean);
+  const lead=currentUser.role==='fse'?(currentUser.fse||currentUser.name):names[0];
+  renderSiteOptions(location);
+  if(document.getElementById('f-site').value!==location){showToast('Location unavailable','Refresh locations and try again.','bad');return;}
+  document.getElementById('f-site').dispatchEvent(new Event('change',{bubbles:true}));
+  ['f-notes','f-ticket','f-time-in','f-time-out','f-duration','f-resolution','f-resolution-type','f-machine','f-component','f-asset','f-parts','f-followup-date','f-followup-reason','f-time-resolved','f-spare-part'].forEach(id=>{const node=document.getElementById(id);if(node)node.value='';});
+  document.getElementById('f-date').value=todayStr();document.getElementById('f-visit-type').value='Preventive Maintenance';document.getElementById('f-status').value='Pending';
+  const tech=document.getElementById('f-tech');if(lead&&!Array.from(tech.options).some(o=>o.value===lead))tech.add(new Option(lead,lead));tech.value=lead||'';
+  renderSupportingFses(names.filter(n=>n.toLowerCase()!==String(lead).toLowerCase()));
+  selectedCat=null;document.querySelectorAll('#cat-picker .cat-opt').forEach(n=>n.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category for the maintenance findings.';
+  renderIssueTypeOptions('');updateCategoryFields();updateResolutionExtra();updateWeekHint();populateVisitCabinets();
+  const note=document.getElementById('f-notes');note.value='Scheduled maintenance: '+record.task+'\n[Maintenance '+record.id+']'+(record.notes?'\n'+record.notes:'');
+  maintenanceVisit={id:record.id,account:key()};note.dispatchEvent(new Event('input',{bubbles:true}));
+  showToast('Maintenance visit ready','Select a concern category and cabinets, then enter the findings.');
+ }
+ window.addEventListener('visit-committed',event=>{
+  const visit=event.detail?.entry;if(!visit)return;
+  const record=data.maintenance.find(r=>r.status==='Scheduled'&&String(visit.notes||'').includes('[Maintenance '+r.id+']'));
+  if(!record||maintenanceVisit&&maintenanceVisit.account!==key())return;
+  const account=key();maintenanceVisit=null;
+  setTimeout(()=>{
+   const prompt=document.createElement('dialog');prompt.style.cssText='max-width:420px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:20px';
+   prompt.append(el('h3','Visit saved'),el('p','Mark “'+record.task+'” as completed?'));
+   const error=el('p');error.setAttribute('role','status');prompt.append(error);
+   const done=el('button','Complete maintenance','btn-primary'),keep=el('button','Keep scheduled','btn-secondary');done.type=keep.type='button';keep.style.marginLeft='8px';
+   keep.onclick=()=>{prompt.close();prompt.remove();};
+   done.onclick=async()=>{done.disabled=true;try{if(account!==key())throw Error('Account changed. Sign in again.');const current=data.maintenance.find(r=>r.id===record.id);if(!current||current.status!=='Scheduled')throw Error('Refresh maintenance to check its current status.');await commit({...data,maintenance:data.maintenance.map(r=>r.id===record.id?{...r,status:'Completed'}:r)});render('maintenance');prompt.close();prompt.remove();showToast('Maintenance completed',record.site);}catch(e){error.textContent=e.message;done.disabled=false;}};
+   prompt.append(done,keep);document.body.append(prompt);prompt.showModal();
+  },0);
+ });
+
  function render(view){const {list,filter}=tabs[view];list.replaceChildren();const terminal=view==='maintenance'?['Completed','Cancelled']:['Declined','Cancelled'];const rows=data[view].filter(r=>filter.value==='all'||!terminal.includes(r.status)).slice().sort((a,b)=>String(a.due||'9999').localeCompare(String(b.due||'9999')));
   if(!rows.length){list.append(el('p',view==='maintenance'?'No checks in this view. Schedule your first cabinet check above.':'No requests in this view. Add a request when a part is needed.','empty'));return;}
   rows.forEach(r=>{const card=el('article',null,'planning-row');const text=el('div');text.append(el('h3',view==='maintenance'?r.task:r.part+' · Qty '+r.quantity));text.append(el('p',[r.cabinetId,r.site,view==='maintenance'?r.technician:'Requested by '+r.createdBy].filter(Boolean).join(' · ')));
    const overdue=r.due&&r.due<todayStr()&&!terminal.includes(r.status);const state=el('span',r.status+(r.due?' · Due '+r.due:' · No due date')+(overdue?' · Overdue':''),'planning-state');if(overdue)state.classList.add('overdue');text.append(state);
    if(r.reason||r.notes)text.append(el('p',[r.reason,r.notes].filter(Boolean).join(' — ')));card.append(text);
    const actions=el('div',null,'planning-actions');
+   if(view==='maintenance'){
+    if(r.status==='Scheduled'){const start=el('button','Start visit','btn-primary');start.type='button';start.onclick=()=>startMaintenanceVisit(r);actions.append(start);}
+    const linked=entries.filter(e=>e.status!=='Voided'&&String(e.notes||'').includes('[Maintenance '+r.id+']'));
+    linked.forEach(visit=>{const link=el('button','View visit · '+visit.date,'btn-secondary');link.type='button';link.onclick=()=>openDetail(visit.id);actions.append(link);});
+   }
    const choices=view==='maintenance'?(r.status==='Scheduled'?(management()?['Completed','Cancelled']:['Completed']):[]):(r.status==='Requested'?(management()?['Approved','Declined','Cancelled']:['Cancelled']):r.status==='Approved'?['Cancelled']:[]);
    choices.forEach(status=>{const b=el('button',status==='Completed'?'Mark complete':status==='Approved'?'Approve':status==='Declined'?'Decline':'Cancel','btn-secondary');b.type='button';b.addEventListener('click',async()=>{b.disabled=true;try{read();const next={...data,[view]:data[view].map(x=>x.id===r.id?{...x,status,updatedAt:x.updatedAt,updatedBy:currentUser.name||currentUser.username}:x)};await commit(next);render(view);}catch(e){notifyError(e);}finally{b.disabled=false;}});actions.append(b);});card.append(actions);list.append(card);});
  }
@@ -8321,7 +8404,7 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  const sync=el('button','Refresh planning','btn-secondary');sync.type='button';inventory.append(sync);sync.onclick=refresh;
  const migrate=el('button','Import saved browser records','btn-secondary');migrate.type='button';inventory.append(migrate);
  migrate.onclick=async()=>{migrate.disabled=true;try{const raw=localStorage.getItem(key());if(!raw)throw Error('No browser records found for this account.');const local=JSON.parse(raw);let count=0;for(const kind of ['maintenance','requests','snapshots'])for(const record of local[kind]||[]){await apiPost('planningSave',{kind,record,importOnly:true});count++;}await refresh();showToast('Import complete',count+' records processed. Original browser backup kept.');}catch(e){notifyError(e);}finally{migrate.disabled=false;}};
- const originalShow=showApp;showApp=function(user){originalShow(user);try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);}catch(e){notifyError(e);}};
+ const originalShow=showApp;showApp=function(user){originalShow(user);try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);updateFseMaintenanceNotice();}catch(e){notifyError(e);}};
  if(currentUser)try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);}catch(e){notifyError(e);}
 })();</script>
 <script id="fse-visit-visibility">
@@ -8689,15 +8772,23 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
  form.addEventListener('input',mark);form.addEventListener('change',mark);
  document.getElementById('cat-picker').addEventListener('click',mark);
  window.addEventListener('visit-committed',()=>{dirty=false;});
- window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+ function draftIsSafe(){
+  if(editingEntryId||!currentUser)return false;
+  try{const key='opexa-visit-draft-v1:'+encodeURIComponent(currentUser.username||currentUser.fse||currentUser.name)+':'+currentUser.role;const d=JSON.parse(localStorage.getItem(key)||'null');
+   if(!d||d.category!==selectedCat||JSON.stringify(d.supporting)!==JSON.stringify(getSupportingFses()))return false;
+   return Array.from(form.querySelectorAll('input[id],select[id],textarea[id]')).filter(n=>n.id.startsWith('f-')&&!n.disabled).every(n=>d.fields[n.id]===(n.type==='checkbox'?n.checked:n.value));
+  }catch(e){return false;}
+ }
+ let logoutApproved=false;
+ window.addEventListener('beforeunload',e=>{if(!logoutApproved&&dirty&&!draftIsSafe()){e.preventDefault();e.returnValue='';}});
  document.addEventListener('click',e=>{
-  const target=e.target.closest('[data-tab],[data-mobile-tab],#logout-btn,#mobile-logout-btn,#cancel-visit-edit,#fieldlogs-new-btn');
-  if(!target||!dirty)return;
-  const tab=target.dataset.tab||target.dataset.mobileTab;
-  if(tab==='log'&&target.id!=='fieldlogs-new-btn')return;
-  if(!confirm(tab?'This visit has unsaved changes. Leave this tab? Your form will stay here until you return.':'This visit has unsaved changes. Continue without saving to the shared sheet?')){e.preventDefault();e.stopImmediatePropagation();}
- },true);
- for(const name of ['editFieldLog','duplicateEntry']){
+  const target=e.target.closest('#logout-btn,#mobile-logout-btn,#cancel-visit-edit');
+  if(!target)return;
+  const logout=target.id==='logout-btn'||target.id==='mobile-logout-btn';
+  if(logout&&logoutApproved)return;
+  if(dirty&&!draftIsSafe()&&!confirm('These changes are not saved as a draft. Continue without saving?')){e.preventDefault();e.stopImmediatePropagation();return;}
+  if(logout)logoutApproved=true;
+ },true); for(const name of ['editFieldLog','duplicateEntry']){
   const original=window[name];if(typeof original!=='function')continue;
   window[name]=function(...args){if(dirty&&!confirm('Replace the unsaved visit form with this record?'))return;dirty=false;const result=original.apply(this,args);if(name==='duplicateEntry')dirty=true;return result;};
  }
@@ -8791,3 +8882,29 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
 })();
 
 </script>
+
+<script id="request-timings-ui">
+(function(){
+ const button=document.createElement('button');button.type='button';button.className='btn-secondary loading-times-compact';button.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="8"/><path d="M12 10v4l2 2M9 2h6M12 2v4M18 6l2-2"/></svg>';button.setAttribute('aria-label','Loading times');button.title='Loading times';document.querySelector('.app-actions').append(button);
+ const dialog=document.createElement('dialog');dialog.style.cssText='width:min(760px,calc(100vw - 32px));max-height:85vh;overflow:auto;background:var(--card,#171c24);color:var(--ink,#eef2ff);border:1px solid var(--line,#404858);border-radius:12px;padding:20px';
+ const title=document.createElement('h2');title.textContent='Loading times';title.style.fontSize='18px';
+ const note=document.createElement('p');note.textContent='Real requests from this browser session. Includes the network and server wait; it does not isolate Google processing time or screen rendering. No passwords, tokens, or record contents are stored.';note.style.cssText='font-size:12px;line-height:1.6;color:var(--ink-soft)';
+ const body=document.createElement('div');const actions=document.createElement('div');actions.style.cssText='display:flex;gap:8px;margin-top:16px;flex-wrap:wrap';
+ function action(label,run){const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=label;b.onclick=run;actions.append(b);}
+ action('Download timing report',()=>{const data={scope:'Browser request durations, not server-only time',records:opexaTiming.rows()};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='opexa-loading-times.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+ action('Clear measurements',()=>opexaTiming.clear());action('Close',()=>dialog.close());dialog.append(title,note,body,actions);document.body.append(dialog);
+ const seconds=n=>(n/1000).toFixed(2)+'s';
+ function paint(){if(!dialog.open)return;body.replaceChildren();const rows=opexaTiming.rows();if(!rows.length){body.textContent='No measurements yet. Sign in, refresh visits, open assets, and save a real visit when needed.';return;}
+ const groups=new Map();rows.forEach(r=>{if(!groups.has(r.operation))groups.set(r.operation,[]);groups.get(r.operation).push(r);});
+ const table=document.createElement('table');table.style.cssText='width:100%;font-size:12px;border-collapse:collapse';
+ const header=table.insertRow();['Request','Count','Median success','Slowest success','Failed'].forEach(s=>{const th=document.createElement('th');th.textContent=s;th.style.cssText='text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)';header.append(th);});
+ [...groups].sort((a,b)=>Math.max(...b[1].map(r=>r.ms))-Math.max(...a[1].map(r=>r.ms))).forEach(([name,list])=>{const success=list.filter(r=>r.outcome==='ok').map(r=>r.ms).sort((a,b)=>a-b);const middle=Math.floor(success.length/2);const median=success.length?(success.length%2?success[middle]:(success[middle-1]+success[middle])/2):null;const row=table.insertRow();[name,list.length,median===null?'—':seconds(median),success.length?seconds(success[success.length-1]):'—',list.length-success.length].forEach(v=>{const cell=row.insertCell();cell.textContent=v;cell.style.cssText='padding:9px 5px;border-bottom:1px solid var(--line)';});});
+ const scroll=document.createElement('div');scroll.style.overflowX='auto';scroll.append(table);body.append(scroll);
+ const last=rows[rows.length-1];const detail=document.createElement('p');detail.style.fontSize='12px';detail.textContent='Latest: '+last.operation+' · '+seconds(last.ms)+' · '+last.outcome+' · '+last.concurrent+' other request(s) active at start.';body.append(detail);
+ }
+ button.onclick=()=>{dialog.showModal();paint();};window.addEventListener('opexa-timing',paint);
+})();
+
+</script>
+
+
