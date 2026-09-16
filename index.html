@@ -4634,11 +4634,14 @@ async function apiGet(type){
 }
 async function apiPost(action,payload={},options={}){
   const source=`POST:${action}`;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),45000);
   try{
     const body={action,...payload};
     if(!options.skipToken&&authToken)body.token=authToken;
     const res=await fetch(API_URL,{
       method:'POST',
+      signal:controller.signal,
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify(body)
     });
@@ -4654,8 +4657,9 @@ async function apiPost(action,payload={},options={}){
       // Writes are important: a failed save/update is shown as a real sync error immediately.
       noteSyncFailure(source,`Save/update failed (${action}): ${err.message||err}`,true);
     }
+    if(err.name==='AbortError')throw new Error('The server did not confirm within 45 seconds. Refresh and check whether the record saved before trying again.');
     throw err;
-  }
+  }finally{clearTimeout(timeout);}
 }
 function normalizeTimeOrDate(val, isTime){
   if(typeof val !== 'string') return val || '';
@@ -8048,7 +8052,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
    else toast.hidden=true;
    return;
   }
-  const jobs=Array.from(pending.values());const job=jobs.find(j=>j.write)||jobs[0];const age=Date.now()-Math.min(...jobs.map(j=>j.started));
+  const jobs=Array.from(pending.values());const job=jobs.find(j=>j.write)||jobs[0];const age=Date.now()-job.started;
   toast.hidden=false;mark.hidden=false;dismiss.hidden=true;title.textContent=(labels[job.action]||(job.write?'Saving changes':'Loading data'))+'…';
   if(!navigator.onLine){title.textContent='Connection lost';detail.textContent='Waiting for the request to finish. Check your internet connection.';}
   else if(age>=8000){title.textContent='Still working…';detail.textContent=job.write?'Confirmation is taking longer than usual. Please don’t submit again.':'The connection is taking longer than usual. Your current view is still available.';}
@@ -8062,12 +8066,13 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   finally{pending.delete(id);paint();}
  }
  const get=apiGet,post=apiPost;
- apiGet=function(type){return track(type,false,()=>get(type));};
+ const reads=new Map();
+ apiGet=function(type){const key=JSON.stringify([authToken,type]);if(reads.has(key))return reads.get(key);const promise=track(type,false,()=>get(type));reads.set(key,promise);promise.then(()=>reads.delete(key),()=>reads.delete(key));return promise;};
  // Repeated clicks on the same pending operation share its confirmation.
  const writes=new Map();
  apiPost=function(action,payload={},options={}){
-  const key=JSON.stringify([action,payload,options]);if(writes.has(key))return writes.get(key);
-  const request=track(action,true,()=>post(action,payload,options));writes.set(key,request);
+  const key=JSON.stringify([authToken,action,payload,options]);if(writes.has(key))return writes.get(key);
+  const request=track(action,!['planningList','planningSnapshot','listUsers','assetsBootstrap'].includes(action),()=>post(action,payload,options));writes.set(key,request);
   request.then(()=>writes.delete(key),()=>writes.delete(key));return request;
  };
  window.addEventListener('online',()=>{if(pending.size)paint();});window.addEventListener('offline',()=>{if(pending.size)paint();});
