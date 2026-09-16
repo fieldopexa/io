@@ -3308,6 +3308,36 @@ table tbody tr:hover{background:#ffffff03!important}
 .app-nav .tab[data-tab="dashboard"],.app-nav .tab[data-tab="fieldlogs"]{display:flex!important;visibility:visible!important;opacity:1!important}
 @media(max-width:900px){.mobile-drawer-nav [data-mobile-tab="dashboard"],.mobile-drawer-nav [data-mobile-tab="fieldlogs"]{display:flex!important;visibility:visible!important;opacity:1!important}}
 </style>
+<style id="sidebar-polish">
+.nav-outline-icon{display:inline-block;width:18px;height:18px;flex:none;vertical-align:middle}
+.app-top .tab-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;flex:none}
+.app-top .field-ops-title-safe{font-size:11px!important;font-weight:600!important;letter-spacing:.07em!important;color:#aab5c6!important}
+.app-top .nav-minimal .nav-primary{background:#a9baff!important;color:#151c30!important;border:1px solid #a9baff!important;box-shadow:none!important;min-height:40px;font-family:inherit;cursor:pointer;margin-bottom:4px!important}
+.app-top .nav-minimal .nav-primary:hover{background:#bdcaff!important;border-color:#bdcaff!important}
+.app-top .nav-minimal .nav-primary .tab-icon{color:inherit!important;opacity:1!important}
+.app-top .nav-minimal .tab:not(.nav-primary) .tab-icon{color:inherit!important;opacity:.8}
+.app-top .fullscreen-btn{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;padding:8px!important}
+.app-top .logout-btn{background:transparent!important;box-shadow:none!important;color:#b9c3d2!important;min-height:40px}
+.app-top .logout-btn:hover{background:rgba(255,255,255,.05)!important;color:#fff!important}
+@media(min-width:981px){.app-top .app-actions{grid-template-columns:40px minmax(0,1fr)!important}.app-top .user-badge{grid-column:1/-1}}
+</style>
+<style id="cabinet-picker-polish">
+.cabinet-multi-picker{padding:0}
+.cabinet-multi-picker>div:first-child{gap:5px!important;margin-bottom:9px!important}
+.cabinet-multi-picker>div:first-child button{min-height:28px!important;padding:3px 8px!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:5px!important;font-size:11px!important;color:#aebddb!important}
+.cabinet-multi-picker>div:first-child button:hover{background:#a9baff12!important;color:#e1e8ff!important}
+.cabinet-multi-picker>div:first-child small{margin-left:auto;font-size:10px;color:#9ba7b8!important}
+.cabinet-multi-picker>div:nth-child(2){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(94px,1fr));gap:6px!important;padding:1px;max-height:210px!important}
+.cabinet-multi-picker label{position:relative;justify-content:center;min-height:34px;padding:6px 9px!important;gap:7px!important;border:1px solid #a8b9d51c!important;border-radius:7px!important;background:#ffffff03!important;color:#b7c2d4;transition:background .15s,border-color .15s;cursor:pointer}
+.cabinet-multi-picker label:hover{background:#a9baff0c!important;border-color:#a9baff50!important}
+.cabinet-multi-picker label.is-selected{background:#a9baff18!important;border-color:#a9baff70!important;color:#e0e8ff}
+.cabinet-multi-picker label input{position:absolute;opacity:0;width:1px!important;height:1px!important}
+.cabinet-multi-picker label span{font-size:11px;font-weight:500;letter-spacing:.025em}
+.cabinet-multi-picker label::before{content:'';width:11px;height:11px;flex:none;border:1px solid #9eabc350;border-radius:50%;box-sizing:border-box}
+.cabinet-multi-picker label.is-selected::before{content:'✓';display:flex;align-items:center;justify-content:center;width:13px;height:13px;background:#b5c5ff;border-color:#b5c5ff;border-radius:50%;color:#151c30;font-size:9px;font-weight:700}
+.cabinet-multi-picker label:focus-within{outline:2px solid #a9baff;outline-offset:2px}
+@media(pointer:coarse){.cabinet-multi-picker label{min-height:44px}.cabinet-multi-picker>div:first-child button{min-height:44px!important}}
+</style>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -3342,12 +3372,12 @@ table tbody tr:hover{background:#ffffff03!important}
       <button type="button" id="mobile-menu-close" aria-label="Close menu">×</button>
     </div>
     <nav class="mobile-drawer-nav">
-      <button type="button" data-mobile-tab="log" class="active"><span>＋</span><b>New Visit</b></button>
-      <button type="button" class="fse-shared-mobile" data-mobile-tab="fieldlogs"><span>▤</span><b>Field Logs</b></button>
-      <button type="button" class="fse-shared-mobile" data-mobile-tab="dashboard"><span>◫</span><b>Dashboard</b></button>
-      <button type="button" data-mobile-tab="report" data-mobile-role="management"><span>▥</span><b>Reports</b></button>
-      <button type="button" data-mobile-tab="inventory"><span>▦</span><b>Sites &amp; Assets</b></button>
-      <button type="button" data-mobile-tab="audit" data-mobile-role="management"><span>◴</span><b>Audit Trail</b></button>
+      <button type="button" data-mobile-tab="log" class="active"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span><b>New Visit</b></button>
+      <button type="button" class="fse-shared-mobile" data-mobile-tab="fieldlogs"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><b>Field Logs</b></button>
+      <button type="button" class="fse-shared-mobile" data-mobile-tab="dashboard"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><b>Dashboard</b></button>
+      <button type="button" data-mobile-tab="report" data-mobile-role="management"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><b>Reports</b></button>
+      <button type="button" data-mobile-tab="inventory"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><b>Locations &amp; Assets</b></button>
+      <button type="button" data-mobile-tab="audit" data-mobile-role="management"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg></span><b>Audit Trail</b></button>
     </nav>
     <div class="mobile-drawer-footer">
       <div class="mobile-user-summary">
@@ -3361,21 +3391,21 @@ table tbody tr:hover{background:#ffffff03!important}
     <div class="app-brand"><img src="https://www.opexa.io/_next/static/media/logo.0ji5glv1jnv4q.png" alt="Opexa"><span class="app-brand-text"></span></div>
 <div class="field-ops-title-safe">Field Operations</div>
     <div class="app-nav nav-minimal">
-      <div class="tab nav-primary active" data-tab="log"><span class="tab-icon">＋</span><span>New Visit</span></div>
+      <button type="button" class="tab nav-primary active" data-tab="log"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span><span>New Visit</span></button>
 
       <div class="nav-section-label">Operations</div>
-      <div class="tab fse-shared-tab" data-tab="dashboard"><span class="tab-icon">◫</span><span>Dashboard</span></div>
-      <div class="tab fse-shared-tab" data-tab="fieldlogs"><span class="tab-icon">▤</span><span>Field Logs</span></div>
-      <div class="tab" data-tab="report" data-role="management"><span class="tab-icon">▥</span><span>Reports</span></div>
+      <div class="tab fse-shared-tab" data-tab="dashboard"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span>Dashboard</span></div>
+      <div class="tab fse-shared-tab" data-tab="fieldlogs"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span>Field Logs</span></div>
+      <div class="tab" data-tab="report" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><span>Reports</span></div>
 
       <div class="nav-section-label">Assets</div>
-      <div class="tab" data-tab="inventory"><span class="tab-icon">▦</span><span>Sites &amp; Assets</span></div>
+      <div class="tab" data-tab="inventory"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Locations &amp; Assets</span></div>
 
       <div class="nav-section-label" data-role="management">Admin</div>
-      <div class="tab" data-tab="audit" data-role="management"><span class="tab-icon">◴</span><span>Audit Trail</span></div>
-      <div class="tab" data-tab="users" data-role="management" style="display:none!important"><span class="tab-icon">♙</span><span>Users</span></div>
+      <div class="tab" data-tab="audit" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg></span><span>Audit Trail</span></div>
+      <div class="tab" data-tab="users" data-role="management" style="display:none!important"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 4 5v1"/></svg></span><span>Users</span></div>
     </div>
-    <div class="app-actions"><div class="user-badge"><span class="user-dot"></span><span><b id="logged-user">—</b><small id="logged-role" style="display:block;color:var(--ink-soft);font-size:9px;margin-top:1px">—</small></span></div><button class="fullscreen-btn" id="fullscreen-btn">⛶ Fullscreen</button><button class="logout-btn" id="logout-btn">Log out</button></div>
+    <div class="app-actions"><div class="user-badge"><span class="user-dot"></span><span><b id="logged-user">—</b><small id="logged-role" style="display:block;color:var(--ink-soft);font-size:9px;margin-top:1px">—</small></span></div><button type="button" class="fullscreen-btn" id="fullscreen-btn" title="Toggle fullscreen" aria-label="Toggle fullscreen"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button><button class="logout-btn" id="logout-btn">Log out</button></div>
   </div>
   <div class="app-content">
   <h1 style="display:none">Field Operations</h1>
@@ -5019,6 +5049,10 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   if(!site||!selectedCat){err.style.display='block';return;}
   err.style.display='none';
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
+  const duplicateDate=document.getElementById('f-date').value||todayStr();
+  const duplicateTech=normUniqueValue(document.getElementById('f-tech').value);
+  const duplicates=entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)&&normUniqueValue(row.tech)===duplicateTech);
+  if(duplicates.length&&!confirm('Possible duplicate: '+duplicates.length+' existing visit(s) for '+site+' on '+duplicateDate+' with this primary technician. Save this as a separate visit anyway?'))return;
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
@@ -5034,6 +5068,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   try{
     submitBtn.textContent=isEdit?'Saving changes…':'Saving visit…';
     await apiPost(isEdit?'updateEntry':'addEntry',{id:entry.id,entry});
+    window.dispatchEvent(new CustomEvent('visit-committed',{detail:{isEdit}}));
     if(!isEdit)window.dispatchEvent(new Event('visit-saved'));
     let spareWarning='';
     if(!isEdit&&trackedSpare.partId){
@@ -5046,7 +5081,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     if(isEdit){const ix=entries.findIndex(x=>String(x.id)===String(entry.id));if(ix>=0)entries[ix]=normalizeEntry(entry);else entries.push(normalizeEntry(entry));}
     else entries.push(normalizeEntry(entry));
     storageSet(STORAGE_KEY,entries);
-    showToast(isEdit?'Field log updated':'Field visit saved',spareWarning||`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category}`,spareWarning?'bad':'ok');
+    showToast('Saved to shared sheet',spareWarning||`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category}`,spareWarning?'bad':'ok');
     cancelVisitEdit();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
     if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category to see what it covers.';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';
@@ -5243,13 +5278,13 @@ function allKnownSites(){
   (window.__lifecycleSites||[]).forEach(record=>{
     const display=cleanSiteDisplayName(record?.name||'');
     const key=normalizeSiteKey(display);
-    if(!key || byKey.has(key))return;
+    if(!key || key==='car' || byKey.has(key))return;
     byKey.set(key,display);
   });
   // Include internal locations already present in cabinet or inventory records.
   [...(cabinetRows||[]).map(r=>r.site),(inventoryRows||[]).map(r=>r.site)].flat().forEach(name=>{
     const display=cleanSiteDisplayName(name||'');const key=normalizeSiteKey(display);
-    if(key&&!byKey.has(key))byKey.set(key,display);
+    if(key&&key!=='car'&&!byKey.has(key))byKey.set(key,display);
   });
 
   return [...byKey.values()]
@@ -5337,7 +5372,7 @@ function renderSites(){
   const q=normalizeSiteKey(document.getElementById('sites-search')?.value||'');
   const statusFilter=document.getElementById('sites-status-filter')?.value||'All';
   const known=allKnownSites();
-  (window.__lifecycleSites||[]).forEach(r=>{if(r.name&&!known.some(n=>normalizeSiteKey(n)===normalizeSiteKey(r.name)))known.push(r.name);});
+  (window.__lifecycleSites||[]).forEach(r=>{if(r.name&&normalizeSiteKey(r.name)!=='car'&&!known.some(n=>normalizeSiteKey(n)===normalizeSiteKey(r.name)))known.push(r.name);});
   const activeNames=known.filter(name=>!siteIsClosed(name)&&!siteIsWarehouse(name));
   const warehouseNames=known.filter(name=>!siteIsClosed(name)&&siteIsWarehouse(name));
   const closedNames=known.filter(name=>siteIsClosed(name)&&!siteIsWarehouse(name));
@@ -7705,7 +7740,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     fieldlogs:'Field Logs',
     dashboard:'Dashboard',
     report:'Reports',
-    inventory:'Sites & Assets',
+    inventory:'Locations & Assets',
     users:'Users',
     audit:'Audit Trail'
   };
@@ -8640,3 +8675,114 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
 </html>
 
 
+
+<script id="daily-work-polish">
+(function(){
+ const form=document.querySelector('.smart-visit-form');
+ let dirty=false;
+ const mark=()=>{dirty=true;};
+ form.addEventListener('input',mark);form.addEventListener('change',mark);
+ document.getElementById('cat-picker').addEventListener('click',mark);
+ window.addEventListener('visit-committed',()=>{dirty=false;});
+ window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+ document.addEventListener('click',e=>{
+  const target=e.target.closest('[data-tab],[data-mobile-tab],#logout-btn,#mobile-logout-btn,#cancel-visit-edit,#fieldlogs-new-btn');
+  if(!target||!dirty)return;
+  const tab=target.dataset.tab||target.dataset.mobileTab;
+  if(tab==='log'&&target.id!=='fieldlogs-new-btn')return;
+  if(!confirm(tab?'This visit has unsaved changes. Leave this tab? Your form will stay here until you return.':'This visit has unsaved changes. Continue without saving to the shared sheet?')){e.preventDefault();e.stopImmediatePropagation();}
+ },true);
+ for(const name of ['editFieldLog','duplicateEntry']){
+  const original=window[name];if(typeof original!=='function')continue;
+  window[name]=function(...args){if(dirty&&!confirm('Replace the unsaved visit form with this record?'))return;dirty=false;const result=original.apply(this,args);if(name==='duplicateEntry')dirty=true;return result;};
+ }
+ document.querySelector('#visit-draft-controls')?.addEventListener('click',e=>{if(e.target.textContent==='Resume draft')dirty=true;});
+ const ids=['global-search','date-from','date-to','my-fse','sites-search','sites-status-filter','cabinet-search','cabinet-status-filter','cabinet-site-filter','inventory-search','inventory-filter','movement-search','movement-type-filter','spare-search','spare-category-filter','period-picker'];
+ const defaults=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)?.value||'']));
+ let memory={},restoring=false;
+ function key(){return currentUser?'opexa-view-filters-v1:'+encodeURIComponent(currentUser.username)+':'+currentUser.role:null;}
+ function remember(){if(restoring||!key())return;ids.forEach(id=>{const el=document.getElementById(id);if(el)memory[id]=el.value;});memory.periodType=periodType;memory.activeCat=activeCat;memory.activeWork=activeWork;try{sessionStorage.setItem(key(),JSON.stringify(memory));}catch(e){}}
+ function apply(id){const el=document.getElementById(id),value=memory[id];if(!el||value===undefined)return;if(el.tagName==='SELECT'&&!Array.from(el.options).some(o=>o.value===value))return;el.value=value;}
+ const oldPopulate=populatePeriodPicker;populatePeriodPicker=function(...args){const result=oldPopulate.apply(this,args);if(restoring)apply('period-picker');return result;};
+ const oldShow=showApp;showApp=function(user){
+  dirty=false;memory={};try{memory=JSON.parse(sessionStorage.getItem('opexa-view-filters-v1:'+encodeURIComponent(user.username)+':'+user.role)||'{}');}catch(e){}
+  restoring=true;
+  try{const result=oldShow(user);ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value=defaults[id];apply(id);});
+   periodType=['week','month','quarter'].includes(memory.periodType)?memory.periodType:'week';
+   document.querySelectorAll('[data-period]').forEach(b=>b.classList.toggle('active',b.dataset.period===periodType));
+   activeCat=memory.activeCat||'All';activeWork=user.role==='management'&&memory.activeWork==='mine'?'mine':'all';
+   document.querySelectorAll('#filters .chip').forEach(b=>b.classList.toggle('active',b.dataset.cat===activeCat));
+   document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.work===activeWork));
+   document.getElementById('my-fse').style.display=activeWork==='mine'?'block':'none';
+   populatePeriodPicker();render();renderReport();return result;
+  }finally{restoring=false;}
+ };
+ document.addEventListener('input',e=>{if(ids.includes(e.target.id))remember();});
+ document.addEventListener('change',e=>{if(ids.includes(e.target.id))remember();});
+ document.addEventListener('click',e=>{if(e.target.closest('#filters,#work-toggle,#period-types'))remember();});
+})();
+
+</script>
+
+<script id="searchable-visit-location">
+(function(){
+ const select=document.getElementById('f-site');
+ const wrap=document.createElement('div');wrap.style.cssText='flex:1;min-width:0;position:relative';select.before(wrap);wrap.append(select);select.hidden=true;select.style.display='none';
+ const input=document.createElement('input');input.type='text';input.id='location-combobox';input.placeholder='Select or type a location';input.autocomplete='off';input.setAttribute('role','combobox');input.setAttribute('aria-label','Client / Site');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls','location-options');input.setAttribute('aria-expanded','false');input.style.paddingRight='38px';wrap.append(input);
+ const toggle=document.createElement('button');toggle.type='button';toggle.innerHTML='&#8964;';toggle.setAttribute('aria-label','Show locations');toggle.style.cssText='position:absolute;right:2px;top:2px;width:34px;height:calc(100% - 4px);border:0;background:transparent;color:var(--ink);cursor:pointer';wrap.append(toggle);
+ const list=document.createElement('div');list.id='location-options';list.setAttribute('role','listbox');list.hidden=true;list.style.cssText='position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card);box-shadow:0 8px 24px #0005';wrap.append(list);
+ let matches=[],active=-1;
+ const label=()=>select.selectedOptions[0]?.value?select.selectedOptions[0].textContent:'';
+ function close(){list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1;input.value=label();}
+ function highlight(){Array.from(list.children).forEach((el,i)=>{el.style.background=i===active?'var(--panel-soft)':'transparent';el.setAttribute('aria-selected',String(i===active));});if(active>=0){input.setAttribute('aria-activedescendant','location-option-'+active);list.children[active]?.scrollIntoView({block:'nearest'});}}
+ function choose(i){if(!matches[i])return;select.value=matches[i].value;select.dispatchEvent(new Event('change',{bubbles:true}));close();input.focus();}
+ function open(query=''){matches=Array.from(select.options).filter(o=>o.value&&!o.disabled&&o.textContent.toLowerCase().includes(query.toLowerCase().trim()));active=-1;list.replaceChildren();list.hidden=false;input.setAttribute('aria-expanded','true');input.removeAttribute('aria-activedescendant');matches.forEach((o,i)=>{const row=document.createElement('div');row.id='location-option-'+i;row.setAttribute('role','option');row.setAttribute('aria-selected','false');row.textContent=o.textContent;row.style.cssText='padding:11px 12px;cursor:pointer;font-size:12px';row.addEventListener('mousedown',e=>e.preventDefault());row.onclick=()=>choose(i);list.append(row);});if(!matches.length){const empty=document.createElement('div');empty.textContent='No matches. Use Others for an unlisted location.';empty.style.padding='12px';list.append(empty);}}
+ input.addEventListener('focus',()=>open());input.addEventListener('click',()=>{if(list.hidden)open();});input.addEventListener('input',()=>{select.value='';select.dispatchEvent(new Event('change',{bubbles:true}));open(input.value);});
+ input.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(list.hidden)open();if(matches.length){active=(active+(e.key==='ArrowDown'?1:-1)+matches.length)%matches.length;highlight();}}else if(e.key==='Enter'&&!list.hidden){e.preventDefault();choose(active<0?0:active);}else if(e.key==='Tab')close();});
+ toggle.addEventListener('mousedown',e=>e.preventDefault());toggle.onclick=()=>{if(!list.hidden)close();else{input.focus();open();}};
+ document.addEventListener('click',e=>{if(!wrap.contains(e.target))close();});
+ select.addEventListener('change',()=>{if(document.activeElement!==input)input.value=label();});
+ const previous=renderSiteOptions;renderSiteOptions=function(value){const selected=value===undefined?select.value:value;previous(value);const names=allKnownSites().filter(n=>!siteIsClosed(n)&&normalizeSiteKey(n)!=='car');select.replaceChildren(new Option('Select a location',''));names.forEach(n=>select.add(new Option(n,n)));select.add(new Option('Others — specify location in remarks','Others'));const match=Array.from(select.options).find(o=>normalizeSiteKey(o.value)===normalizeSiteKey(selected));if(match)select.value=match.value;else if(editingEntryId&&selected){const o=new Option(selected+' — recorded location',selected);o.disabled=true;select.add(o);select.value=selected;}close();};
+ new MutationObserver(()=>{if(document.activeElement!==input)input.value=label();}).observe(select,{childList:true,subtree:true});
+ renderSiteOptions();if(currentUser)renderSites();
+})();
+
+</script>
+
+<script id="multi-cabinet-visits">
+(function(){
+ const select=document.getElementById('f-cabinet-quick'),machine=document.getElementById('f-machine');
+ select.style.display='none';
+ const box=document.createElement('div');box.className='cabinet-multi-picker';select.after(box);
+ const hint=select.parentElement.querySelector('.cat-desc');if(hint)hint.textContent='Choose any cabinets affected by this visit. Concern and remarks apply to all selected cabinets.';
+ const tokens=()=>machine.value.split(';').map(s=>s.trim()).filter(Boolean);
+ const code=c=>String(c.cabinetId||c.label||'').trim();
+ function rows(){const key=normalizeSiteKey(document.getElementById('f-site').value);if(!key)return [];const map=cabinetCanonicalSiteMap();return cabinetRows.filter(c=>normalizeSiteKey(canonicalCabinetSite(c,map))===key&&code(c)).sort(cabinetNaturalSort);}
+ function selected(){const keys=tokens().map(normUniqueValue);return rows().filter(c=>keys.includes(normUniqueValue(code(c))));}
+ function saveSelection(values){machine.value=values.join('; ');const chosen=selected();select.value=chosen.length===1?String(chosen[0].id):'';
+ document.getElementById('f-asset').value='';document.getElementById('f-component').value='';
+ if(chosen.length===1)syncTechnicalFromSelectedCabinet();
+ renderVisitCabinetCard(chosen.length===1?chosen[0]:null);paint();machine.dispatchEvent(new Event('input',{bubbles:true}));}
+ function paint(){box.replaceChildren();const available=rows(),keys=tokens().map(normUniqueValue);const toolbar=document.createElement('div');toolbar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px';
+ const count=document.createElement('small');count.textContent=selected().length?selected().length+' cabinets selected':'No specific cabinet';count.style.color='var(--ink-soft)';
+ for(const [title,values] of [['Select all',available.map(code)],['Clear',[]]]){const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=title;b.disabled=!available.length;b.onclick=()=>saveSelection(values);toolbar.append(b);}toolbar.append(count);box.append(toolbar);
+ const list=document.createElement('div');list.style.cssText='display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow:auto';box.append(list);
+ available.forEach(c=>{const checked=keys.includes(normUniqueValue(code(c)));const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:12px;background:'+(checked?'var(--panel-soft)':'transparent');const input=document.createElement('input');input.type='checkbox';input.checked=checked;input.style.cssText='width:15px;height:15px;margin:0';input.onchange=()=>{const next=tokens().filter(v=>normUniqueValue(v)!==normUniqueValue(code(c)));if(input.checked)next.push(code(c));saveSelection(next);};const caption=document.createElement('span');caption.textContent=code(c);label.append(input,caption);label.classList.toggle('is-selected',checked);list.append(label);});
+ if(!available.length)list.textContent=document.getElementById('f-site').value?'No cabinets available for this location.':'Select a location first.';
+ }
+ const oldPopulate=populateVisitCabinets;populateVisitCabinets=function(...args){const result=oldPopulate.apply(this,args);paint();return result;};
+ const oldSync=syncTechnicalFromSelectedCabinet;syncTechnicalFromSelectedCabinet=function(){if(tokens().length>1)return;return oldSync();};
+ document.getElementById('f-site').addEventListener('change',()=>saveSelection([]));
+ machine.addEventListener('input',paint);
+ window.addEventListener('visit-committed',()=>{machine.value='';select.value='';renderVisitCabinetCard(null);paint();});
+ for(const name of ['editFieldLog','duplicateEntry']){const original=window[name];window[name]=function(...args){const result=original.apply(this,args);populateVisitCabinets();return result;};}
+ document.getElementById('visit-draft-controls')?.addEventListener('click',()=>{populateVisitCabinets();});
+ const oldApply=applyVisitCabinet;applyVisitCabinet=function(){oldApply();paint();};
+ // The existing shared-sheet Machine field preserves the full list, including after reload.
+ const originalMatch=entryMatchesCabinet;entryMatchesCabinet=function(entry,cab){if(String(entry.machineNo||'').includes(';')){const sameSite=normalizeSiteKey(canonicalSiteName(entry.site))===normalizeSiteKey(canonicalCabinetSite(cab,cabinetCanonicalSiteMap()));return sameSite&&String(entry.machineNo).split(';').some(id=>normUniqueValue(id)===normUniqueValue(code(cab)));}return originalMatch(entry,cab);};
+ document.getElementById('submit-btn').addEventListener('click',e=>{if(tokens().length>1&&document.getElementById('f-spare-part')?.value){e.preventDefault();e.stopImmediatePropagation();showToast('Choose one cabinet for tracked parts','Save this multi-cabinet visit without a tracked part, then record the part usage against its specific cabinet.','bad');}},true);
+ box.addEventListener('pointerdown',()=>{select.dispatchEvent(new Event('pointerdown'));},{once:true});
+ paint();
+})();
+
+</script>
