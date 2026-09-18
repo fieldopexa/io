@@ -3380,6 +3380,32 @@ table tbody tr:hover{background:#ffffff03!important}
 @media(max-width:760px){#panel-report .period-select{padding:6px!important}#panel-report .report-actions{gap:4px!important}}
 </style>
 <style id="report-print-quiet">#panel-report #print-btn{display:none!important}</style>
+
+<style id="visit-report-column-alignment-fix">
+/* Keep report headers directly aligned with their row values. */
+.brief-site-register .visit-remarks-table{
+  table-layout:fixed!important;
+  width:100%!important;
+}
+.brief-site-register .visit-remarks-table th,
+.brief-site-register .visit-remarks-table td{
+  box-sizing:border-box!important;
+  text-align:left!important;
+  vertical-align:top!important;
+  padding:10px 12px!important;
+}
+.brief-site-register .visit-remarks-table th:nth-child(1),
+.brief-site-register .visit-remarks-table td:nth-child(1){width:13%!important;min-width:0!important;}
+.brief-site-register .visit-remarks-table th:nth-child(2),
+.brief-site-register .visit-remarks-table td:nth-child(2){width:19%!important;}
+.brief-site-register .visit-remarks-table th:nth-child(3),
+.brief-site-register .visit-remarks-table td:nth-child(3){width:14%!important;}
+.brief-site-register .visit-remarks-table th:nth-child(4),
+.brief-site-register .visit-remarks-table td:nth-child(4){width:29%!important;}
+.brief-site-register .visit-remarks-table th:nth-child(5),
+.brief-site-register .visit-remarks-table td:nth-child(5){width:25%!important;}
+.brief-site-register .visit-remarks-table td:first-child{white-space:nowrap!important;}
+</style>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -3754,8 +3780,8 @@ table tbody tr:hover{background:#ffffff03!important}
   <div class="panel" id="panel-inventory">
     <div class="inventory-subnav">
       <button class="inventory-subtab active" data-inventory-view="sites">Sites</button>
-      <button class="inventory-subtab" data-inventory-view="components">Installed Components</button>
       <button class="inventory-subtab" data-inventory-view="cabinets">All Cabinets</button>
+      <button class="inventory-subtab" data-inventory-view="components">Installed Components</button>
       <button class="inventory-subtab" data-inventory-view="overview">Inventory</button>
       <button class="inventory-subtab" data-inventory-view="movements">Movements</button>
       <button class="inventory-subtab" data-inventory-view="spares">Spare Parts</button>
@@ -3887,7 +3913,7 @@ table tbody tr:hover{background:#ffffff03!important}
         </select>
       </div>
       <div id="component-body" class="component-site-list"></div>
-      <p class="component-source-note">Component data is linked to Cabinet Profiles. Use Edit here to update BV, printer, or MPU details without opening All Cabinets.</p>
+      <p class="component-source-note">Component data is linked to Cabinet Profiles. Update a cabinet profile once and this view updates automatically.</p>
     </div>
 
     <div class="inventory-subpanel" id="inventory-view-movements">
@@ -8308,7 +8334,7 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
 <script id="site-first-navigation">
 (function(){
  const nav=document.querySelector('#panel-inventory .inventory-subnav');
- const cabinets=nav.querySelector('[data-inventory-view="cabinets"]');const components=nav.querySelector('[data-inventory-view="components"]');if(components&&cabinets)components.after(cabinets);cabinets.classList.add('secondary-cabinet-nav');
+ const cabinets=nav.querySelector('[data-inventory-view="cabinets"]');nav.append(cabinets);cabinets.classList.add('secondary-cabinet-nav');
  cabinets.title='Find a cabinet across all sites';
  const heading=document.querySelector('#inventory-view-sites .section-head p');if(heading)heading.textContent='Choose a site to see its cabinets, visits and open concerns.';
  const cabHeading=document.querySelector('#inventory-view-cabinets .section-head h2');if(cabHeading)cabHeading.textContent='All Cabinets';
@@ -8653,8 +8679,7 @@ html{scrollbar-gutter:stable}
 .component-site-name{font-size:12px;font-weight:800;color:var(--ink);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.component-site-name small{display:block;font-size:9px;font-weight:500;color:var(--ink-soft);margin-top:2px}.component-site-metric{font-size:10px;color:var(--ink-soft);white-space:nowrap}.component-site-metric b{color:var(--ink);font-size:11px}.component-site-chevron{font-size:14px;color:var(--ink-soft);text-align:right;transition:transform .18s}.component-site-group[open] .component-site-chevron{transform:rotate(90deg)}
 .component-cabinet-grid{display:grid}.component-cabinet-row{display:grid;grid-template-columns:minmax(135px,.85fr) minmax(140px,1fr) minmax(140px,1fr) minmax(130px,.9fr) minmax(110px,.65fr);gap:8px;align-items:start;padding:9px 12px;border-bottom:1px solid var(--line)}.component-cabinet-row:last-child{border-bottom:0}.component-cabinet-row:hover{background:#171c22}.component-cabinet-row.component-row-head{padding:7px 12px;background:#171c22;color:var(--ink-soft);font-size:8px;text-transform:uppercase;letter-spacing:.07em;position:sticky;top:0;z-index:1}.component-cabinet-row.component-row-head>div{font-weight:700}
 .component-cabinet-id{display:flex;align-items:flex-start;gap:7px;min-width:0}.component-cabinet-id .cabinet-link{font-size:11px}.component-status-dot{width:7px;height:7px;border-radius:50%;background:#6f7887;flex:0 0 auto;margin-top:5px}.component-status-dot.is-operational{background:#71b996}.component-status-dot.is-non-operational{background:#d5a65b}.component-status-text{display:block;font-size:9px;color:var(--ink-soft);margin-top:2px}
-.component-part{min-width:0}.component-main{font-weight:700;color:var(--ink);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.component-sub{font-size:9px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.component-missing{color:#d5a65b}.component-complete{color:#71b996}.component-profile-state{display:inline-flex;padding:3px 6px;border:1px solid var(--line);border-radius:999px;font-size:8px;white-space:nowrap}.component-profile-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.component-edit-btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:7px;padding:4px 7px;font-size:9px;font-weight:700;cursor:pointer}.component-edit-btn:hover{border-color:var(--accent);background:rgba(255,255,255,.035)}.component-source-note{font-size:9px;color:var(--ink-soft);margin:8px 2px 0}.component-empty{padding:24px;text-align:center;color:var(--ink-soft);border:1px dashed var(--line);border-radius:9px;background:#191e25}
-.component-edit-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,7,11,.78);backdrop-filter:blur(4px)}.component-edit-overlay.open{display:flex}.component-edit-dialog{width:min(680px,96vw);max-height:90vh;overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel,#171c23);box-shadow:0 24px 70px rgba(0,0,0,.45);padding:18px}.component-edit-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}.component-edit-head h3{margin:0;font-size:17px}.component-edit-head p{margin:3px 0 0;color:var(--ink-soft);font-size:10px}.component-edit-close{border:1px solid var(--line);background:transparent;color:var(--ink);width:30px;height:30px;border-radius:8px;cursor:pointer}.component-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.component-edit-grid .field label{font-size:9px}.component-edit-grid .field input{width:100%}.component-edit-grid .component-edit-wide{grid-column:1/-1}.component-edit-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:15px}.component-edit-error{display:none;margin-top:10px;padding:8px 10px;border:1px solid rgba(217,112,112,.35);border-radius:8px;color:#efadad;background:rgba(217,112,112,.08);font-size:10px}@media(max-width:620px){.component-edit-grid{grid-template-columns:1fr}}
+.component-part{min-width:0}.component-main{font-weight:700;color:var(--ink);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.component-sub{font-size:9px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.component-missing{color:#d5a65b}.component-complete{color:#71b996}.component-profile-state{display:inline-flex;padding:3px 6px;border:1px solid var(--line);border-radius:999px;font-size:8px;white-space:nowrap}.component-source-note{font-size:9px;color:var(--ink-soft);margin:8px 2px 0}.component-empty{padding:24px;text-align:center;color:var(--ink-soft);border:1px dashed var(--line);border-radius:9px;background:#191e25}
 @media(max-width:1050px){.component-site-group>summary{grid-template-columns:minmax(160px,1fr) repeat(2,minmax(70px,.45fr)) 28px}.component-site-group>summary .component-site-metric:nth-of-type(4),.component-site-group>summary .component-site-metric:nth-of-type(5){display:none}.component-cabinet-row{grid-template-columns:minmax(130px,.8fr) repeat(3,minmax(125px,1fr)) minmax(100px,.6fr)}}
 @media(max-width:760px){.component-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.component-toolbar{align-items:stretch}.component-toolbar input,.component-toolbar select{width:100%;min-width:0}.component-site-group>summary{grid-template-columns:minmax(0,1fr) auto 24px}.component-site-group>summary .component-site-metric{display:none!important}.component-site-group>summary .component-site-metric:first-of-type{display:block!important}.component-cabinet-grid{overflow-x:auto}.component-cabinet-row{min-width:760px}}
 </style>
@@ -8670,26 +8695,6 @@ html{scrollbar-gutter:stable}
  const hasPrinter=r=>Boolean(String(r.printerModel||'').trim()||String(r.printerSerial||'').trim());
  const hasMPU=r=>Boolean(String(r.mpuSerial||'').trim());
  const complete=r=>hasBV(r)&&hasPrinter(r)&&hasMPU(r);
-
- document.body.insertAdjacentHTML('beforeend',`<div class="component-edit-overlay" id="component-edit-overlay" aria-hidden="true">
-   <div class="component-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="component-edit-title">
-     <div class="component-edit-head"><div><h3 id="component-edit-title">Edit Installed Components</h3><p id="component-edit-context">Cabinet</p></div><button type="button" class="component-edit-close" id="component-edit-close" aria-label="Close">×</button></div>
-     <input type="hidden" id="component-edit-id">
-     <div class="component-edit-grid">
-       <div class="field"><label>Bill Validator</label><input id="component-edit-bv-model" placeholder="e.g. NV200"></div>
-       <div class="field"><label>BV Serial</label><input id="component-edit-bv-serial" placeholder="Bill validator serial"></div>
-       <div class="field"><label>Printer</label><input id="component-edit-printer-model" placeholder="e.g. Epic Edge"></div>
-       <div class="field"><label>Printer Serial</label><input id="component-edit-printer-serial" placeholder="Printer serial"></div>
-       <div class="field component-edit-wide"><label>System Unit / MPU Serial</label><input id="component-edit-mpu" placeholder="Serial / asset no."></div>
-     </div>
-     <div class="component-edit-error" id="component-edit-error"></div>
-     <div class="component-edit-actions"><button type="button" class="btn-secondary" id="component-edit-cancel">Cancel</button><button type="button" class="btn-primary" id="component-edit-save">Save Components</button></div>
-   </div>
- </div>`);
- const overlay=get('component-edit-overlay');
- const editErr=get('component-edit-error');
- const editSave=get('component-edit-save');
-
  function partCell(model,serial,missingLabel){
    const a=String(model||'').trim(),b=String(serial||'').trim();
    if(!a&&!b)return '<div class="component-part"><span class="component-missing">'+escapeHtml(missingLabel)+'</span></div>';
@@ -8712,45 +8717,8 @@ html{scrollbar-gutter:stable}
      partCell(r.bvModel,r.bvSerial,'Not recorded')+
      partCell(r.printerModel,r.printerSerial,'Not recorded')+
      '<div class="component-part">'+(hasMPU(r)?'<div class="component-main" title="'+escapeHtml(r.mpuSerial)+'">'+escapeHtml(r.mpuSerial)+'</div>':'<span class="component-missing">Not recorded</span>')+'</div>'+
-     '<div class="component-profile-actions"><span class="component-profile-state '+(missing.length?'component-missing':'component-complete')+'">'+(missing.length?'Missing '+escapeHtml(missing.join(', ')):'Complete')+'</span><button type="button" class="component-edit-btn" data-component-edit="'+escapeHtml(id)+'">Edit</button></div>'+
+     '<div><span class="component-profile-state '+(missing.length?'component-missing':'component-complete')+'">'+(missing.length?'Missing '+escapeHtml(missing.join(', ')):'Complete')+'</span></div>'+
    '</div>';
- }
- function openComponentEditor(id){
-   const r=(cabinetRows||[]).find(x=>String(x.id)===String(id));
-   if(!r)return;
-   get('component-edit-id').value=String(r.id||'');
-   get('component-edit-context').textContent=(r.cabinetId||r.label||'Cabinet')+' · '+canonicalSiteName(r.site||'');
-   get('component-edit-bv-model').value=r.bvModel||'';
-   get('component-edit-bv-serial').value=r.bvSerial||'';
-   get('component-edit-printer-model').value=r.printerModel||'';
-   get('component-edit-printer-serial').value=r.printerSerial||'';
-   get('component-edit-mpu').value=r.mpuSerial||'';
-   editErr.style.display='none';editErr.textContent='';
-   overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');
-   get('component-edit-bv-model').focus();
- }
- function closeComponentEditor(){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');editErr.style.display='none';editErr.textContent='';}
- async function saveComponentEditor(){
-   const id=get('component-edit-id').value;
-   const r=(cabinetRows||[]).find(x=>String(x.id)===String(id));
-   if(!r)return;
-   const record={
-     id:r.id||'',cabinetId:r.cabinetId||'',site:canonicalSiteName(r.site||''),label:r.label||'',status:r.status||'Operational',
-     token:r.token||'',teamviewerId:r.teamviewerId||'',mpuSerial:get('component-edit-mpu').value.trim(),cabinetSerial:r.cabinetSerial||'',
-     bvModel:get('component-edit-bv-model').value.trim(),bvSerial:get('component-edit-bv-serial').value.trim(),
-     printerModel:get('component-edit-printer-model').value.trim(),printerSerial:get('component-edit-printer-serial').value.trim(),
-     networkNote:r.networkNote||'',remarks:r.remarks||''
-   };
-   const duplicate=typeof cabinetDuplicateMessage==='function'?cabinetDuplicateMessage(record):'';
-   if(duplicate){editErr.textContent=duplicate;editErr.style.display='block';if(typeof showToast==='function')showToast('Duplicate blocked',duplicate,'bad');return;}
-   try{
-     editErr.style.display='none';editSave.disabled=true;editSave.textContent='Saving…';
-     await apiPost('saveCabinet',{record});
-     await loadCabinets();
-     closeComponentEditor();
-     if(typeof showToast==='function')showToast('Components updated',(record.cabinetId||record.label||'Cabinet')+' · '+record.site,'ok');
-   }catch(e){editErr.textContent=e.message||'Unable to save component details.';editErr.style.display='block';if(typeof showToast==='function')showToast('Components not saved',editErr.textContent,'bad');}
-   finally{editSave.disabled=false;editSave.textContent='Save Components';}
  }
  window.renderInstalledComponents=function(){
    const rows=(cabinetRows||[]).filter(r=>r&&String(r.cabinetId||r.label||r.site||'').trim());
@@ -8792,16 +8760,10 @@ html{scrollbar-gutter:stable}
        '<div class="component-site-metric"><b>'+pr+'</b> Printer</div>'+ 
        '<div class="component-site-metric"><b>'+mpu+'</b> MPU</div>'+ 
        '<div class="component-site-chevron">›</div></summary>'+ 
-       '<div class="component-cabinet-grid"><div class="component-cabinet-row component-row-head"><div>Cabinet</div><div>Bill Validator</div><div>Printer</div><div>System / MPU</div><div>Profile / Edit</div></div>'+rs.map(cabinetRow).join('')+'</div></details>';
+       '<div class="component-cabinet-grid"><div class="component-cabinet-row component-row-head"><div>Cabinet</div><div>Bill Validator</div><div>Printer</div><div>System / MPU</div><div>Profile</div></div>'+rs.map(cabinetRow).join('')+'</div></details>';
    }).join('');
  };
  [search,siteFilter,coverage].forEach(el=>el.addEventListener(el===search?'input':'change',renderInstalledComponents));
- body.addEventListener('click',e=>{const btn=e.target.closest('[data-component-edit]');if(btn)openComponentEditor(btn.dataset.componentEdit);});
- get('component-edit-close').addEventListener('click',closeComponentEditor);
- get('component-edit-cancel').addEventListener('click',closeComponentEditor);
- get('component-edit-save').addEventListener('click',saveComponentEditor);
- overlay.addEventListener('click',e=>{if(e.target===overlay)closeComponentEditor();});
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))closeComponentEditor();});
 })();
 </script>
 <script id="asset-group-controller">
