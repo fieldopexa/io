@@ -457,7 +457,7 @@ table.detail{font-size:10px!important}table.detail th{color:#737c89!important;ba
 .cabinet-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0}
 .cabinet-card{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px}.cabinet-card .n{font-size:24px;font-weight:800}.cabinet-card .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
 .cabinet-form{display:none;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px;margin:12px 0}.cabinet-form.open{display:block}.cabinet-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.cabinet-form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-.cabinet-toolbar{display:flex;gap:10px;align-items:center;margin:12px 0}.cabinet-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.cabinet-table{width:100%;border-collapse:collapse;min-width:1200px}.cabinet-table th,.cabinet-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;vertical-align:middle}.cabinet-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);background:var(--panel-soft);position:sticky;top:0}.cabinet-actions{display:flex;gap:6px;justify-content:flex-end}.secret-mask{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}.cabinet-link{background:none;border:0;padding:0;color:var(--indigo);font:inherit;font-weight:700;cursor:pointer;text-align:left}.cabinet-empty{padding:30px;text-align:center;color:var(--ink-soft)}
+.cabinet-toolbar{display:flex;gap:10px;align-items:center;margin:12px 0}.cabinet-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.cabinet-table{width:100%;border-collapse:collapse;min-width:900px}.cabinet-table th,.cabinet-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;vertical-align:middle}.cabinet-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);background:var(--panel-soft);position:sticky;top:0}.cabinet-actions{display:flex;gap:6px;justify-content:flex-end}.secret-mask{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}.token-compact{display:inline-flex;align-items:center;gap:6px;max-width:100%;white-space:nowrap}.token-preview{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;letter-spacing:.02em;color:#dbe3f3}.token-copy{border:1px solid var(--line);background:#171a1f;color:var(--ink-soft);border-radius:5px;padding:3px 6px;font-size:9px;line-height:1.2;cursor:pointer}.token-copy:hover{color:var(--ink);border-color:#46505f}.cabinet-link{background:none;border:0;padding:0;color:var(--indigo);font:inherit;font-weight:700;cursor:pointer;text-align:left}.cabinet-empty{padding:30px;text-align:center;color:var(--ink-soft)}
 
 .inventory-subnav{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px;padding:6px;border:1px solid var(--line);border-radius:10px;background:#0c0f13}
 .inventory-subtab{border:1px solid transparent;background:transparent;color:var(--ink-soft);padding:8px 11px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer}
@@ -3238,8 +3238,8 @@ body.report-presenting .brief-visits-wide .brief-venue-note time{font-size:20px}
 </style>
 <style id="site-first-styles">
 #panel-inventory .secondary-cabinet-nav{margin-left:auto!important;border-left:1px solid var(--line)!important;color:var(--ink-soft)}
-.site-primary-cabinets{margin-top:18px;margin-bottom:20px}.site-cabinet-simple{display:grid;grid-template-columns:minmax(80px,1fr) minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.site-cabinet-simple:last-child{border:0}.site-cabinet-simple button{text-align:left;min-height:36px}.site-cabinet-simple span{font-size:11px;overflow-wrap:anywhere}.site-cabinet-state{color:#bbc6d8}
-@media(max-width:600px){.site-cabinet-simple{grid-template-columns:minmax(0,1fr) auto}.site-cabinet-simple>.muted{display:none}.site-cabinet-simple button{min-height:44px}}
+.site-primary-cabinets{margin-top:18px;margin-bottom:20px}.site-cabinet-simple{display:grid;grid-template-columns:minmax(90px,.9fr) minmax(150px,1.1fr) minmax(180px,1.5fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.site-cabinet-simple:last-child{border:0}.site-cabinet-simple button{text-align:left;min-height:36px}.site-cabinet-simple span{font-size:11px;overflow-wrap:anywhere}.site-cabinet-simple small{display:block;color:var(--ink-soft);font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}.site-cabinet-serial{color:#c7cfdb}.site-cabinet-token{color:#dbe3f3;min-width:0}.site-cabinet-token .token-compact{flex-wrap:wrap}.site-cabinet-state{color:#bbc6d8}
+@media(max-width:600px){.site-cabinet-simple{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}.site-cabinet-simple button{min-height:44px}.site-cabinet-serial,.site-cabinet-token{grid-column:1/-1}.site-cabinet-state{grid-column:2;grid-row:1}}
 </style>
 <style>.site-status-edit{display:block;border:0;background:none;color:#aebfe9;font-size:10px;padding:4px 0;cursor:pointer}.site-status-overlay{position:fixed;inset:0;z-index:2500;background:#0009;display:flex;align-items:center;justify-content:center;padding:18px}.site-status-overlay[hidden]{display:none}.site-status-overlay>section{width:min(430px,100%);background:var(--card);border:1px solid var(--line);padding:24px;border-radius:12px}.site-status-overlay p{font-size:12px;line-height:1.6}.site-status-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.site-status-actions button{padding:10px 14px}#site-status-error{color:#e8a89e}@media(max-width:700px){.site-status-edit{min-height:36px}}</style>
 <style>.site-directory-views button[aria-pressed="true"]{background:#2a3249!important;color:#d3dcff!important}.site-lifecycle-edit{font-size:10px}</style>
@@ -3855,7 +3855,7 @@ table tbody tr:hover{background:#ffffff03!important}
       <select id="cabinet-site-filter"><option value="All">All sites</option></select>
     </div>
 
-    <div class="cabinet-table-wrap"><table class="cabinet-table"><thead><tr><th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Token</th><th>TeamViewer</th><th>BV</th><th>Printer</th><th>System / MPU</th><th>Updated</th><th></th></tr></thead><tbody id="cabinet-body"></tbody></table></div>
+    <div class="cabinet-table-wrap"><table class="cabinet-table"><thead><tr><th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Serial Number</th><th>Token</th><th>TeamViewer</th><th>Updated</th><th></th></tr></thead><tbody id="cabinet-body"></tbody></table></div>
 
     </div>
 
@@ -5504,7 +5504,8 @@ document.getElementById('sites-status-filter')?.addEventListener('change',render
 function siteAssetOverview(siteName){
   const key=normalizeSiteKey(canonicalSiteName(siteName));
   const cabinets=cabinetRows.filter(c=>normalizeSiteKey(canonicalSiteName(c.site))===key);
-  const rows=cabinets.map(c=>'<div class="site-cabinet-simple"><button type="button" class="site-asset-link" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')">'+escapeHtml(c.cabinetId||'Cabinet')+'</button><span class="muted">'+escapeHtml(c.label||'')+'</span><span class="site-cabinet-state">'+escapeHtml(c.status||'Not recorded')+'</span></div>').join('');
+  const isMgmt=currentUser?.role==='management';
+  const rows=cabinets.map(c=>'<div class="site-cabinet-simple"><button type="button" class="site-asset-link" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')">'+escapeHtml(c.cabinetId||'Cabinet')+'</button><span class="site-cabinet-serial"><small>Serial Number</small>'+escapeHtml(c.cabinetSerial||'—')+'</span>'+(isMgmt?'<span class="site-cabinet-token"><small>Token</small>'+tokenCompactMarkup(c.token)+'</span>':'')+'<span class="site-cabinet-state">'+escapeHtml(c.status||'Not recorded')+'</span></div>').join('');
   return '<section class="site-section site-primary-cabinets"><div class="site-asset-title"><div><h3>Cabinets at this site <span class="muted">· '+cabinets.length+'</span></h3><span>Select a cabinet for components, serial numbers and movement history.</span></div></div><div class="site-asset-list">'+(rows||'<p class="site-empty">No cabinets currently loaded for this site.</p>')+'</div></section>';
 }
 
@@ -6295,6 +6296,8 @@ function cabinetSummary(){
   return {total,operational,nonop,ready,sitesCount};
 }
 function maskToken(v){const x=String(v||'');if(!x)return '—';if(x.length<=4)return '••••';return '••••••'+x.slice(-4);}
+function compactToken(v){const x=String(v||'').trim();if(!x)return '—';if(x.length<=20)return x;return x.slice(0,10)+'…'+x.slice(-6);}
+function tokenCompactMarkup(v){const x=String(v||'').trim();if(!x)return '<span class="token-preview">—</span>';return '<span class="token-compact"><span class="token-preview" title="Open Cabinet Profile to view the full token">'+escapeHtml(compactToken(x))+'</span><button type="button" class="token-copy" data-copy-token="'+escapeHtml(x)+'" aria-label="Copy full token">Copy</button></span>';}
 
 function cabinetGroupPrefix(cabinetId){
   const id=String(cabinetId||'').trim();
@@ -6577,12 +6580,12 @@ function renderCabinets(){
   groupNames.forEach(group=>grouped[group].sort(cabinetNaturalSort));
 
   const isMgmt=currentUser?.role==='management';
-  const colCount=isMgmt?10:8;
+  const colCount=isMgmt?8:8;
   const head=body.closest('table')?.querySelector('thead tr');
 
   if(head){
     head.innerHTML=isMgmt
-      ?'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Token</th><th>TeamViewer</th><th>BV</th><th>Printer</th><th>System / MPU</th><th>Updated</th><th></th>'
+      ?'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Serial Number</th><th>Token</th><th>TeamViewer</th><th>Updated</th><th></th>'
       :'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Cabinet Serial</th><th>BV</th><th>Printer</th><th>System / MPU</th><th>Network</th>';
   }
 
@@ -6616,11 +6619,9 @@ function renderCabinets(){
         <td><button class="cabinet-link" data-cab-profile="${escapeHtml(r.id)}">${escapeHtml(r.cabinetId||'—')}</button><div class="muted">${escapeHtml(r.label||'')}</div></td>
         <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
         <td>${cabinetStatusMarkup(r)}</td>
-        <td><span class="secret-mask">${maskToken(r.token)}</span></td>
+        <td>${escapeHtml(r.cabinetSerial||'—')}</td>
+        <td>${tokenCompactMarkup(r.token)}</td>
         <td>${escapeHtml(r.teamviewerId||'—')}</td>
-        <td>${escapeHtml(r.bvModel||'—')}<div class="muted">${escapeHtml(r.bvSerial||'')}</div></td>
-        <td>${escapeHtml(r.printerModel||'—')}<div class="muted">${escapeHtml(r.printerSerial||'')}</div></td>
-        <td>${escapeHtml(r.mpuSerial||'—')}</td>
         <td>${r.updatedAt?new Date(r.updatedAt).toLocaleDateString():'—'}</td>
         <td><div class="cabinet-actions"><button class="btn-secondary" data-cab-profile="${escapeHtml(r.id)}">History</button><button class="btn-secondary" data-cab-edit="${escapeHtml(r.id)}">Edit</button><button class="btn-secondary" data-cab-delete="${escapeHtml(r.id)}">Delete</button></div></td>
       </tr>`).join('');
@@ -7030,7 +7031,7 @@ function openCabinetProfile(id){
   sub.textContent=(cab.site||'Unknown site')+' · '+(cab.status||'No status');
   const details=[
     ['Cabinet label',cab.label||'—'],['Site / Location',cab.site||'—'],['Status',cab.status||'—'],
-    ['TeamViewer ID',cab.teamviewerId||'—'],['Cabinet Serial',cab.cabinetSerial||'—'],['System / MPU Serial',cab.mpuSerial||'—'],
+    ['Cabinet Serial',cab.cabinetSerial||'—'],...(currentUser?.role==='management'?[['Opexa / Game Token',cab.token||'—']]:[]),['TeamViewer ID',cab.teamviewerId||'—'],['System / MPU Serial',cab.mpuSerial||'—'],
     ['Bill Validator', [cab.bvModel,cab.bvSerial].filter(Boolean).join(' · ')||'—'],
     ['Printer', [cab.printerModel,cab.printerSerial].filter(Boolean).join(' · ')||'—'],
     ['Network / IP Notes',cab.networkNote||'—'],['Remarks',cab.remarks||'—']
@@ -8697,6 +8698,24 @@ html{scrollbar-gutter:stable}
  }
  const old=applyRoleUI;applyRoleUI=function(){old();apply();};
  if(currentUser)apply();
+})();
+</script>
+
+<script id="token-copy-handler">
+(function(){
+ document.addEventListener('click',async e=>{
+  const button=e.target.closest('[data-copy-token]');if(!button)return;
+  if(currentUser?.role!=='management'){e.preventDefault();return;}
+  const token=button.getAttribute('data-copy-token')||'';if(!token)return;
+  e.preventDefault();e.stopPropagation();
+  const old=button.textContent;
+  try{
+   if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(token);
+   else{const ta=document.createElement('textarea');ta.value=token;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+   button.textContent='Copied';
+  }catch(err){button.textContent='Copy failed';}
+  setTimeout(()=>{button.textContent=old;},1200);
+ },true);
 })();
 </script>
 </body>
