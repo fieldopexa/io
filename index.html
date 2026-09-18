@@ -4715,17 +4715,29 @@ async function apiPost(action,payload={},options={}){
 }
 function normalizeTimeOrDate(val, isTime){
   if(typeof val !== 'string') return val || '';
-  // Sheets dates arrive as UTC timestamps; interpret them in Philippine business time.
-  if(/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:?\d{2})$/.test(val)){
-    const date=new Date(val);
+  const raw=val.trim();
+
+  // Keep plain HTML date/time values exactly as entered by the FSE.
+  if(!isTime && /^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  if(isTime && /^\d{2}:\d{2}(?::\d{2})?$/.test(raw)) return raw.slice(0,5);
+
+  // Google Sheets / Apps Script may return date cells as ISO timestamps.
+  // Some responses include Z/offset, while others omit it. Date fields must
+  // always be interpreted in Philippine business time so midnight PH does
+  // not appear as the previous calendar day (e.g. Sep 17 -> Sep 16).
+  const isoMatch=raw.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/);
+  if(isoMatch){
+    if(isTime && !isoMatch[3]) return isoMatch[2];
+    const date=new Date(isoMatch[3] ? raw : raw+'Z');
     if(!Number.isNaN(date.getTime())){
       const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Manila',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date);
       const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));
       return isTime?p.hour+':'+p.minute:p.year+'-'+p.month+'-'+p.day;
     }
   }
-  const m=val.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
-  return m?(isTime?m[2]:m[1]):val;
+
+  const m=raw.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+  return m?(isTime?m[2]:m[1]):raw;
 }
 function normalizeEntry(e){
   return {
