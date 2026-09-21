@@ -5199,6 +5199,17 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
     date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType:document.getElementById('f-visit-type').value,site,status:document.getElementById('f-status').value,category:selectedCat,issueType:document.getElementById('f-issue-type')?.value||'',generalType:selectedCat==='General'?(document.getElementById('f-issue-type')?.value||''):'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:document.getElementById('f-resolution').value.trim(),resolutionType:document.getElementById('f-resolution-type').value,machineNo:document.getElementById('f-machine').value.trim(),component:document.getElementById('f-component').value.trim(),assetNo:document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:document.getElementById('f-followup-date').value,followupReason:document.getElementById('f-followup-reason').value.trim(),parts:document.getElementById('f-parts').value.trim()
   };
+  // FAST SAVE: update the browser state immediately so Dashboard / Field Logs
+  // reflect the visit without waiting for Google Apps Script. If the server
+  // rejects the save, the optimistic change is rolled back automatically.
+  const optimisticEntry=normalizeEntry(entry);
+  const optimisticIndex=entries.findIndex(x=>String(x.id)===String(entry.id));
+  const previousEntry=optimisticIndex>=0?entries[optimisticIndex]:null;
+  if(optimisticIndex>=0)entries[optimisticIndex]=optimisticEntry;
+  else entries.push(optimisticEntry);
+  storageSet(STORAGE_KEY,entries);
+  render();renderReport();renderDashboard();
+
   try{
     submitBtn.textContent=isEdit?'Saving changes…':'Saving visit…';
     await apiPost(isEdit?'updateEntry':'addEntry',{id:entry.id,entry});
@@ -5212,15 +5223,27 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
         else spareWarning='Visit saved, but tracked spare was not deducted because the cabinet could not be matched.';
       }catch(spareErr){console.error(spareErr);spareWarning='Visit saved, but the tracked spare update needs attention.';}
     }
-    if(isEdit){const ix=entries.findIndex(x=>String(x.id)===String(entry.id));if(ix>=0)entries[ix]=normalizeEntry(entry);else entries.push(normalizeEntry(entry));}
-    else entries.push(normalizeEntry(entry));
+    // Keep the already-rendered optimistic record. The server has now confirmed it.
     storageSet(STORAGE_KEY,entries);
     showToast('Saved to shared sheet',spareWarning||`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category}`,spareWarning?'bad':'ok');
     cancelVisitEdit();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
     if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category to see what it covers.';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';
     render();renderReport();renderDashboard();
-  }catch(e){console.error(e);showToast(isEdit?'Update failed':'Visit not saved',e.message||'Unable to sync with the shared sheet.','bad');}
+  }catch(e){
+    console.error(e);
+    // Server did not confirm the write: restore the exact pre-save state.
+    const rollbackIndex=entries.findIndex(x=>String(x.id)===String(entry.id));
+    if(previousEntry){
+      if(rollbackIndex>=0)entries[rollbackIndex]=previousEntry;
+      else entries.push(previousEntry);
+    }else if(rollbackIndex>=0){
+      entries.splice(rollbackIndex,1);
+    }
+    storageSet(STORAGE_KEY,entries);
+    render();renderReport();renderDashboard();
+    showToast(isEdit?'Update failed':'Visit not saved',e.message||'Unable to sync with the shared sheet.','bad');
+  }
   finally{submitBtn.disabled=false;submitBtn.classList.remove('syncing-btn');if(!editingEntryId)submitBtn.innerHTML='<span>Log field visit</span><span class="submit-arrow">→</span>';}
 });
 
