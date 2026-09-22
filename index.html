@@ -3239,7 +3239,9 @@ body.report-presenting .brief-visits-wide .brief-venue-note time{font-size:20px}
 <style id="site-first-styles">
 #panel-inventory .secondary-cabinet-nav{margin-left:auto!important;border-left:1px solid var(--line)!important;color:var(--ink-soft)}
 .site-primary-cabinets{margin-top:18px;margin-bottom:20px}.site-cabinet-simple{display:grid;grid-template-columns:minmax(90px,.9fr) minmax(150px,1.1fr) minmax(180px,1.5fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.site-cabinet-simple:last-child{border:0}.site-cabinet-simple button{text-align:left;min-height:36px}.site-cabinet-simple span{font-size:11px;overflow-wrap:anywhere}.site-cabinet-simple small{display:block;color:var(--ink-soft);font-size:9px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}.site-cabinet-serial{color:#c7cfdb}.site-cabinet-token{color:#dbe3f3;min-width:0}.site-cabinet-token .token-compact{flex-wrap:wrap}.site-cabinet-state{color:#bbc6d8}
+.warehouse-stock-list{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#11161d}.warehouse-stock-row{display:grid;grid-template-columns:minmax(110px,.75fr) minmax(210px,1.7fr) minmax(150px,.9fr);align-items:center;gap:16px;padding:13px 14px;border-bottom:1px solid var(--line)}.warehouse-stock-row:last-child{border-bottom:0}.warehouse-stock-row:hover{background:#171d26}.warehouse-stock-id{border:0!important;background:transparent!important;padding:0!important;color:#9bb6ff!important;text-align:left!important;box-shadow:none!important}.warehouse-stock-id b{display:block;font-size:12px}.warehouse-stock-id small{display:block;margin-top:3px;color:var(--ink-soft);font-size:9px;text-transform:uppercase}.warehouse-stock-location{font-size:11px;color:var(--ink)}.warehouse-stock-badge{justify-self:start;display:inline-flex;padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:#171c24;color:var(--ink);font-size:10px;font-weight:800}.warehouse-stock-heading{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.warehouse-stock-heading span{font-size:10px;color:var(--ink-soft);letter-spacing:.08em}
 @media(max-width:600px){.site-cabinet-simple{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px}.site-cabinet-simple button{min-height:44px}.site-cabinet-serial,.site-cabinet-token{grid-column:1/-1}.site-cabinet-state{grid-column:2;grid-row:1}}
+@media(max-width:600px){.warehouse-stock-row{grid-template-columns:minmax(0,1fr) auto;gap:7px 12px}.warehouse-stock-location{grid-column:1}.warehouse-stock-badge{grid-column:2;grid-row:1/3}.warehouse-stock-id{min-height:40px!important}}
 </style>
 <style>.site-status-edit{display:block;border:0;background:none;color:#aebfe9;font-size:10px;padding:4px 0;cursor:pointer}.site-status-overlay{position:fixed;inset:0;z-index:2500;background:#0009;display:flex;align-items:center;justify-content:center;padding:18px}.site-status-overlay[hidden]{display:none}.site-status-overlay>section{width:min(430px,100%);background:var(--card);border:1px solid var(--line);padding:24px;border-radius:12px}.site-status-overlay p{font-size:12px;line-height:1.6}.site-status-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.site-status-actions button{padding:10px 14px}#site-status-error{color:#e8a89e}@media(max-width:700px){.site-status-edit{min-height:36px}}</style>
 <style>.site-directory-views button[aria-pressed="true"]{background:#2a3249!important;color:#d3dcff!important}.site-lifecycle-edit{font-size:10px}</style>
@@ -3249,6 +3251,7 @@ body.report-presenting .brief-visits-wide .brief-venue-note time{font-size:20px}
 @media(max-width:600px){.planning-form{grid-template-columns:1fr}.planning-row{align-items:flex-start;flex-direction:column;gap:10px}.planning-actions button{min-height:44px}}
 @media print{.planning-snapshots{display:none!important}}
 body.report-presenting .planning-snapshots{display:none!important}
+.planning-data-tools{margin-top:24px}.planning-data-tools>button{margin:0 8px 8px 0}.planning-data-tools .planning-local-note{margin:8px 0 12px}
 </style>
 <style id="working-ui-refinement">
 /* A restrained shared visual scale. No changes to authentication or data flows. */
@@ -3351,6 +3354,60 @@ table tbody tr:hover{background:#ffffff03!important}
 })();
 
 </script>
+
+<style id="weekly-agenda-style">
+.agenda-editor{margin:14px 0 20px;padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.agenda-editor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px}
+.agenda-editor h2{font-size:15px!important;margin:0 0 4px}.agenda-editor p{margin:0;color:var(--ink-soft);font-size:11px;line-height:1.5}
+.agenda-editor textarea{width:100%;min-height:116px;resize:vertical;margin:0;line-height:1.6}
+.agenda-editor-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px}.agenda-editor-status{font-size:10px;color:var(--ink-soft)}
+.agenda-editor button{padding:8px 12px;min-height:34px}
+.brief-agenda{position:relative;padding:24px;margin:0 0 22px;background:linear-gradient(145deg,rgba(167,184,255,.075),rgba(255,255,255,.018));border:1px solid rgba(167,184,255,.22);border-radius:12px;overflow:hidden}
+.brief-agenda::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#a7b8ff,#7186c9)}
+.brief-agenda h2{font-size:19px!important;margin:0 0 5px;letter-spacing:-.01em}.brief-agenda .brief-caption{margin-bottom:16px}.brief-agenda-list{display:grid;gap:10px;margin:0;padding:0;color:#d4dbe7;font-size:14px;line-height:1.7;list-style:none}
+.brief-agenda-list li{margin:0;padding:14px 16px;overflow-wrap:anywhere;white-space:pre-wrap;background:rgba(8,12,18,.22);border:1px solid rgba(255,255,255,.07);border-radius:9px;box-shadow:0 5px 16px rgba(0,0,0,.08)}.brief-agenda-empty{margin:0;padding:16px;border:1px dashed var(--line);border-radius:8px;color:var(--ink-soft);font-size:12px;font-style:italic}
+body.report-presenting .agenda-editor{display:none!important}body.report-presenting .brief-agenda-list{font-size:17px;line-height:1.75}
+@media(max-width:600px){.agenda-editor{padding:14px}.agenda-editor-head,.agenda-editor-actions{flex-direction:column;align-items:stretch}.agenda-editor button{width:100%}.brief-agenda{padding:17px}}
+@media print{.agenda-editor{display:none!important}.brief-agenda{break-inside:avoid;background:#fff!important;color:#111!important;border-color:#bbb!important}.brief-agenda-list{color:#222!important}.brief-agenda-list li{background:#fff!important;border-color:#ddd!important;box-shadow:none!important;break-inside:avoid}.brief-agenda-empty,.brief-agenda .brief-caption{color:#555!important}}
+</style>
+<script id="weekly-report-agenda">
+window.addEventListener('DOMContentLoaded',()=>{
+ if(true)return; // Replaced by the Google Sheets-backed Agenda implementation below.
+ const panel=document.getElementById('panel-report');
+ const toolbar=panel?.querySelector('.period-select');
+ const report=document.getElementById('presentation-report');
+ if(!panel||!toolbar||!report)return;
+ const editor=document.createElement('section');editor.className='agenda-editor';
+ editor.innerHTML='<div class="agenda-editor-head"><div><h2>Agenda & other weekly work</h2><p>Add one item per line for work, updates, meetings, or events outside site visits.</p></div></div><textarea id="report-agenda-input" placeholder="Example:\nCompleted inventory reconciliation\nCoordinated Week 39 deployment plan\nReviewed pending support requests"></textarea><div class="agenda-editor-actions"><span class="agenda-editor-status" role="status" aria-live="polite"></span><button type="button" class="btn-secondary">Save agenda</button></div>';
+ toolbar.after(editor);
+ const input=editor.querySelector('textarea'),saveButton=editor.querySelector('button'),status=editor.querySelector('[role="status"]');
+ let timer=null,loadedKey='';
+ function periodValue(){return document.getElementById('period-picker')?.value||'';}
+ function storageKey(){const account=currentUser?(currentUser.username||currentUser.fse||currentUser.name||'user'):'user';return 'opexa-report-agenda-v1:'+encodeURIComponent(account)+':'+periodType+':'+periodValue();}
+ function items(){return input.value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);}
+ function paintAgenda(){
+  report.querySelector('.brief-agenda')?.remove();
+  const section=document.createElement('section');section.className='brief-agenda';
+  const list=items();section.innerHTML='<h2>Agenda & other work</h2><p class="brief-caption">Activities and updates beyond recorded site visits</p>'+(list.length?'<ol class="brief-agenda-list">'+list.map(item=>'<li>'+escapeHtml(item)+'</li>').join('')+'</ol>':'<p class="brief-agenda-empty">No additional agenda items recorded for this period.</p>');
+  const header=report.querySelector('.brief-header');if(header)header.after(section);else report.prepend(section);
+ }
+ function load(){
+  const key=storageKey();loadedKey=key;
+  try{input.value=localStorage.getItem(key)||'';status.textContent=input.value.trim()?'Saved agenda for '+(periodKeyFns().label(periodValue())||periodValue()):'No agenda saved for this period.';}catch(e){input.value='';status.textContent='Agenda storage is unavailable in this browser.';}
+  paintAgenda();
+ }
+ function save(){
+  const key=storageKey();loadedKey=key;
+  try{if(input.value.trim())localStorage.setItem(key,input.value);else localStorage.removeItem(key);status.textContent='Agenda saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});paintAgenda();}
+  catch(e){status.textContent='Agenda could not be saved in this browser.';}
+ }
+ input.addEventListener('input',()=>{status.textContent='Saving…';clearTimeout(timer);timer=setTimeout(save,500);});
+ saveButton.addEventListener('click',()=>{clearTimeout(timer);save();});
+ const previousRender=window.renderReport;
+ window.renderReport=function(...args){const result=previousRender.apply(this,args);const key=storageKey();if(key!==loadedKey)load();else paintAgenda();return result;};
+ load();
+});
+</script>
 <style id="compact-loading-times">
 .app-actions .loading-times-compact{grid-column:1/-1;justify-self:start;width:auto!important;min-width:0!important;min-height:28px!important;margin:2px 0 0!important;padding:4px 7px!important;border:1px solid transparent!important;border-radius:5px!important;background:transparent!important;box-shadow:none!important;color:var(--ink-soft)!important;font:500 10px/1.4 'Segoe UI',sans-serif!important;letter-spacing:0!important;cursor:pointer}
 .app-actions .loading-times-compact:hover{color:var(--ink)!important;background:rgba(169,186,255,.06)!important;border-color:rgba(169,186,255,.12)!important}
@@ -3444,8 +3501,9 @@ table tbody tr:hover{background:#ffffff03!important}
       <button type="button" class="fse-shared-mobile" data-mobile-tab="fieldlogs"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><b>Field Logs</b></button>
       <button type="button" class="fse-shared-mobile" data-mobile-tab="dashboard"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><b>Dashboard</b></button>
       <button type="button" data-mobile-tab="report" data-mobile-role="management"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><b>Reports</b></button>
-      <button type="button" data-mobile-tab="inventory"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><b>Locations &amp; Assets</b></button>
+      <button type="button" data-mobile-tab="inventory"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><b>Asset Operations</b></button>
       <button type="button" data-mobile-tab="audit" data-mobile-role="management"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg></span><b>Audit Trail</b></button>
+      <button type="button" data-mobile-tab="users" data-mobile-role="management"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 4 5v1"/></svg></span><b>Users</b></button>
     </nav>
     <div class="mobile-drawer-footer">
       <div class="mobile-user-summary">
@@ -3467,11 +3525,11 @@ table tbody tr:hover{background:#ffffff03!important}
       <div class="tab" data-tab="report" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><span>Reports</span></div>
 
       <div class="nav-section-label">Assets</div>
-      <div class="tab" data-tab="inventory"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Locations &amp; Assets</span></div>
+      <div class="tab" data-tab="inventory"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Asset Operations</span></div>
 
       <div class="nav-section-label" data-role="management">Admin</div>
       <div class="tab" data-tab="audit" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg></span><span>Audit Trail</span></div>
-      <div class="tab" data-tab="users" data-role="management" style="display:none!important"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 4 5v1"/></svg></span><span>Users</span></div>
+      <div class="tab" data-tab="users" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 4 5v1"/></svg></span><span>Users</span></div>
     </div>
     <div class="app-actions"><div class="user-badge"><span class="user-dot"></span><span><b id="logged-user">—</b><small id="logged-role" style="display:block;color:var(--ink-soft);font-size:9px;margin-top:1px">—</small></span></div><button type="button" class="fullscreen-btn" id="fullscreen-btn" title="Toggle fullscreen" aria-label="Toggle fullscreen"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button><button class="logout-btn" id="logout-btn">Log out</button></div>
   </div>
@@ -3781,8 +3839,7 @@ table tbody tr:hover{background:#ffffff03!important}
     <div class="inventory-subnav">
       <button class="inventory-subtab active" data-inventory-view="sites">Sites</button>
       <button class="inventory-subtab" data-inventory-view="cabinets">All Cabinets</button>
-      <button class="inventory-subtab" data-inventory-view="components">Installed Components</button>
-      <button class="inventory-subtab" data-inventory-view="overview">Inventory</button>
+      <button class="inventory-subtab" data-inventory-view="components">Component Coverage</button>
       <button class="inventory-subtab" data-inventory-view="movements">Movements</button>
       <button class="inventory-subtab" data-inventory-view="spares">Spare Parts</button>
     </div>
@@ -3889,8 +3946,8 @@ table tbody tr:hover{background:#ffffff03!important}
     <div class="inventory-subpanel" id="inventory-view-components">
       <div class="section-head compact-head">
         <div>
-          <h2>Installed Components</h2>
-          <p>One view of the bill validator, printer, and system / MPU already recorded in each cabinet profile.</p>
+          <h2>Component Coverage</h2>
+          <p>Audit bill validator, printer, and system / MPU completeness using data from Cabinet Profiles.</p>
         </div>
       </div>
       <div class="component-summary">
@@ -4176,7 +4233,23 @@ table tbody tr:hover{background:#ffffff03!important}
     <div class="banner" style="display:block;border-left-color:var(--indigo);margin-top:12px">Accounts use the Google Apps Script authentication backend. Passwords are stored as salted hashes and access is protected by session tokens.</div>
   </div>
 
-  <div class="panel" id="panel-report">
+  <div class="panel" id="panel-report" data-report-view="report">
+    <nav class="report-subnav" aria-label="Report sections">
+      <button type="button" class="active" data-report-view-button="report">Report</button>
+      <button type="button" data-report-view-button="tasks">Agenda</button>
+    </nav>
+    <section class="report-weekly-task-view">
+      <div class="section-head"><div><h2>Agenda</h2><p>Record completed work, meetings, coordination, and other weekly activities outside site visits. Synced with Google Sheets.</p></div><button type="button" class="btn-primary" id="agenda-add-more">＋ Add another activity</button></div>
+      <div class="weekly-task-toolbar">
+        <label>Reporting week<select id="weekly-task-week"></select></label>
+        <span id="weekly-task-count" class="muted">0 tasks</span>
+      </div>
+      <form id="weekly-task-form" class="weekly-task-form">
+        <label>Task or activity completed<textarea id="weekly-task-text" rows="3" placeholder="What did you complete this week?" required></textarea></label>
+        <div class="weekly-task-actions"><button type="submit" class="btn-primary">Add agenda item</button><span id="weekly-task-status" role="status" aria-live="polite"></span></div>
+      </form>
+      <div id="weekly-task-list" class="weekly-task-list"></div>
+    </section>
     <div class="period-select">
       <div class="period-types" id="period-types">
         <span class="period-type-btn active" data-period="week">Week</span>
@@ -4376,16 +4449,23 @@ document.querySelectorAll('[data-mobile-tab="dashboard"],[data-mobile-tab="field
 if(window.applyExactRolePolicy)window.applyExactRolePolicy();
 renderUsers();}
 function showApp(user){currentUser=user;document.getElementById('logged-user').textContent=user.name||user.username;document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='block';document.body.classList.add('app-fullscreen');startApp();setTimeout(applyRoleUI,0);}
+let logoutInProgress=false;
 async function doLogout(){
+  if(logoutInProgress)return;
+  logoutInProgress=true;
+  const logoutToken=authToken;
+  // Clear both possible login locations before any asynchronous request. This
+  // prevents restoreAuth from signing the same session back in during reload.
+  localStorage.removeItem('fo-auth');
+  sessionStorage.removeItem('fo-auth');
+  authToken='';
+  authExpiresAt=0;
+  currentUser=null;
   try{
-    if(authToken) await apiPost('logout',{});
+    if(logoutToken) await apiPost('logout',{token:logoutToken},{skipToken:true,authRequest:true});
   }catch(e){
     console.warn('Logout request failed:',e);
   }finally{
-    localStorage.removeItem('fo-auth');
-    authToken='';
-    authExpiresAt=0;
-    currentUser=null;
     location.reload();
   }
 }
@@ -4424,6 +4504,7 @@ async function restoreAuth(){
     if(!saved||!saved.token||!saved.user)return false;
     if(saved.expiresAt&&Date.now()>Number(saved.expiresAt)){
       localStorage.removeItem('fo-auth');
+      sessionStorage.removeItem('fo-auth');
       return false;
     }
 
@@ -4434,6 +4515,7 @@ async function restoreAuth(){
 
     // Validate quietly in the background. Every API request is still token-protected.
     apiPost('me',{}).then(check=>{
+      if(logoutInProgress)return;
       if(check&&check.user){
         localStorage.setItem('fo-auth',JSON.stringify({
           token:authToken,
@@ -4445,7 +4527,9 @@ async function restoreAuth(){
         applyRoleUI();
       }
     }).catch(()=>{
+      if(logoutInProgress)return;
       localStorage.removeItem('fo-auth');
+      sessionStorage.removeItem('fo-auth');
       authToken='';
       authExpiresAt=0;
       location.reload();
@@ -4454,6 +4538,7 @@ async function restoreAuth(){
     return true;
   }catch(e){
     localStorage.removeItem('fo-auth');
+    sessionStorage.removeItem('fo-auth');
     authToken='';
     authExpiresAt=0;
     return false;
@@ -5184,9 +5269,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   err.style.display='none';
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
-  const duplicateTech=normUniqueValue(document.getElementById('f-tech').value);
-  const duplicates=entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)&&normUniqueValue(row.tech)===duplicateTech);
-  if(duplicates.length&&!confirm('Possible duplicate: '+duplicates.length+' existing visit(s) for '+site+' on '+duplicateDate+' with this primary technician. Save this as a separate visit anyway?'))return;
+  const duplicates=entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site));
+  if(duplicates.length&&!confirm('Same-day visit warning: '+duplicates.length+' visit log'+(duplicates.length===1?' has':'s have')+' already been created for '+site+' on '+duplicateDate+'.\n\nDo you want to create another visit log for the same site and date?'))return;
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
@@ -5433,14 +5517,15 @@ function allKnownSites(){
   const byKey=new Map();
 
   (window.__lifecycleSites||[]).forEach(record=>{
-    const display=cleanSiteDisplayName(record?.name||'');
+    let display=cleanSiteDisplayName(record?.name||'');
+    if(siteIsWarehouse(display))display='Carmona Cavite Warehouse';
     const key=normalizeSiteKey(display);
     if(!key || key==='car' || byKey.has(key))return;
     byKey.set(key,display);
   });
   // Include internal locations already present in cabinet or inventory records.
   [...(cabinetRows||[]).map(r=>r.site),(inventoryRows||[]).map(r=>r.site)].flat().forEach(name=>{
-    const display=cleanSiteDisplayName(name||'');const key=normalizeSiteKey(display);
+    let display=cleanSiteDisplayName(name||'');if(siteIsWarehouse(display))display='Carmona Cavite Warehouse';const key=normalizeSiteKey(display);
     if(key&&key!=='car'&&!byKey.has(key))byKey.set(key,display);
   });
 
@@ -5449,8 +5534,13 @@ function allKnownSites(){
 }
 
 function lifecycleRecordForSite(siteName){
-  const key=normalizeSiteKey(siteName);
-  return (window.__lifecycleSites||[]).find(r=>normalizeSiteKey(r?.name)===key)||null;
+  const warehouse=siteIsWarehouse(siteName);
+  const key=normalizeSiteKey(warehouse?'Carmona Cavite Warehouse':siteName);
+  return (window.__lifecycleSites||[]).find(r=>{
+    const name=cleanSiteDisplayName(r?.name||'');
+    const candidate=siteIsWarehouse(name)?'Carmona Cavite Warehouse':name;
+    return normalizeSiteKey(candidate)===key;
+  })||null;
 }
 
 async function deleteSiteFromProfile(siteName){
@@ -5529,7 +5619,11 @@ function renderSites(){
   const q=normalizeSiteKey(document.getElementById('sites-search')?.value||'');
   const statusFilter=document.getElementById('sites-status-filter')?.value||'All';
   const known=allKnownSites();
-  (window.__lifecycleSites||[]).forEach(r=>{if(r.name&&normalizeSiteKey(r.name)!=='car'&&!known.some(n=>normalizeSiteKey(n)===normalizeSiteKey(r.name)))known.push(r.name);});
+  (window.__lifecycleSites||[]).forEach(r=>{
+    if(!r.name||normalizeSiteKey(r.name)==='car')return;
+    const display=siteIsWarehouse(r.name)?'Carmona Cavite Warehouse':r.name;
+    if(!known.some(n=>normalizeSiteKey(n)===normalizeSiteKey(display)))known.push(display);
+  });
   const activeNames=known.filter(name=>!siteIsClosed(name)&&!siteIsWarehouse(name));
   const warehouseNames=known.filter(name=>!siteIsClosed(name)&&siteIsWarehouse(name));
   const closedNames=known.filter(name=>siteIsClosed(name)&&!siteIsWarehouse(name));
@@ -5541,8 +5635,9 @@ function renderSites(){
   document.getElementById('sites-status-filter').disabled=isClosedView;
 
   const data=siteNames.map(site=>{
-    const key=normalizeSiteKey(site);
-    const cabinets=cabinetRows.filter(c=>normalizeSiteKey(canonicalSiteName(c.site))===key);
+    const key=normalizeSiteKey(siteIsWarehouse(site)?'Carmona Cavite Warehouse':canonicalSiteName(site));
+    const siteMap=cabinetCanonicalSiteMap();
+    const cabinets=cabinetRows.filter(c=>normalizeSiteKey(canonicalCabinetSite(c,siteMap))===key);
     const operational=cabinets.filter(c=>normalizeSiteKey(c.status)==='operational').length;
     const attention=cabinets.filter(c=>[
       'non-operational','for repair','for assessment','for pull-out'
@@ -5582,9 +5677,20 @@ document.getElementById('sites-search')?.addEventListener('input',renderSites);
 document.getElementById('sites-status-filter')?.addEventListener('change',renderSites);
 
 function siteAssetOverview(siteName){
-  const key=normalizeSiteKey(canonicalSiteName(siteName));
-  const cabinets=cabinetRows.filter(c=>normalizeSiteKey(canonicalSiteName(c.site))===key);
+  const warehouse=siteIsWarehouse(siteName);
+  const key=normalizeSiteKey(warehouse?'Carmona Cavite Warehouse':canonicalSiteName(siteName));
+  // Use the same canonical location mapping as All Cabinets. Stock01–Stock04
+  // belong to the Carmona warehouse even when an older Sheet row has a blank
+  // or outdated raw site value.
+  const siteMap=cabinetCanonicalSiteMap();
+  const cabinets=cabinetRows
+    .filter(c=>normalizeSiteKey(canonicalCabinetSite(c,siteMap))===key)
+    .sort(cabinetNaturalSort);
   const isMgmt=currentUser?.role==='management';
+  if(warehouse){
+    const stockRows=cabinets.map(c=>'<div class="warehouse-stock-row"><button type="button" class="warehouse-stock-id" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')"><b>'+escapeHtml(c.cabinetId||'Stock cabinet')+'</b><small>'+escapeHtml(c.label||c.cabinetId||'')+'</small></button><span class="warehouse-stock-location">Carmona Cavite Warehouse</span><span class="warehouse-stock-badge">Warehouse / Stock</span></div>').join('');
+    return '<section class="site-section site-primary-cabinets"><div class="site-asset-title"><div><h3 class="warehouse-stock-heading">Carmona Cavite Warehouse <span>— STOCK</span></h3><span>Warehouse cabinet stock currently registered in Google Sheets.</span></div></div><div class="warehouse-stock-list">'+(stockRows||'<p class="site-empty">No warehouse stock cabinets are currently recorded.</p>')+'</div></section>';
+  }
   const rows=cabinets.map(c=>'<div class="site-cabinet-simple"><button type="button" class="site-asset-link" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')">'+escapeHtml(c.cabinetId||'Cabinet')+'</button><span class="site-cabinet-serial"><small>Serial Number</small>'+escapeHtml(c.cabinetSerial||'—')+'</span>'+(isMgmt?'<span class="site-cabinet-token"><small>Token</small>'+tokenCompactMarkup(c.token)+'</span>':'')+'<span class="site-cabinet-state">'+escapeHtml(c.status||'Not recorded')+'</span></div>').join('');
   return '<section class="site-section site-primary-cabinets"><div class="site-asset-title"><div><h3>Cabinets at this site <span class="muted">· '+cabinets.length+'</span></h3><span>Select a cabinet for components, serial numbers and movement history.</span></div></div><div class="site-asset-list">'+(rows||'<p class="site-empty">No cabinets currently loaded for this site.</p>')+'</div></section>';
 }
@@ -6460,6 +6566,8 @@ function cabinetCanonicalSiteMap(){
 
 function canonicalCabinetSite(row,siteMap){
   const explicit=canonicalSiteName(row?.site||'');
+  const cabinetId=String(row?.cabinetId||row?.label||'').trim();
+  if(/^stock\s*0*\d+/i.test(cabinetId)||normalizeSiteKey(explicit)==='car')return 'Carmona Cavite Warehouse';
   const map=siteMap||cabinetCanonicalSiteMap();
   const mapped=map[cabinetGroupPrefix(row?.cabinetId)] || explicit || 'Unassigned';
   return canonicalSiteName(mapped)||'Unassigned';
@@ -7668,7 +7776,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     }
 
     // Avoid refetching again immediately during the same page session.
-    if(!force && assetsBootstrapLoaded && Date.now()-lastAssetsFetch<60000){
+    // Asset data changes only after an explicit save/update. Keep it warm while
+    // navigating between Dashboard and Asset Operations so tab changes stay instant.
+    if(!force && assetsBootstrapLoaded && Date.now()-lastAssetsFetch<300000){
       if(target==='sites' && typeof renderSites==='function')renderSites();
       paintCurrentAssets(target);
       return Promise.resolve();
@@ -7902,7 +8012,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     fieldlogs:'Field Logs',
     dashboard:'Dashboard',
     report:'Reports',
-    inventory:'Locations & Assets',
+    inventory:'Asset Operations',
     users:'Users',
     audit:'Audit Trail'
   };
@@ -8072,7 +8182,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     });
 
     document.querySelectorAll(
-      '[data-mobile-tab="report"], [data-mobile-tab="audit"]'
+      '[data-mobile-tab="report"], [data-mobile-tab="audit"], [data-mobile-tab="users"]'
     ).forEach(el=>{
       el.style.setProperty('display',isMgmt?'flex':'none','important');
     });
@@ -8337,11 +8447,12 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  function update(){
   const grids=report.querySelectorAll(':scope > .brief-grid');
   const register=report.querySelector('.brief-site-register');
+  const agenda=report.querySelector('.brief-agenda');
   const rows=Array.from(report.querySelectorAll('.visit-remarks-table tbody tr'));
   const total=reportPageCount(rows.length);page=Math.max(0,Math.min(page,total-1));
   const active=document.body.classList.contains('report-presenting');
   function show(el,yes){if(el)el.classList.toggle('report-page-away',active&&!yes);}
-  show(report.querySelector('.brief-takeaway'),page===0);show(report.querySelector('.brief-metrics'),page===0);
+  show(agenda,page===total-1);show(report.querySelector('.brief-takeaway'),page===0);show(report.querySelector('.brief-metrics'),page===0);
   show(grids[0],page===0);show(register,page>=1);
   rows.forEach((r,i)=>show(r,page>=1&&i>=(page-1)*5&&i<page*5));
   buttons.forEach((b,i)=>b.setAttribute('aria-current',(i===Math.min(page,1))?'page':'false'));
@@ -8377,7 +8488,7 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  document.getElementById('sites-grid').addEventListener('click',e=>{const button=e.target.closest('[data-site-status]');if(!button||currentUser?.role!=='management')return;returnFocus=button;site=button.dataset.siteStatus;const rows=records();get('site-status-name').textContent=site;get('site-status-value').value=siteOperationalState(site)==='Non-Operational'?'Non-Operational':'Operational';get('site-status-error').textContent='';get('site-status-note').textContent=rows.length?'Updates the status on this site’s inventory records. Cabinet quantities and individual cabinet statuses stay unchanged.':'This site has no inventory record. Add its inventory and actual quantity first, then set its operational status.';get('site-status-save').textContent=rows.length?'Save status':'Add inventory';get('site-status-value').disabled=!rows.length;modal.hidden=false;get('site-status-cancel').focus();});
  get('site-status-save').addEventListener('click',async()=>{
   if(busy||currentUser?.role!=='management')return;const rows=records();
-  if(!rows.length){close();document.querySelector('[data-inventory-view="overview"]').click();clearInventoryForm();openInventoryForm();get('inv-site').value=site;get('inv-qty').value='';get('inv-qty').focus();return;}
+  if(!rows.length){close();setInventoryView('overview');clearInventoryForm();openInventoryForm();get('inv-site').value=site;get('inv-qty').value='';get('inv-qty').focus();return;}
   busy=true;get('site-status-save').disabled=true;get('site-status-cancel').disabled=true;get('site-status-error').textContent='';
   const state=get('site-status-value').value;
   try{for(const row of rows){if(!row.id)throw Error('Inventory record is missing its ID. Refresh data before editing.');await apiPost('saveInventory',{record:{...row,operationalStatus:state}});}await loadInventory();renderSites();renderCabinets();showToast('Site status saved',site+' · '+state);busy=false;close();}
@@ -8528,11 +8639,10 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
    const record={id:crypto.randomUUID(),period,title,savedAt:now,html:frozen};await commit({...data,snapshots:[record,...data.snapshots]});snapshotList();archive.open=true;showToast('Snapshot saved','This copy will not change when visit records are updated.');
   }catch(e){notifyError(e);}});
  archive.addEventListener('toggle',()=>{if(archive.open)try{read();snapshotList();refresh();}catch(e){notifyError(e);}});
- const exportButton=el('button','Back up planning data','btn-secondary');exportButton.type='button';inventory.append(exportButton);exportButton.addEventListener('click',()=>{try{read();download('opexa-planning-backup.json',JSON.stringify(data,null,2),'application/json');}catch(e){notifyError(e);}});
+ const dataTools=el('details',null,'calm-disclosure planning-data-tools');dataTools.append(el('summary','Data tools'));dataTools.append(el('p','Refresh, back up, or migrate planning records. These utilities do not change cabinet or stock records.','planning-local-note'));inventory.append(dataTools);
+ const exportButton=el('button','Back up planning data','btn-secondary');exportButton.type='button';dataTools.append(exportButton);exportButton.addEventListener('click',()=>{try{read();download('opexa-planning-backup.json',JSON.stringify(data,null,2),'application/json');}catch(e){notifyError(e);}});
 
- const sync=el('button','Refresh planning','btn-secondary');sync.type='button';inventory.append(sync);sync.onclick=refresh;
- const migrate=el('button','Import saved browser records','btn-secondary');migrate.type='button';inventory.append(migrate);
- migrate.onclick=async()=>{migrate.disabled=true;try{const raw=localStorage.getItem(key());if(!raw)throw Error('No browser records found for this account.');const local=JSON.parse(raw);let count=0;for(const kind of ['maintenance','requests','snapshots'])for(const record of local[kind]||[]){await apiPost('planningSave',{kind,record,importOnly:true});count++;}await refresh();showToast('Import complete',count+' records processed. Original browser backup kept.');}catch(e){notifyError(e);}finally{migrate.disabled=false;}};
+ const sync=el('button','Refresh planning','btn-secondary');sync.type='button';dataTools.append(sync);sync.onclick=refresh;
  const originalShow=showApp;showApp=function(user){originalShow(user);try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);updateFseMaintenanceNotice();}catch(e){notifyError(e);}};
  if(currentUser)try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);}catch(e){notifyError(e);}
 })();</script>
@@ -8744,7 +8854,8 @@ html{scrollbar-gutter:stable}
    '</div>';
  }
  window.renderInstalledComponents=function(){
-   const rows=(cabinetRows||[]).filter(r=>r&&String(r.cabinetId||r.label||r.site||'').trim());
+   const siteMap=cabinetCanonicalSiteMap();
+   const rows=(cabinetRows||[]).filter(r=>r&&String(r.cabinetId||r.label||r.site||'').trim()).map(r=>({...r,site:canonicalCabinetSite(r,siteMap)})).filter(r=>!siteIsClosed(r.site));
    syncSiteOptions(rows);
    const sites=new Set(rows.map(r=>normalizeSiteKey(canonicalSiteName(r.site||''))).filter(Boolean));
    get('component-sites').textContent=sites.size;
@@ -8793,19 +8904,19 @@ html{scrollbar-gutter:stable}
 (function(){
  const panel=document.getElementById('panel-inventory');
  const nav=panel.querySelector('.inventory-subnav');
- const groups=[['Sites & Cabinets',['sites','cabinets','components','overview']],['Inventory',['spares','requests']],['Movements',['movements']],['Maintenance',['maintenance']]];
+ const groups=[['Locations',['sites']],['Cabinet Registry',['cabinets','components']],['Stock',['spares','requests']],['Activity',['movements','maintenance']]];
  const primary=document.createElement('nav');primary.id='asset-groups';primary.setAttribute('aria-label','Sites and assets sections');nav.before(primary);
  const originals=Array.from(nav.querySelectorAll('[data-inventory-view]'));
  const refresh=panel.querySelector('.asset-load-status');
  const refreshButton=refresh.querySelector('button');refreshButton.textContent='↻';refreshButton.title='Refresh asset data';refreshButton.setAttribute('aria-label','Refresh asset data');
- const stock=originals.find(b=>b.dataset.inventoryView==='overview');if(stock)stock.textContent='Inventory Allocation';
  const buttons=groups.map(([title,views])=>{const b=document.createElement('button');b.type='button';b.textContent=title;b.addEventListener('click',()=>originals.find(x=>x.dataset.inventoryView===views[0])?.click());primary.append(b);return b;});
  function update(){
   const active=panel.querySelector('.inventory-subpanel.active');
   const view=active?active.id.replace('inventory-view-',''):inventoryView;
   const index=groups.findIndex(g=>g[1].includes(view));if(index<0)return;
   buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
-  originals.forEach(b=>b.hidden=b.dataset.inventoryView==='overview'||!groups[index][1].includes(b.dataset.inventoryView));
+  groups[index][1].forEach(name=>{const item=originals.find(b=>b.dataset.inventoryView===name);if(item)nav.append(item);});
+  originals.forEach(b=>b.hidden=!groups[index][1].includes(b.dataset.inventoryView));
   nav.hidden=groups[index][1].length===1;
   const heading=active?.querySelector('.section-head');
   if(heading&&refresh.parentElement!==heading)heading.append(refresh);
@@ -8856,17 +8967,8 @@ html{scrollbar-gutter:stable}
 })();
 </script>
 <script id="cabinet-tab-reload-fix">
-(function(){
- const tab=document.querySelector('[data-inventory-view="cabinets"]');
- if(!tab)return;
- tab.addEventListener('click',()=>{
-   setTimeout(()=>{
-     if(typeof loadCabinets==='function'&&currentUser){
-       loadCabinets().catch(()=>{});
-     }
-   },0);
- });
-})();
+/* Cabinet data is loaded by the shared Asset Operations cache. The former
+   click handler downloaded it again on every All Cabinets tab click. */
 </script>
 <script id="fse-dashboard-site-guard">
 (function(){
@@ -9126,8 +9228,116 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
 
 </script>
 
+<style id="weekly-task-tab-style">
+.agenda-editor{display:none!important}
+.report-subnav{display:flex;gap:5px;margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}.report-subnav button{padding:9px 14px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--ink-soft);cursor:pointer;font:inherit;font-size:12px}.report-subnav button.active{background:var(--ink);color:var(--paper)}
+.report-weekly-task-view{max-width:920px;margin:0 auto}
+@media screen{#panel-report[data-report-view="report"]>.report-weekly-task-view{display:none!important}#panel-report[data-report-view="tasks"]>:not(.report-subnav):not(.report-weekly-task-view){display:none!important}}
+body.report-presenting .report-subnav,body.report-presenting .report-weekly-task-view{display:none!important}
+.weekly-task-toolbar{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:0 0 14px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.weekly-task-toolbar label{margin:0;min-width:240px}.weekly-task-toolbar select{margin-top:6px}
+.weekly-task-form{padding:18px;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:18px}.weekly-task-form label{margin:0}.weekly-task-form textarea{margin-top:7px;resize:vertical;min-height:90px}
+.weekly-task-actions{display:flex;align-items:center;gap:12px;margin-top:10px}.weekly-task-actions button{min-width:160px}.weekly-task-actions span{font-size:11px;color:var(--ink-soft)}
+.weekly-task-list{display:grid;gap:9px}.weekly-task-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:12px;align-items:start;padding:15px 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.weekly-task-check{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:rgba(82,190,128,.12);color:#7fd4a3;font-weight:800}.weekly-task-row p{margin:1px 0 5px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.55}.weekly-task-row small{color:var(--ink-soft);font-size:10px}.weekly-task-delete{border:0;background:transparent;color:var(--ink-soft);cursor:pointer;padding:6px 8px;border-radius:6px}.weekly-task-delete:hover{color:#ef9180;background:rgba(239,145,128,.08)}
+.weekly-task-row-actions{display:flex;align-items:center;gap:5px}.weekly-task-row-actions .btn-secondary{min-height:32px;padding:6px 10px;font-size:10px}
+.weekly-task-empty{padding:28px;border:1px dashed var(--line);border-radius:10px;text-align:center;color:var(--ink-soft);font-size:12px}
+.brief-agenda-list li{position:relative}.brief-agenda-list small{display:block;color:var(--ink-soft);font-size:10px;margin-top:2px}
+.report-agenda-section{margin-top:26px;padding:22px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#1a2029,#151a21);break-inside:avoid}.report-agenda-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:17px;padding-bottom:13px;border-bottom:1px solid var(--line)}.report-agenda-head h2{margin:0 0 4px;font-size:18px}.report-agenda-head p{margin:0;color:var(--ink-soft);font-size:11px}.report-agenda-week{flex:none;padding:6px 9px;border:1px solid #46526a;border-radius:999px;background:#202838;color:#cdd8ef;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.report-agenda-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;counter-reset:agenda}.report-agenda-card{counter-increment:agenda;display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;align-items:start;padding:14px;border:1px solid #303a48;border-radius:9px;background:#121820;break-inside:avoid}.report-agenda-card::before{content:counter(agenda,decimal-leading-zero);display:grid;place-items:center;width:30px;height:30px;border-radius:7px;background:#28334a;color:#b9c9ee;font-size:10px;font-weight:800}.report-agenda-card p{margin:1px 0 8px;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}.report-agenda-card small{display:block;color:var(--ink-soft);font-size:9px}.report-agenda-empty{padding:24px;border:1px dashed var(--line);border-radius:9px;text-align:center;color:var(--ink-soft);font-size:11px}
+@media(max-width:700px){.report-agenda-grid{grid-template-columns:1fr}.report-agenda-head{align-items:flex-start;flex-direction:column}.report-agenda-section{padding:16px}}
+@media print{.report-agenda-section{background:#fff!important;color:#111!important;border-color:#bbb!important;box-shadow:none!important;break-inside:auto}.report-agenda-card{background:#fff!important;border-color:#ccc!important}.report-agenda-card::before{background:#eef1f5!important;color:#222!important}.report-agenda-card p{color:#111!important}.report-agenda-head p,.report-agenda-card small{color:#555!important}.report-agenda-week{background:#fff!important;color:#222!important;border-color:#aaa!important}}
+@media(max-width:600px){.weekly-task-toolbar,.weekly-task-actions{align-items:stretch;flex-direction:column}.weekly-task-toolbar label{min-width:0}.weekly-task-row{grid-template-columns:28px minmax(0,1fr)}.weekly-task-delete{grid-column:2;justify-self:start;min-height:40px}.weekly-task-actions button{width:100%}}
+</style>
+<script id="weekly-task-tab">
+window.addEventListener('DOMContentLoaded',()=>{
+ const weekSelect=document.getElementById('weekly-task-week'),form=document.getElementById('weekly-task-form'),input=document.getElementById('weekly-task-text'),list=document.getElementById('weekly-task-list'),count=document.getElementById('weekly-task-count'),status=document.getElementById('weekly-task-status'),addMore=document.getElementById('agenda-add-more');
+ if(!weekSelect||!form||!input||!list)return;
+ document.querySelector('.agenda-editor')?.remove();
+ let agendaRows=[],editingId='',agendaLoadedAt=0,agendaLoadInFlight=null,agendaCacheRestored=false;
+ const AGENDA_CACHE_PREFIX='fo-agenda-cache-v1:';
+ function agendaCacheKey(){
+  const userKey=String(currentUser?.username||currentUser?.name||currentUser?.fse||'shared').trim().toLowerCase();
+  return AGENDA_CACHE_PREFIX+userKey;
+ }
+ function saveAgendaCache(){
+  try{localStorage.setItem(agendaCacheKey(),JSON.stringify({rows:agendaRows,savedAt:agendaLoadedAt||Date.now()}));}catch(e){console.warn('Agenda cache save skipped:',e);}
+ }
+ function restoreAgendaCache(){
+  try{
+   const raw=localStorage.getItem(agendaCacheKey());
+   if(!raw)return false;
+   const cached=JSON.parse(raw);
+   if(!cached||!Array.isArray(cached.rows))return false;
+   agendaRows=cached.rows;agendaLoadedAt=Number(cached.savedAt||0);agendaCacheRestored=true;
+   buildWeeks();renderList();renderReportTasks();status.textContent='Agenda ready.';
+   return true;
+  }catch(e){console.warn('Agenda cache restore skipped:',e);return false;}
+ }
+ function read(week){return agendaRows.filter(row=>String(row.week||'')===String(week||''));}
+ async function loadAgenda(force=false,quiet=false){
+  if(!authToken)return agendaRows;
+  if(!agendaCacheRestored)restoreAgendaCache();
+  if(!force&&agendaLoadedAt&&Date.now()-agendaLoadedAt<60000){buildWeeks();renderList();renderReportTasks();status.textContent='Agenda ready.';return agendaRows;}
+  if(agendaLoadInFlight)return agendaLoadInFlight;
+  status.textContent=quiet&&agendaCacheRestored?'Agenda ready. Syncing…':'Loading agenda from Google Sheets…';
+  agendaLoadInFlight=apiGet('agenda').then(rows=>{
+   agendaRows=Array.isArray(rows)?rows:[];agendaLoadedAt=Date.now();agendaCacheRestored=true;saveAgendaCache();
+   buildWeeks();renderList();renderReportTasks();status.textContent='Agenda synced with Google Sheets.';return agendaRows;
+  }).catch(error=>{
+   if(agendaCacheRestored){status.textContent='Showing saved agenda. Google Sheets refresh unavailable.';}
+   else{status.textContent=error.message||'Agenda could not be loaded from Google Sheets.';showToast('Agenda unavailable',status.textContent,'bad');}
+   return agendaRows;
+  }).finally(()=>{agendaLoadInFlight=null;});
+  return agendaLoadInFlight;
+ }
+ function buildWeeks(){
+  const values=new Set(entries.map(e=>e.week||weekKey(e.date)).concat(agendaRows.map(row=>row.week)).filter(Boolean));
+  const cursor=new Date(),limit=new Date();limit.setMonth(limit.getMonth()-18);
+  while(cursor>=limit){values.add(weekKey(cursor.toISOString().slice(0,10)));cursor.setDate(cursor.getDate()-7);}
+  values.add(weekKey(todayStr()));const selected=weekSelect.value||weekKey(todayStr());
+  weekSelect.innerHTML=[...values].sort().reverse().map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(periodKeyFns().label(value))+'</option>').join('');
+  weekSelect.value=[...values].includes(selected)?selected:weekKey(todayStr());
+ }
+ function syncReportWeek(week,renderNow=false){
+  if(!week)return;
+  periodType='week';
+  document.querySelectorAll('[data-period]').forEach(button=>button.classList.toggle('active',button.dataset.period==='week'));
+  const picker=document.getElementById('period-picker');
+  if(!picker)return;
+  if(!Array.from(picker.options).some(option=>option.value===week))picker.add(new Option(periodKeyFns().label(week)||week,week));
+  picker.value=week;
+  if(renderNow){renderReport(week);renderReportTasks();}
+ }
+ function renderList(){
+  const rows=read(weekSelect.value);count.textContent=rows.length+' agenda item'+(rows.length===1?'':'s');list.replaceChildren();
+  form.hidden=rows.length>0&&!editingId;
+  if(addMore)addMore.hidden=!rows.length||!form.hidden;
+  const submit=form.querySelector('button[type="submit"]');submit.textContent=editingId?'Save changes':'Add agenda item';
+  if(!rows.length){form.hidden=false;const empty=document.createElement('div');empty.className='weekly-task-empty';empty.textContent='No agenda items recorded yet. Add the first completed activity above.';list.append(empty);return;}
+  rows.forEach(row=>{const card=document.createElement('article');card.className='weekly-task-row';const check=document.createElement('span');check.className='weekly-task-check';check.textContent='✓';const body=document.createElement('div');const text=document.createElement('p');text.textContent=row.text;const meta=document.createElement('small');meta.textContent=(row.owner||'User')+' · '+new Date(row.createdAt).toLocaleString();body.append(text,meta);const actions=document.createElement('div');actions.className='weekly-task-row-actions';const edit=document.createElement('button');edit.type='button';edit.className='btn-secondary';edit.textContent='Edit';edit.onclick=()=>{editingId=row.id;input.value=row.text;form.hidden=false;form.querySelector('button[type="submit"]').textContent='Save changes';status.textContent='Editing this agenda item.';form.scrollIntoView({behavior:'smooth',block:'center'});input.focus();};const remove=document.createElement('button');remove.type='button';remove.className='weekly-task-delete';remove.textContent='Remove';remove.onclick=async()=>{if(!confirm('Remove this agenda item?'))return;const before=agendaRows.slice();agendaRows=agendaRows.filter(item=>String(item.id)!==String(row.id));if(editingId===row.id){editingId='';input.value='';}renderList();renderReportTasks();status.textContent='Removing from Google Sheets…';try{await apiPost('deleteAgendaItem',{id:row.id});agendaLoadedAt=Date.now();saveAgendaCache();status.textContent='Agenda item removed.';showToast('Agenda item removed','Google Sheets has been updated.');}catch(error){agendaRows=before;renderList();renderReportTasks();status.textContent='Remove failed; the item was restored.';showToast('Could not remove item',error.message||'Google Sheets did not confirm the change.','bad');}};actions.append(edit,remove);card.append(check,body,actions);list.append(card);});
+ }
+ addMore?.addEventListener('click',()=>{editingId='';input.value='';form.hidden=false;addMore.hidden=true;form.querySelector('button[type="submit"]').textContent='Add agenda item';status.textContent='Add another activity for '+(periodKeyFns().label(weekSelect.value)||weekSelect.value)+'.';form.scrollIntoView({behavior:'smooth',block:'center'});input.focus();});
+ function renderReportTasks(){
+  const report=document.getElementById('presentation-report');if(!report)return;report.querySelector('.brief-agenda,.report-agenda-section')?.remove();
+  if(periodType!=='week')return;const selected=document.getElementById('period-picker')?.value;if(!selected)return;const rows=read(selected);const section=document.createElement('section');section.className='report-agenda-section';
+  section.innerHTML='<div class="report-agenda-head"><div><h2>Agenda & Weekly Activities</h2><p>Completed work, coordination, meetings and operational updates beyond recorded site visits.</p></div><span class="report-agenda-week">'+escapeHtml(periodKeyFns().label(selected)||selected)+'</span></div>'+(rows.length?'<div class="report-agenda-grid">'+rows.map(row=>'<article class="report-agenda-card"><div><p>'+escapeHtml(row.text)+'</p><small>Completed'+(row.owner?' · '+escapeHtml(row.owner):'')+'</small></div></article>').join('')+'</div>':'<div class="report-agenda-empty">No additional weekly activities recorded for this reporting period.</div>');
+  report.append(section);
+ }
+ buildWeeks();renderList();
+ const reportPanel=document.getElementById('panel-report');
+ document.querySelectorAll('[data-report-view-button]').forEach(button=>button.addEventListener('click',()=>{const view=button.dataset.reportViewButton;reportPanel.dataset.reportView=view;document.querySelectorAll('[data-report-view-button]').forEach(item=>item.classList.toggle('active',item===button));if(view==='tasks'){restoreAgendaCache();syncReportWeek(weekSelect.value,false);loadAgenda(false,true);}else syncReportWeek(weekSelect.value,true);}));
+ weekSelect.addEventListener('change',()=>{editingId='';input.value='';status.textContent='';renderList();syncReportWeek(weekSelect.value,false);});
+ form.addEventListener('submit',async event=>{event.preventDefault();const text=input.value.trim();if(!text)return;const submit=form.querySelector('button[type="submit"]'),week=weekSelect.value,originalId=editingId,wasEdit=!!originalId,before=agendaRows.slice(),existing=agendaRows.find(row=>String(row.id)===String(originalId)),temporaryId=originalId||('PENDING-'+crypto.randomUUID());const optimistic={...(existing||{}),id:temporaryId,week,text,owner:existing?.owner||currentUser?.name||currentUser?.fse||currentUser?.username||'User',createdAt:existing?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};agendaRows=wasEdit?agendaRows.map(row=>String(row.id)===String(originalId)?optimistic:row):[optimistic,...agendaRows];editingId='';input.value='';renderList();renderReportTasks();submit.disabled=true;status.textContent='Saving to Google Sheets…';try{const result=await apiPost('saveAgendaItem',{record:{id:originalId||'',week,text}});const saved=result?.record||optimistic;agendaRows=agendaRows.map(row=>String(row.id)===String(temporaryId)?saved:row);agendaLoadedAt=Date.now();saveAgendaCache();renderList();renderReportTasks();status.textContent=wasEdit?'Agenda changes saved.':'Agenda item saved.';showToast(wasEdit?'Agenda updated':'Agenda saved',periodKeyFns().label(week));}catch(error){agendaRows=before;editingId=originalId;input.value=text;renderList();form.hidden=false;status.textContent=error.message||'Google Sheets did not confirm the save.';showToast('Agenda not saved',status.textContent,'bad');}finally{submit.disabled=false;}});
+ const previousRender=window.renderReport;window.renderReport=function(...args){const result=previousRender.apply(this,args);renderReportTasks();return result;};
+ window.renderWeeklyTasks=()=>{restoreAgendaCache();return loadAgenda(false,true);};
+ const previousShowApp=showApp;showApp=function(user){const result=previousShowApp(user);restoreAgendaCache();return result;};
+ if(currentUser)restoreAgendaCache();else renderReportTasks();
+});
+</script>
+
 <script id="request-timings-ui">
 (function(){
+ if(true)return; // Development diagnostics are disabled in the production master.
  const button=document.createElement('button');button.type='button';button.className='btn-secondary loading-times-compact';button.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="8"/><path d="M12 10v4l2 2M9 2h6M12 2v4M18 6l2-2"/></svg>';button.setAttribute('aria-label','Loading times');button.title='Loading times';document.querySelector('.app-actions').append(button);
  const dialog=document.createElement('dialog');dialog.style.cssText='width:min(760px,calc(100vw - 32px));max-height:85vh;overflow:auto;background:var(--card,#171c24);color:var(--ink,#eef2ff);border:1px solid var(--line,#404858);border-radius:12px;padding:20px';
  const title=document.createElement('h2');title.textContent='Loading times';title.style.fontSize='18px';
@@ -9150,4 +9360,11 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
 
 </script>
 
-
+<script id="v16-production-cleanup">
+(function(){
+  // Remove retired interfaces while preserving their internal data adapters for
+  // dashboard totals, site operational status, and legacy Sheet compatibility.
+  document.getElementById('weekly-report-agenda')?.remove();
+  document.getElementById('compact-loading-times')?.remove();
+})();
+</script>
