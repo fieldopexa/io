@@ -3463,6 +3463,83 @@ window.addEventListener('DOMContentLoaded',()=>{
 .brief-site-register .visit-remarks-table td:nth-child(5){width:25%!important;}
 .brief-site-register .visit-remarks-table td:first-child{white-space:nowrap!important;}
 </style>
+
+<style id="spare-part-modal-redesign">
+#spare-modal{padding:22px;overflow:auto;background:rgba(5,8,13,.76);backdrop-filter:blur(8px)}
+.spare-part-dialog{width:min(820px,96vw)!important;max-height:92vh;overflow:auto;padding:0!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:16px!important;background:#11161d!important;box-shadow:0 30px 90px rgba(0,0,0,.48)}
+.spare-part-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;padding:22px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.025),transparent)}
+.spare-part-kicker{margin-bottom:5px;color:var(--accent);font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.spare-part-head h2{margin:0 0 5px;font-size:20px;letter-spacing:-.02em}
+.spare-part-head p{margin:0;color:var(--ink-soft);font-size:11px;line-height:1.5}
+.spare-part-close{flex:none;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#171d25;color:var(--ink-soft);font-size:22px;line-height:1;cursor:pointer}
+.spare-part-close:hover{color:var(--ink);background:#202833}
+.spare-part-section{padding:18px 24px 4px}
+.spare-part-section+.spare-part-section{padding-top:15px}
+.spare-part-section-title{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.spare-part-step{display:grid;place-items:center;min-width:28px;height:28px;border-radius:7px;background:var(--accent-soft);color:var(--accent);font-size:9px;font-weight:800}
+.spare-part-section-title b{display:block;font-size:12px;margin:1px 0 2px}
+.spare-part-section-title small{display:block;color:var(--ink-soft);font-size:9px;line-height:1.4}
+.spare-part-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 12px;padding:14px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(255,255,255,.018)}
+.spare-part-grid .field{min-width:0}
+.spare-part-grid .field label{display:flex;align-items:center;gap:3px;margin-bottom:6px;color:#aeb8c7;font-size:9px;font-weight:700;letter-spacing:.025em}
+.spare-part-grid .field label span{color:#e48a7b}
+.spare-part-grid input,.spare-part-grid select,.spare-part-grid textarea{width:100%;min-height:39px;border-radius:7px!important;background:#0d1218!important;border-color:#2a333f!important;font-size:11px!important}
+.spare-part-grid textarea{min-height:78px;resize:vertical;padding-top:10px}
+.spare-part-name-field{grid-column:span 1}
+.spare-part-stock-grid{grid-template-columns:120px 140px minmax(0,1fr)}
+.spare-part-remarks-field{grid-column:1/-1}
+.spare-part-error{margin:14px 24px 0}
+.spare-part-footer{position:sticky;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;padding:14px 24px;border-top:1px solid var(--line);background:rgba(17,22,29,.97);backdrop-filter:blur(8px)}
+.spare-part-footer>span{color:var(--ink-soft);font-size:9px}
+.spare-part-footer-actions{display:flex;gap:8px}
+.spare-part-footer-actions button{min-width:104px;min-height:36px}
+@media(max-width:680px){
+ #spare-modal{padding:10px}
+ .spare-part-head,.spare-part-section,.spare-part-footer{padding-left:15px;padding-right:15px}
+ .spare-part-grid,.spare-part-stock-grid{grid-template-columns:1fr}
+ .spare-part-footer{align-items:stretch;flex-direction:column}
+ .spare-part-footer-actions{display:grid;grid-template-columns:1fr 1fr}
+ .spare-part-footer-actions button{width:100%}
+}
+</style>
+
+
+<style id="spare-part-modal-position-fix">
+#spare-modal{
+  position:fixed!important;
+  inset:0!important;
+  z-index:99999!important;
+  display:none;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  padding:5vh 18px 18px!important;
+  overflow-y:auto!important;
+}
+#spare-modal[style*="display: flex"],
+#spare-modal[style*="display:flex"]{
+  display:flex!important;
+}
+#spare-modal .spare-part-dialog{
+  position:relative!important;
+  margin:0 auto!important;
+  max-height:88vh!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+}
+body:has(#spare-modal[style*="display: flex"]),
+body:has(#spare-modal[style*="display:flex"]){
+  overflow:hidden;
+}
+@media(max-width:680px){
+  #spare-modal{
+    padding:12px 8px!important;
+  }
+  #spare-modal .spare-part-dialog{
+    max-height:calc(100vh - 24px)!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -4141,22 +4218,61 @@ window.addEventListener('DOMContentLoaded',()=>{
     </div>
 
     <div class="modal-overlay" id="spare-modal" style="display:none;align-items:center;justify-content:center;z-index:1200">
-      <div class="card" style="width:min(760px,94vw);padding:18px">
-        <div class="section-head compact-head"><div><h2 id="spare-modal-title">Add Spare Part</h2></div><button class="btn-secondary" id="spare-close-btn">Close</button></div>
-        <input type="hidden" id="sp-id">
-        <div class="movement-form-grid">
-          <div class="field"><label>Part Name *</label><input id="sp-name" placeholder="e.g. NV200 Bill Validator"></div>
-          <div class="field"><label>Category</label><select id="sp-category"><option>Bill Validator</option><option>Printer</option><option>PSU</option><option>RAM</option><option>Storage</option><option>Buttons</option><option>Harness</option><option>Network</option><option>Other</option></select></div>
-          <div class="field"><label>Brand / Model</label><input id="sp-model" placeholder="e.g. Innovative NV200"></div>
-          <div class="field"><label>Serial No.</label><input id="sp-serial" placeholder="Optional"></div>
-          <div class="field"><label>Quantity</label><input id="sp-qty" type="number" min="0" value="1"></div>
-          <div class="field"><label>Minimum Stock</label><input id="sp-min" type="number" min="0" value="1"></div>
-          <div class="field"><label>Stock Location</label><input id="sp-location" placeholder="Carmona Warehouse, office, etc."></div>
-          <div class="field"><label>Status</label><select id="sp-status"><option>Available</option><option>For Repair</option><option>Reserved</option><option>Defective</option></select></div>
-          <div class="field" style="grid-column:1/-1"><label>Remarks</label><input id="sp-remarks"></div>
+      <div class="card spare-part-dialog">
+        <div class="spare-part-head">
+          <div>
+            <div class="spare-part-kicker">Inventory</div>
+            <h2 id="spare-modal-title">Add Spare Part</h2>
+            <p>Add stock details once, then assign parts to cabinets when they are used.</p>
+          </div>
+          <button class="spare-part-close" id="spare-close-btn" type="button" aria-label="Close">×</button>
         </div>
-        <div class="movement-form-actions"><button class="btn-primary" id="spare-save-btn">Save Part</button></div>
-        <div class="err" id="spare-err" style="display:none"></div>
+        <input type="hidden" id="sp-id">
+
+        <div class="spare-part-section">
+          <div class="spare-part-section-title">
+            <span class="spare-part-step">01</span>
+            <div><b>Part details</b><small>Basic identification for this spare item.</small></div>
+          </div>
+          <div class="spare-part-grid">
+            <div class="field spare-part-name-field"><label>Part Name <span>*</span></label><input id="sp-name" placeholder="e.g. NV200 Bill Validator"></div>
+            <div class="field"><label>Category</label><select id="sp-category"><option>Bill Validator</option><option>Printer</option><option>PSU</option><option>RAM</option><option>Storage</option><option>Buttons</option><option>Harness</option><option>Network</option><option>Other</option></select></div>
+            <div class="field"><label>Brand / Model</label><input id="sp-model" placeholder="e.g. Innovative NV200"></div>
+            <div class="field"><label>Serial No.</label><input id="sp-serial" placeholder="Optional"></div>
+          </div>
+        </div>
+
+        <div class="spare-part-section">
+          <div class="spare-part-section-title">
+            <span class="spare-part-step">02</span>
+            <div><b>Stock & location</b><small>Track available quantity and where the stock is kept.</small></div>
+          </div>
+          <div class="spare-part-grid spare-part-stock-grid">
+            <div class="field"><label>Quantity</label><input id="sp-qty" type="number" min="0" value="1"></div>
+            <div class="field"><label>Minimum Stock</label><input id="sp-min" type="number" min="0" value="1"></div>
+            <div class="field spare-part-location-field"><label>Stock Location</label><input id="sp-location" placeholder="Carmona Warehouse, office, etc."></div>
+          </div>
+        </div>
+
+        <div class="spare-part-section">
+          <div class="spare-part-section-title">
+            <span class="spare-part-step">03</span>
+            <div><b>Status & notes</b><small>Current condition and any useful inventory remarks.</small></div>
+          </div>
+          <div class="spare-part-grid">
+            <div class="field"><label>Status</label><select id="sp-status"><option>Available</option><option>For Repair</option><option>Reserved</option><option>Defective</option></select></div>
+            <div class="field spare-part-remarks-field"><label>Remarks</label><textarea id="sp-remarks" rows="3" placeholder="Optional notes about condition, source, compatibility, etc."></textarea></div>
+          </div>
+        </div>
+
+        <div class="err spare-part-error" id="spare-err" style="display:none"></div>
+        <div class="spare-part-footer">
+          <span>Required fields are marked with *</span>
+          <div class="spare-part-footer-actions">
+            <button class="btn-secondary" type="button" id="spare-cancel-btn">Cancel</button>
+            <button class="btn-primary" id="spare-save-btn">Save Part</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -7007,7 +7123,11 @@ function renderSpareParts(){
   body.innerHTML=rows.length?rows.map(r=>`<tr><td><b>${escapeHtml(r.partName||'—')}</b></td><td>${escapeHtml(r.category||'—')}</td><td>${escapeHtml(r.brandModel||'—')}<div class="cabinet-movement-meta">${escapeHtml(r.serialNo||'')}</div></td><td><b>${escapeHtml(r.quantity||0)}</b></td><td>${escapeHtml(r.minStock||0)}</td><td>${escapeHtml(r.location||'—')}</td><td>${escapeHtml(r.status||'—')}</td><td><button class="btn-secondary" onclick="openUseSpare('${escapeJs(String(r.id))}')">Use on Cabinet</button>${currentUser?.role==='management'?` <button class="btn-secondary" onclick="editSpare('${escapeJs(String(r.id))}')">Edit</button>`:''}</td></tr>`).join(''):`<tr><td colspan="8"><div class="movement-empty">${sparePartRows.length?'No parts match these filters. Clear the search, category or attention filter.':'No spare parts loaded. Once stock has been added, it will appear here.'}</div></td></tr>`;
 }
 function openSpareModal(rec=null){
-  document.getElementById('spare-modal').style.display='flex';
+  const spareModal=document.getElementById('spare-modal');
+  spareModal.style.display='flex';
+  const spareDialog=spareModal.querySelector('.spare-part-dialog');
+  if(spareDialog)spareDialog.scrollTop=0;
+  const spareErr=document.getElementById('spare-err');if(spareErr){spareErr.style.display='none';spareErr.textContent='';}
   document.getElementById('spare-modal-title').textContent=rec?'Edit Spare Part':'Add Spare Part';
   document.getElementById('sp-id').value=rec?.id||'';document.getElementById('sp-name').value=rec?.partName||'';document.getElementById('sp-category').value=rec?.category||'Other';document.getElementById('sp-model').value=rec?.brandModel||'';document.getElementById('sp-serial').value=rec?.serialNo||'';document.getElementById('sp-qty').value=rec?.quantity??1;document.getElementById('sp-min').value=rec?.minStock??1;document.getElementById('sp-location').value=rec?.location||'';document.getElementById('sp-status').value=rec?.status||'Available';document.getElementById('sp-remarks').value=rec?.remarks||'';
 }
@@ -7031,6 +7151,7 @@ async function useSpare(){
 }
 document.getElementById('spare-add-btn')?.addEventListener('click',()=>openSpareModal());
 document.getElementById('spare-close-btn')?.addEventListener('click',()=>document.getElementById('spare-modal').style.display='none');
+document.getElementById('spare-cancel-btn')?.addEventListener('click',()=>document.getElementById('spare-modal').style.display='none');
 document.getElementById('spare-save-btn')?.addEventListener('click',saveSpare);
 document.getElementById('use-spare-close-btn')?.addEventListener('click',()=>document.getElementById('use-spare-modal').style.display='none');
 document.getElementById('use-spare-save-btn')?.addEventListener('click',useSpare);
