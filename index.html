@@ -4589,6 +4589,15 @@ function startApp(){
   setTimeout(()=>loadSites().catch?.(()=>{}),220);
   setTimeout(()=>loadFses().catch?.(()=>{}),400);
 
+  // Warm the weekly Agenda shortly after the app becomes usable. Cached Agenda
+  // paints immediately; the Google Sheets refresh happens quietly in background.
+  setTimeout(()=>{
+    try{
+      const p=window.renderWeeklyTasks?.();
+      if(p&&typeof p.catch==='function')p.catch(()=>{});
+    }catch(e){}
+  },700);
+
   // Do NOT auto-load heavy management datasets.
   // They are fetched only when the user opens a feature that needs them.
 }
@@ -9277,7 +9286,7 @@ window.addEventListener('DOMContentLoaded',()=>{
  async function loadAgenda(force=false,quiet=false){
   if(!authToken)return agendaRows;
   if(!agendaCacheRestored)restoreAgendaCache();
-  if(!force&&agendaLoadedAt&&Date.now()-agendaLoadedAt<60000){buildWeeks();renderList();renderReportTasks();status.textContent='Agenda ready.';return agendaRows;}
+  if(!force&&agendaLoadedAt&&Date.now()-agendaLoadedAt<300000){buildWeeks();renderList();renderReportTasks();status.textContent='Agenda ready.';return agendaRows;}
   if(agendaLoadInFlight)return agendaLoadInFlight;
   status.textContent=quiet&&agendaCacheRestored?'Agenda ready. Syncing…':'Loading agenda from Google Sheets…';
   agendaLoadInFlight=apiGet('agenda').then(rows=>{
