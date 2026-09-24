@@ -3701,7 +3701,7 @@ body:has(#spare-modal[style*="display:flex"]){
           </select>
         </div>
       </div>
-      <div class="smart-section-head"><span>02</span><div><b>Concern / Activity</b><small>Choose the category and only the relevant fields will remain visible.</small></div></div>
+      <div class="smart-section-head" id="concern-activity-section-head"><span>02</span><div><b>Concern / Activity</b><small>Choose the category and only the relevant fields will remain visible.</small></div></div>
       <div id="advanced-fields">
       <div class="row">
         <div class="field" style="max-width:150px;">
@@ -3713,7 +3713,7 @@ body:has(#spare-modal[style*="display:flex"]){
           <input type="text" id="f-duration" placeholder="Auto-calculated" readonly>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="visit-category-row">
         <div class="field">
           <label>Category</label>
           <div class="cats" id="cat-picker">
@@ -3731,7 +3731,7 @@ body:has(#spare-modal[style*="display:flex"]){
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="visit-priority-status-row">
         <div class="field" style="max-width:180px;">
           <label>Priority</label>
           <select id="f-priority">
@@ -3750,7 +3750,7 @@ body:has(#spare-modal[style*="display:flex"]){
           </select>
         </div>
       </div>
-      <div class="smart-section-head"><span>03</span><div><b>Action Taken</b><small>Record what was done and any next step required.</small></div></div>
+      <div class="smart-section-head" id="action-taken-section-head"><span>03</span><div><b>Action Taken</b><small>Record what was done and any next step required.</small></div></div>
       <div class="row" id="resolution-extra" style="display:none;">
         <div class="field">
           <label>Visit / Support Mode</label>
@@ -3774,7 +3774,7 @@ body:has(#spare-modal[style*="display:flex"]){
           <input type="text" id="f-followup-reason" placeholder="What needs to be followed up?">
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="field-resolution-action">
         <div class="field">
           <label>Resolution / Action Taken</label>
           <textarea id="f-resolution" placeholder="What was done to resolve or address the issue?"></textarea>
@@ -3819,7 +3819,7 @@ body:has(#spare-modal[style*="display:flex"]){
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" id="visit-notes-row">
         <div class="field">
           <label>Issue / notes</label>
           <textarea id="f-notes" placeholder="What happened on this visit"></textarea>
@@ -5323,22 +5323,113 @@ function renderIssueTypeOptions(selected=''){
 }
 
 
+const SIMPLE_ACTIVITY_VISIT_TYPES=['Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'];
+function isSimpleActivityVisit(value){
+  const type=value===undefined?(document.getElementById('f-visit-type')?.value||''):String(value||'');
+  return SIMPLE_ACTIVITY_VISIT_TYPES.includes(type);
+}
+function clearTechnicalVisitValues(){
+  ['f-resolution','f-resolution-type','f-machine','f-component','f-asset','f-parts','f-followup-date','f-followup-reason','f-time-resolved'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';
+  if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';
+  if(document.getElementById('visit-replacement-box'))document.getElementById('visit-replacement-box').style.display='none';
+}
+function updateVisitTypeFlow(resetCategory=false){
+  const select=document.getElementById('f-visit-type');
+  const type=select?.value||'Routine Visit';
+  const simple=isSimpleActivityVisit(type);
+  const categoryRow=document.getElementById('visit-category-row');
+  const priorityRow=document.getElementById('visit-priority-status-row');
+  const head=document.getElementById('concern-activity-section-head');
+  const title=head?.querySelector('b');
+  const note=head?.querySelector('small');
+  const notes=document.getElementById('f-notes');
+  const err=document.getElementById('err-msg');
+
+  if(categoryRow)categoryRow.style.display=simple?'none':'flex';
+  if(priorityRow)priorityRow.style.display=simple?'none':'flex';
+
+  if(simple){
+    if(title)title.textContent='Issue / Notes';
+    if(note)note.textContent='Add the activity details below. No technical category is required.';
+    if(notes)notes.placeholder='Add notes about this '+type.toLowerCase()+' activity';
+    if(err)err.textContent='Select a site before logging.';
+    if(resetCategory){
+      selectedCat=null;
+      document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');
+      const desc=document.getElementById('cat-desc');if(desc)desc.textContent='Select a category to see what it covers.';
+      const issueBox=document.getElementById('issue-type-options');if(issueBox)issueBox.style.display='none';
+      const issue=document.getElementById('f-issue-type');if(issue)issue.innerHTML='';
+    }
+    document.getElementById('f-status').value='Resolved';
+    document.getElementById('f-priority').value='Low';
+    clearTechnicalVisitValues();
+  }else{
+    if(title)title.textContent='Concern / Activity';
+    if(note)note.textContent='Choose the category and only the relevant fields will remain visible.';
+    if(notes)notes.placeholder='What happened on this visit';
+    if(err)err.textContent='Fill in the site and category before logging.';
+    if(resetCategory){
+      selectedCat=null;
+      document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');
+      const desc=document.getElementById('cat-desc');if(desc)desc.textContent='Select a category to see what it covers.';
+      renderIssueTypeOptions();
+    }
+  }
+  updateCategoryFields();
+  updateResolutionExtra();
+}
+
+
 function updateCategoryFields(){
+  const simpleVisit=isSimpleActivityVisit();
   const general=selectedCat==='General';
+  const activity=document.getElementById('f-issue-type')?.value||'';
+  const siteMonitoring=!simpleVisit&&general&&activity==='Site Monitoring';
   const softwareOrBackoffice=selectedCat==='Software'||selectedCat==='Backoffice';
   const setDisplay=(id,show,display='flex')=>{
     const el=document.getElementById(id);
     if(el)el.style.display=show?display:'none';
   };
+  const actionHead=document.getElementById('action-taken-section-head');
 
+  // Pull-out / Transfer / Training / Ocular / Follow-up / Other:
+  // skip the technical workflow and go straight to Issue / Notes.
+  if(simpleVisit){
+    if(actionHead)actionHead.style.display='none';
+    setDisplay('field-resolution-action',false);
+    setDisplay('field-resolution-type',false);
+    setDisplay('field-machine-component',false);
+    setDisplay('field-asset',false);
+    setDisplay('field-parts',false);
+    setDisplay('visit-spare-box',false,'block');
+    clearTechnicalVisitValues();
+    return;
+  }
+
+  if(actionHead)actionHead.style.display='';
   // General is activity-focused: hide technical resolution/asset/parts fields.
+  // Site Monitoring is observation-only, so it does not need a Resolution / Action Taken field.
+  setDisplay('field-resolution-action',!siteMonitoring);
   setDisplay('field-resolution-type',!general);
   setDisplay('field-machine-component',!general);
   setDisplay('field-asset',!general&&!softwareOrBackoffice);
   setDisplay('field-parts',!general&&!softwareOrBackoffice);
   setDisplay('visit-spare-box',!general&&!softwareOrBackoffice,'block');
 
+  if(actionHead){
+    const title=actionHead.querySelector('b');
+    const note=actionHead.querySelector('small');
+    if(title)title.textContent=siteMonitoring?'Visit Details':'Action Taken';
+    if(note)note.textContent=siteMonitoring?'Record how the site monitoring was performed.':'Record what was done and any next step required.';
+  }
+
   // Clear hidden fields so old/duplicated values cannot accidentally be saved.
+  if(siteMonitoring){
+    document.getElementById('f-resolution').value='';
+  }
   if(general){
     document.getElementById('f-resolution-type').value='';
     document.getElementById('f-machine').value='';
@@ -5360,15 +5451,23 @@ function updateResolutionExtra(){
   const timeField=document.getElementById('field-time-resolved');
   const follow=document.getElementById('followup-extra');
   const status=document.getElementById('f-status').value;
-  // QA requirement: every log records whether work was done onsite or remotely.
+  if(isSimpleActivityVisit()){
+    if(box)box.style.display='none';
+    if(timeField)timeField.style.display='none';
+    if(follow)follow.style.display='none';
+    return;
+  }
+  // Technical visits record whether work was done onsite or remotely.
   if(box)box.style.display=selectedCat?'flex':'none';
   if(timeField)timeField.style.display=(RESOLVABLE_CATS.includes(selectedCat)&&status==='Resolved')?'block':'none';
   if(follow)follow.style.display=status==='Follow-up'?'flex':'none';
 }
 document.getElementById('f-status').addEventListener('change', updateResolutionExtra);
+document.getElementById('f-visit-type').addEventListener('change',()=>updateVisitTypeFlow(true));
 function updateDurationField(){ const v=minutesBetween(document.getElementById('f-time-in').value,document.getElementById('f-time-out').value); document.getElementById('f-duration').value=formatMinutes(v); }
 document.getElementById('f-time-in').addEventListener('input',updateDurationField);
 document.getElementById('f-time-out').addEventListener('input',updateDurationField);
+updateVisitTypeFlow(false);
 
 document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{
   el.addEventListener('click', ()=>{
@@ -5390,7 +5489,9 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     document.getElementById('f-notes').focus();return;
   }
   const err=document.getElementById('err-msg');
-  if(!site||!selectedCat){err.style.display='block';return;}
+  const visitType=document.getElementById('f-visit-type').value;
+  const simpleVisit=isSimpleActivityVisit(visitType);
+  if(!site||(!simpleVisit&&!selectedCat)){err.style.display='block';return;}
   err.style.display='none';
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
@@ -5400,13 +5501,13 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
   const date=document.getElementById('f-date').value||todayStr();
-  const showExtra=!!selectedCat;
-  const isResolved=RESOLVABLE_CATS.includes(selectedCat)&&document.getElementById('f-status').value==='Resolved';
+  const showExtra=!simpleVisit&&!!selectedCat;
+  const isResolved=!simpleVisit&&RESOLVABLE_CATS.includes(selectedCat)&&document.getElementById('f-status').value==='Resolved';
   const now=new Date().toISOString();
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType:document.getElementById('f-visit-type').value,site,status:document.getElementById('f-status').value,category:selectedCat,issueType:document.getElementById('f-issue-type')?.value||'',generalType:selectedCat==='General'?(document.getElementById('f-issue-type')?.value||''):'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:document.getElementById('f-resolution').value.trim(),resolutionType:document.getElementById('f-resolution-type').value,machineNo:document.getElementById('f-machine').value.trim(),component:document.getElementById('f-component').value.trim(),assetNo:document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:document.getElementById('f-followup-date').value,followupReason:document.getElementById('f-followup-reason').value.trim(),parts:document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:simpleVisit?'':selectedCat,issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:simpleVisit?visitType:(selectedCat==='General'?(document.getElementById('f-issue-type')?.value||''):''),notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:simpleVisit?'':document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   // FAST SAVE: update the browser state immediately so Dashboard / Field Logs
   // reflect the visit without waiting for Google Apps Script. If the server
@@ -5434,10 +5535,10 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     }
     // Keep the already-rendered optimistic record. The server has now confirmed it.
     storageSet(STORAGE_KEY,entries);
-    showToast('Saved to shared sheet',spareWarning||`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category}`,spareWarning?'bad':'ok');
+    showToast('Saved to shared sheet',spareWarning||`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`,spareWarning?'bad':'ok');
     cancelVisitEdit();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
-    if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category to see what it covers.';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';
+    if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category to see what it covers.';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);
     render();renderReport();renderDashboard();
   }catch(e){
     console.error(e);
@@ -5469,13 +5570,13 @@ document.getElementById('date-to').addEventListener('change', render);
 document.getElementById('global-search').addEventListener('input', render);
 
 document.getElementById('f-site').addEventListener('change',e=>renderSiteHistory(e.target.value));
-document.getElementById('f-issue-type').addEventListener('change',()=>{const monitoring=selectedCat==='General'&&document.getElementById('f-issue-type').value==='Site Monitoring';document.getElementById('f-notes').placeholder=monitoring?'Optional — add a note only if there is a concern.':'What happened on this visit';});
+document.getElementById('f-issue-type').addEventListener('change',()=>{const monitoring=selectedCat==='General'&&document.getElementById('f-issue-type').value==='Site Monitoring';document.getElementById('f-notes').placeholder=monitoring?'Optional — add a note only if there is a concern.':'What happened on this visit';updateCategoryFields();updateResolutionExtra();});
 document.getElementById('f-tech').addEventListener('change',()=>{if(activeWork==='mine'){populateMyFse();render();}});
 document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListener('click',()=>{activeWork=btn.dataset.work;document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b===btn));const sel=document.getElementById('my-fse');sel.style.display=activeWork==='mine'?'block':'none';if(activeWork==='mine')populateMyFse();window.attentionFilter=null;render();}));
 document.getElementById('my-fse').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateCategoryFields();updateResolutionExtra();closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
   closeDetail(); document.querySelector('.tab[data-tab="log"]')?.click();
@@ -5507,7 +5608,7 @@ function editFieldLog(id){
   document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');
   const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${CSS.escape(selectedCat)}"]`); if(c)c.classList.add('cat-opt','sel-'+selectedCat);
   document.getElementById('cat-desc').textContent=catDesc[selectedCat]||'';
-  renderIssueTypeOptions(e.issueType||e.generalType||''); updateCategoryFields(); updateResolutionExtra(); updateDurationField(); updateWeekHint();
+  renderIssueTypeOptions(e.issueType||e.generalType||''); updateVisitTypeFlow(false); updateDurationField(); updateWeekHint();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 document.getElementById('cancel-visit-edit')?.addEventListener('click',()=>{cancelVisitEdit(); showToast('Edit cancelled','No changes were saved.');});
@@ -6120,7 +6221,7 @@ function renderReadableLog(e,tracking){
  const status=e.status||'Unspecified';const statusClass=status==='Resolved'?'resolved':status==='Pending'?'pending':status==='Follow-up'?'followup':'neutral';
  const issue=e.issueType||e.generalType||e.visitType||'Field visit';
  return `<article class="entry fieldlog-card readable-log" data-calm="true" data-entry-id="${safe(String(e.id))}">
-  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||'General')}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
+  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
@@ -6454,7 +6555,7 @@ document.getElementById('export-btn').addEventListener('click', ()=>{
   const rows = periodEntries.map(e=>({
     'Trk #': trackingMap[e.id]||'', 'Ticket #': e.ticketNo||'', Period: label(reportPeriodKey(e)), Date: e.date, 'Site name': e.site,
     'Primary FSE': e.tech||'', 'Supporting FSEs': parseSupportingFses(e.supportingFses).join(', '),
-    'Visit type': e.visitType||'', Issue: e.notes, 'Resolution / Action Taken': e.resolution||'',
+    'Visit type': e.visitType||'', Issue: (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||''), 'Resolution / Action Taken': (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'':(e.resolution||''),
     'Concern category': catLabel[e.category], 'Issue type': e.issueType||e.generalType||'', Priority: e.priority, Status: e.status,
     'Visit / Support Mode': e.resolvedVia, 'Time in': e.timeIn, 'Time out': e.timeOut, 'Visit duration': formatMinutes(minutesBetween(e.timeIn,e.timeOut)),
     'Time resolved': e.timeResolved, 'Follow-up date': e.followupDate||'', 'Follow-up reason': e.followupReason||'',
@@ -8503,12 +8604,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 <script id="presentation-report-script">
 function reportVenueNotes(rows){
  const visits=rows.filter(e=>e.status!=='Voided').slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.site||'').localeCompare(String(b.site||'')));
- return visits.length?visits.map(e=>'<article class="brief-venue-note"><time>'+escapeHtml(e.date?fieldLogDateParts(e.date).main:'Date not recorded')+'</time><h3>'+escapeHtml(e.site||'Venue not recorded')+'</h3><p>'+escapeHtml(e.notes||e.remarks||'No remarks recorded.')+'</p></article>').join(''):'<p class="brief-empty">No visits recorded for this period.</p>';
+ return visits.length?visits.map(e=>'<article class="brief-venue-note"><time>'+escapeHtml(e.date?fieldLogDateParts(e.date).main:'Date not recorded')+'</time><h3>'+escapeHtml(e.site||'Venue not recorded')+'</h3><p>'+escapeHtml((e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||e.remarks||'No remarks recorded.'))+'</p></article>').join(''):'<p class="brief-empty">No visits recorded for this period.</p>';
 }
 
 function reportVisitRows(rows){
  return rows.filter(e=>e.status!=='Voided').slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.site||'').localeCompare(String(b.site||''))).map(e=>
-  '<tr><td>'+escapeHtml(e.date?fieldLogDateParts(e.date).main:'Date not recorded')+'</td><td><b>'+escapeHtml(e.site||'Venue not recorded')+'</b></td><td>'+escapeHtml(catLabel[e.category]||e.category||'Unspecified')+'</td><td class="visit-remarks">'+escapeHtml(e.notes||e.remarks||'No remarks recorded.')+'</td><td class="visit-remarks">'+escapeHtml(e.resolution||'No action recorded.')+'</td></tr>'
+  '<tr><td>'+escapeHtml(e.date?fieldLogDateParts(e.date).main:'Date not recorded')+'</td><td><b>'+escapeHtml(e.site||'Venue not recorded')+'</b></td><td>'+escapeHtml(catLabel[e.category]||e.category||e.visitType||'Unspecified')+'</td><td class="visit-remarks">'+escapeHtml((e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||e.remarks||'No remarks recorded.'))+'</td><td class="visit-remarks">'+escapeHtml((e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'—':(e.resolution||'No action recorded.'))+'</td></tr>'
  ).join('');
 }
 
