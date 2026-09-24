@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- MASTER V34: FSE can view Token + TeamViewer; editing remains management-only -->
 <html lang="en">
 <head>
   <link rel="manifest" href="manifest.webmanifest">
@@ -5917,7 +5918,7 @@ function siteAssetOverview(siteName){
     const stockRows=cabinets.map(c=>'<div class="warehouse-stock-row"><button type="button" class="warehouse-stock-id" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')"><b>'+escapeHtml(c.cabinetId||'Stock cabinet')+'</b><small>'+escapeHtml(c.label||c.cabinetId||'')+'</small></button><span class="warehouse-stock-location">Carmona Cavite Warehouse</span><span class="warehouse-stock-badge">Warehouse / Stock</span></div>').join('');
     return '<section class="site-section site-primary-cabinets"><div class="site-asset-title"><div><h3 class="warehouse-stock-heading">Carmona Cavite Warehouse <span>— STOCK</span></h3><span>Warehouse cabinet stock currently registered in Google Sheets.</span></div></div><div class="warehouse-stock-list">'+(stockRows||'<p class="site-empty">No warehouse stock cabinets are currently recorded.</p>')+'</div></section>';
   }
-  const rows=cabinets.map(c=>'<div class="site-cabinet-simple"><button type="button" class="site-asset-link" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')">'+escapeHtml(c.cabinetId||'Cabinet')+'</button><span class="site-cabinet-serial"><small>Serial Number</small>'+escapeHtml(c.cabinetSerial||'—')+'</span>'+(isMgmt?'<span class="site-cabinet-token"><small>Token</small>'+tokenCompactMarkup(c.token)+'</span>':'')+'<span class="site-cabinet-state">'+escapeHtml(c.status||'Not recorded')+'</span></div>').join('');
+  const rows=cabinets.map(c=>'<div class="site-cabinet-simple"><button type="button" class="site-asset-link" onclick="closeSiteProfile();openCabinetProfile('+escapeHtml(JSON.stringify(String(c.id)))+')">'+escapeHtml(c.cabinetId||'Cabinet')+'</button><span class="site-cabinet-serial"><small>Serial Number</small>'+escapeHtml(c.cabinetSerial||'—')+'</span><span class="site-cabinet-token"><small>Token</small>'+tokenCompactMarkup(c.token)+'</span><span class="site-cabinet-token"><small>TeamViewer</small>'+escapeHtml(c.teamviewerId||'—')+'</span><span class="site-cabinet-state">'+escapeHtml(c.status||'Not recorded')+'</span></div>').join('');
   return '<section class="site-section site-primary-cabinets"><div class="site-asset-title"><div><h3>Cabinets at this site <span class="muted">· '+cabinets.length+'</span></h3><span>Select a cabinet for components, serial numbers and movement history.</span></div></div><div class="site-asset-list">'+(rows||'<p class="site-empty">No cabinets currently loaded for this site.</p>')+'</div></section>';
 }
 
@@ -6922,8 +6923,7 @@ function cabinetMatchesSearch(r,site,query,management){
   const text=value=>String(value??'').normalize('NFKC').toLowerCase().trim();
   const compact=value=>text(value).replace(/[\s-]+/g,'');
   const q=text(query);if(!q)return true;
-  const fields=[r.cabinetId,r.label,site,r.site,r.cabinetSerial,r.mpuSerial,r.bvModel,r.bvSerial,r.printerModel,r.printerSerial,r.networkNote];
-  if(management)fields.push(r.teamviewerId,r.token);
+  const fields=[r.cabinetId,r.label,site,r.site,r.cabinetSerial,r.mpuSerial,r.bvModel,r.bvSerial,r.printerModel,r.printerSerial,r.networkNote,r.teamviewerId,r.token];
   const cq=compact(q);
   return fields.some(value=>text(value).includes(q)||(cq&&compact(value).includes(cq)));
 }
@@ -6996,13 +6996,13 @@ function renderCabinets(){
   groupNames.forEach(group=>grouped[group].sort(cabinetNaturalSort));
 
   const isMgmt=currentUser?.role==='management';
-  const colCount=isMgmt?8:8;
+  const colCount=isMgmt?8:10;
   const head=body.closest('table')?.querySelector('thead tr');
 
   if(head){
     head.innerHTML=isMgmt
       ?'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Serial Number</th><th>Token</th><th>TeamViewer</th><th>Updated</th><th></th>'
-      :'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Cabinet Serial</th><th>BV</th><th>Printer</th><th>System / MPU</th><th>Network</th>';
+      :'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Cabinet Serial</th><th>Token</th><th>TeamViewer</th><th>BV</th><th>Printer</th><th>System / MPU</th><th>Network</th>';
   }
 
   if(!rows.length){
@@ -7051,6 +7051,8 @@ function renderCabinets(){
         <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
         <td>${cabinetStatusMarkup(r)}</td>
         <td>${escapeHtml(r.cabinetSerial||'—')}</td>
+        <td>${tokenCompactMarkup(r.token)}</td>
+        <td>${escapeHtml(r.teamviewerId||'—')}</td>
         <td>${escapeHtml(r.bvModel||'—')}<div class="muted">${escapeHtml(r.bvSerial||'')}</div></td>
         <td>${escapeHtml(r.printerModel||'—')}<div class="muted">${escapeHtml(r.printerSerial||'')}</div></td>
         <td>${escapeHtml(r.mpuSerial||'—')}</td>
@@ -7453,7 +7455,7 @@ function openCabinetProfile(id){
   sub.textContent=(cab.site||'Unknown site')+' · '+(cab.status||'No status');
   const details=[
     ['Cabinet label',cab.label||'—'],['Site / Location',cab.site||'—'],['Status',cab.status||'—'],
-    ['Cabinet Serial',cab.cabinetSerial||'—'],...(currentUser?.role==='management'?[['Opexa / Game Token',cab.token||'—']]:[]),['TeamViewer ID',cab.teamviewerId||'—'],['System / MPU Serial',cab.mpuSerial||'—'],
+    ['Cabinet Serial',cab.cabinetSerial||'—'],['Opexa / Game Token',cab.token||'—'],['TeamViewer ID',cab.teamviewerId||'—'],['System / MPU Serial',cab.mpuSerial||'—'],
     ['Bill Validator', [cab.bvModel,cab.bvSerial].filter(Boolean).join(' · ')||'—'],
     ['Printer', [cab.printerModel,cab.printerSerial].filter(Boolean).join(' · ')||'—'],
     ['Network / IP Notes',cab.networkNote||'—'],['Remarks',cab.remarks||'—']
