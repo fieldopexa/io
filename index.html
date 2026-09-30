@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- MASTER V36: permanent cabinet numbering + allocation prefix renaming -->
 <!-- MASTER V34: FSE can view Token + TeamViewer; editing remains management-only -->
 <html lang="en">
 <head>
@@ -3993,9 +3994,10 @@ body:has(#spare-modal[style*="display:flex"]){
     <div class="cabinet-form" id="cabinet-form">
       <input type="hidden" id="cab-row-id">
       <div class="cabinet-form-grid">
-        <div class="field"><label>Cabinet ID *</label><input id="cab-id" placeholder="e.g. OECPANG02"></div>
+        <div class="field"><label>Current Cabinet Name / ID *</label><input id="cab-id" placeholder="e.g. OECPANG02"></div>
+        <div class="field"><label>Permanent Cabinet No.</label><input id="cab-permanent" placeholder="Assigned automatically" readonly></div>
         <div class="field"><label>Site / Location *</label><input id="cab-site" list="cab-site-list" placeholder="Select or type site"><datalist id="cab-site-list"></datalist></div>
-        <div class="field"><label>Cabinet No. / Label</label><input id="cab-label" placeholder="e.g. Cabinet 02"></div>
+        <div class="field"><label>Display Label <span class="muted">(optional)</span></label><input id="cab-label" placeholder="e.g. Left-side cabinet"></div>
         <div class="field"><label>Status</label><select id="cab-status"><option>Operational</option><option>Non-Operational</option><option>Ready to Deploy</option><option>Warehouse / Stock</option><option>For Repair</option><option>For Pull-out</option><option>For Assessment</option></select></div>
         <div class="field"><label>Opexa / Game Token</label><input id="cab-token" autocomplete="off" placeholder="Cabinet token"></div>
         <div class="field"><label>TeamViewer ID</label><input id="cab-teamviewer" placeholder="Remote access ID"></div>
@@ -4100,6 +4102,11 @@ body:has(#spare-modal[style*="display:flex"]){
           <label>Destination / New Location *</label>
           <input id="mov-to" list="mov-site-list" placeholder="Select or type destination">
           <datalist id="mov-site-list"></datalist>
+        </div>
+        <div class="field">
+          <label>Allocation After Movement</label>
+          <input id="mov-new-id" placeholder="Auto-generated from destination">
+          <div class="cat-desc" id="mov-allocation-hint">The destination prefix changes, but the permanent cabinet number stays the same.</div>
         </div>
         <div class="field">
           <label>Status After Movement</label>
@@ -6867,7 +6874,7 @@ function renderVisitCabinetCard(c){
     <div class="visit-cabinet-icon">▣</div>
     <div class="visit-cabinet-main">
       <div><b>${escapeHtml(c.cabinetId||'Cabinet')}</b>${c.label?`<span>${escapeHtml(c.label)}</span>`:''}</div>
-      <small>${escapeHtml(c.site||'No site')} · ${escapeHtml(c.status||'No status')}</small>
+      <small>${c.permanentNumber?'Cabinet #'+escapeHtml(String(c.permanentNumber).padStart(3,'0'))+' · ':''}${escapeHtml(c.site||'No site')} · ${escapeHtml(c.status||'No status')}</small>
     </div>
     <div class="visit-cabinet-tech">
       <span><small>Cabinet Serial</small><b>${escapeHtml(c.cabinetSerial||'—')}</b></span>
@@ -6923,7 +6930,7 @@ function cabinetMatchesSearch(r,site,query,management){
   const text=value=>String(value??'').normalize('NFKC').toLowerCase().trim();
   const compact=value=>text(value).replace(/[\s-]+/g,'');
   const q=text(query);if(!q)return true;
-  const fields=[r.cabinetId,r.label,site,r.site,r.cabinetSerial,r.mpuSerial,r.bvModel,r.bvSerial,r.printerModel,r.printerSerial,r.networkNote,r.teamviewerId,r.token];
+  const fields=[r.cabinetId,r.permanentNumber,r.label,site,r.site,r.cabinetSerial,r.mpuSerial,r.bvModel,r.bvSerial,r.printerModel,r.printerSerial,r.networkNote,r.teamviewerId,r.token];
   const cq=compact(q);
   return fields.some(value=>text(value).includes(q)||(cq&&compact(value).includes(cq)));
 }
@@ -7032,7 +7039,7 @@ function renderCabinets(){
     body.innerHTML=groupNames.map(group=>{
       const groupKey='cabgrp-'+btoa(unescape(encodeURIComponent(group))).replace(/[^a-zA-Z0-9]/g,'');
       const groupRows=grouped[group].map(r=>`<tr class="cabinet-group-item" data-cab-parent="${groupKey}">
-        <td><button class="cabinet-link" data-cab-profile="${escapeHtml(r.id)}">${escapeHtml(r.cabinetId||'—')}</button><div class="muted">${escapeHtml(r.label||'')}</div></td>
+        <td><button class="cabinet-link" data-cab-profile="${escapeHtml(r.id)}">${escapeHtml(r.cabinetId||'—')}</button><div class="muted">${r.permanentNumber?'Cabinet #'+escapeHtml(String(r.permanentNumber).padStart(3,'0')):''}${r.label?(r.permanentNumber?' · ':'')+escapeHtml(r.label):''}</div></td>
         <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
         <td>${cabinetStatusMarkup(r)}</td>
         <td>${escapeHtml(r.cabinetSerial||'—')}</td>
@@ -7047,7 +7054,7 @@ function renderCabinets(){
     body.innerHTML=groupNames.map(group=>{
       const groupKey='cabgrp-'+btoa(unescape(encodeURIComponent(group))).replace(/[^a-zA-Z0-9]/g,'');
       const groupRows=grouped[group].map(r=>`<tr class="cabinet-group-item" data-cab-parent="${groupKey}">
-        <td><b>${escapeHtml(r.cabinetId||'—')}</b><div class="muted">${escapeHtml(r.label||'')}</div></td>
+        <td><b>${escapeHtml(r.cabinetId||'—')}</b><div class="muted">${r.permanentNumber?'Cabinet #'+escapeHtml(String(r.permanentNumber).padStart(3,'0')):''}${r.label?(r.permanentNumber?' · ':'')+escapeHtml(r.label):''}</div></td>
         <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
         <td>${cabinetStatusMarkup(r)}</td>
         <td>${escapeHtml(r.cabinetSerial||'—')}</td>
@@ -7076,10 +7083,10 @@ document.addEventListener('click',e=>{
   });
 });
 
-function clearCabinetForm(){['cab-row-id','cab-id','cab-site','cab-label','cab-token','cab-teamviewer','cab-mpu','cab-serial','cab-bv-model','cab-bv-serial','cab-printer-model','cab-printer-serial','cab-network','cab-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('cab-status').value='Operational';const err=document.getElementById('cabinet-err');err.style.display='none';err.textContent='';}
+function clearCabinetForm(){['cab-row-id','cab-id','cab-permanent','cab-site','cab-label','cab-token','cab-teamviewer','cab-mpu','cab-serial','cab-bv-model','cab-bv-serial','cab-printer-model','cab-printer-serial','cab-network','cab-remarks'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('cab-status').value='Operational';const err=document.getElementById('cabinet-err');err.style.display='none';err.textContent='';}
 function openCabinetForm(){document.getElementById('cabinet-form').classList.add('open');}
 function closeCabinetForm(){document.getElementById('cabinet-form').classList.remove('open');clearCabinetForm();}
-function editCabinet(id){const r=cabinetRows.find(x=>String(x.id)===String(id));if(!r)return;openCabinetForm();document.getElementById('cab-row-id').value=r.id||'';document.getElementById('cab-id').value=r.cabinetId||'';document.getElementById('cab-site').value=canonicalSiteName(r.site||'');document.getElementById('cab-label').value=r.label||'';document.getElementById('cab-status').value=r.status||'Operational';document.getElementById('cab-token').value=r.token||'';document.getElementById('cab-teamviewer').value=r.teamviewerId||'';document.getElementById('cab-mpu').value=r.mpuSerial||'';document.getElementById('cab-serial').value=r.cabinetSerial||'';document.getElementById('cab-bv-model').value=r.bvModel||'';document.getElementById('cab-bv-serial').value=r.bvSerial||'';document.getElementById('cab-printer-model').value=r.printerModel||'';document.getElementById('cab-printer-serial').value=r.printerSerial||'';document.getElementById('cab-network').value=r.networkNote||'';document.getElementById('cab-remarks').value=r.remarks||'';document.getElementById('cab-id').focus();}
+function editCabinet(id){const r=cabinetRows.find(x=>String(x.id)===String(id));if(!r)return;openCabinetForm();document.getElementById('cab-row-id').value=r.id||'';document.getElementById('cab-id').value=r.cabinetId||'';document.getElementById('cab-permanent').value=r.permanentNumber?('Cabinet #'+String(r.permanentNumber).padStart(3,'0')):'';document.getElementById('cab-site').value=canonicalSiteName(r.site||'');document.getElementById('cab-label').value=r.label||'';document.getElementById('cab-status').value=r.status||'Operational';document.getElementById('cab-token').value=r.token||'';document.getElementById('cab-teamviewer').value=r.teamviewerId||'';document.getElementById('cab-mpu').value=r.mpuSerial||'';document.getElementById('cab-serial').value=r.cabinetSerial||'';document.getElementById('cab-bv-model').value=r.bvModel||'';document.getElementById('cab-bv-serial').value=r.bvSerial||'';document.getElementById('cab-printer-model').value=r.printerModel||'';document.getElementById('cab-printer-serial').value=r.printerSerial||'';document.getElementById('cab-network').value=r.networkNote||'';document.getElementById('cab-remarks').value=r.remarks||'';document.getElementById('cab-id').focus();}
 function normUniqueValue(v){return String(v||'').trim().toLowerCase();}
 function cabinetDuplicateMessage(record){
   const current=String(record.id||'');
@@ -7292,7 +7299,7 @@ function movementSummary(){
 function renderMovementCabinetOptions(selected=''){
   const sel=document.getElementById('mov-cabinet');if(!sel)return;
   const rows=[...cabinetRows].sort((a,b)=>String(a.cabinetId||'').localeCompare(String(b.cabinetId||'')));
-  sel.innerHTML='<option value="">Select cabinet...</option>'+rows.map(c=>`<option value="${escapeHtml(c.id)}" ${String(c.id)===String(selected)?'selected':''}>${escapeHtml(c.cabinetId||'—')} · ${escapeHtml(c.site||'No site')}</option>`).join('');
+  sel.innerHTML='<option value="">Select cabinet...</option>'+rows.map(c=>`<option value="${escapeHtml(c.id)}" ${String(c.id)===String(selected)?'selected':''}>${escapeHtml(c.cabinetId||'—')}${c.permanentNumber?' · Cabinet #'+escapeHtml(String(c.permanentNumber).padStart(3,'0')):''} · ${escapeHtml(c.site||'No site')}</option>`).join('');
   const dl=document.getElementById('mov-site-list');
   if(dl){
     const names=[...new Set([...(sites||[]),...inventoryRows.map(x=>x.site),...cabinetRows.map(x=>x.site)].map(x=>String(x||'').trim()).filter(Boolean))].sort();
@@ -7321,7 +7328,7 @@ function renderMovements(){
     .sort((a,b)=>String(b.movementDate||'').localeCompare(String(a.movementDate||'')) || String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
   body.innerHTML=rows.length?rows.map(r=>`<tr>
     <td>${escapeHtml(r.movementDate||'—')}</td>
-    <td><button class="cabinet-link" data-mov-cab="${escapeHtml(r.cabinetRowId)}">${escapeHtml(r.cabinetId||'—')}</button></td>
+    <td><button class="cabinet-link" data-mov-cab="${escapeHtml(r.cabinetRowId)}">${escapeHtml(r.allocationBefore||r.cabinetId||'—')}</button>${(r.allocationAfter&&r.allocationAfter!==(r.allocationBefore||r.cabinetId))?`<div class="muted">→ ${escapeHtml(r.allocationAfter)}</div>`:''}</td>
     <td><span class="movement-type">${escapeHtml(r.movementType||'—')}</span></td>
     <td><div class="movement-path"><span class="movement-place">${escapeHtml(r.fromLocation||'—')}</span><span class="movement-arrow">→</span><span class="movement-place">${escapeHtml(r.toLocation||'—')}</span></div></td>
     <td>${escapeHtml(r.statusBefore||'—')} → <b>${escapeHtml(r.statusAfter||'—')}</b></td>
@@ -7330,6 +7337,80 @@ function renderMovements(){
     <td>${escapeHtml(r.remarks||'—')}</td>
   </tr>`).join(''):`<tr><td colspan="8"><div class="movement-empty">No cabinet movements recorded yet.</div></td></tr>`;
 }
+function isWarehouseMovementLocation(value){
+  const key=normalizeSiteKey(value);
+  return key.includes('carmona')||key.includes('warehouse')||key==='stock'||key.includes('warehouse stock');
+}
+function allocationPrefixForSite(value){
+  if(isWarehouseMovementLocation(value))return 'STOCK';
+  const target=normalizeSiteKey(canonicalSiteName(value));
+  const prefixCounts=new Map();
+  cabinetRows.forEach(c=>{
+    if(normalizeSiteKey(canonicalSiteName(c.site||''))!==target)return;
+    const id=String(c.cabinetId||'').trim();
+    if(!id||/^stock\s*0*\d+/i.test(id))return;
+    const prefix=cabinetGroupPrefix(id);
+    if(prefix)prefixCounts.set(prefix,(prefixCounts.get(prefix)||0)+1);
+  });
+  if(prefixCounts.size){
+    return [...prefixCounts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0][0];
+  }
+  const code=canonicalSiteCode(value);
+  return String(code||'').trim().toUpperCase();
+}
+function normalizedPermanentCabinetNumber(value){
+  const digits=String(value||'').replace(/\D/g,'');
+  if(!digits)return '';
+  return String(Number(digits)).padStart(3,'0');
+}
+function allocationIdForCabinet(prefix,cab){
+  prefix=String(prefix||'').trim();
+  const number=normalizedPermanentCabinetNumber(cab?.permanentNumber);
+  return prefix&&number?prefix+number:'';
+}
+function allocationKeepsPermanentNumber(allocation,cab){
+  const number=normalizedPermanentCabinetNumber(cab?.permanentNumber);
+  if(!number)return false;
+  const match=String(allocation||'').trim().match(/(\d+)\s*$/);
+  return !!match&&normalizedPermanentCabinetNumber(match[1])===number;
+}
+function suggestedMovementAllocation(){
+  const cabinetRowId=document.getElementById('mov-cabinet')?.value||'';
+  const cab=cabinetRows.find(x=>String(x.id)===String(cabinetRowId));
+  const movementType=document.getElementById('mov-type')?.value||'';
+  const toLocation=document.getElementById('mov-to')?.value.trim()||'';
+  if(!cab)return {id:'',hint:'Select a cabinet first.'};
+  const number=normalizedPermanentCabinetNumber(cab.permanentNumber);
+  if(!number)return {id:'',hint:'This cabinet does not have a permanent cabinet number yet. Refresh Cabinet Profiles first.'};
+  if(movementType==='Status Change'&&normalizeSiteKey(toLocation||cab.site)===normalizeSiteKey(cab.site)){
+    return {id:cab.cabinetId||'',hint:`Cabinet #${number} · status-only change keeps the current cabinet name.`};
+  }
+  if(isWarehouseMovementLocation(toLocation)||['Warehouse Return'].includes(movementType)){
+    return {id:allocationIdForCabinet('STOCK',cab),hint:`Cabinet #${number} keeps its number in stock: STOCK${number}.`};
+  }
+  const prefix=allocationPrefixForSite(toLocation);
+  if(prefix){
+    return {id:allocationIdForCabinet(prefix,cab),hint:`Cabinet #${number} keeps the same number. Only the destination prefix changes.`};
+  }
+  return {id:'',hint:`New/unknown outlet: enter the destination prefix/name but keep ${number} as the ending number.`};
+}
+function refreshMovementAllocationSuggestion(force=false){
+  const input=document.getElementById('mov-new-id');
+  const hint=document.getElementById('mov-allocation-hint');
+  const status=document.getElementById('mov-status');
+  if(!input)return;
+  const suggestion=suggestedMovementAllocation();
+  if(force||input.dataset.manual!=='1'||!input.value.trim()){
+    input.value=suggestion.id||'';
+    input.dataset.manual='0';
+  }
+  if(hint)hint.textContent=suggestion.hint;
+  const toLocation=document.getElementById('mov-to')?.value||'';
+  const movementType=document.getElementById('mov-type')?.value||'';
+  if(status&&(isWarehouseMovementLocation(toLocation)||movementType==='Warehouse Return'))status.value='Warehouse / Stock';
+  else if(status&&movementType==='Deployment'&&status.value==='Warehouse / Stock')status.value='Operational';
+}
+
 function openMovementForm(cabinetRowId=''){
   const form=document.getElementById('movement-form');if(!form)return;
   form.classList.add('open');
@@ -7339,7 +7420,9 @@ function openMovementForm(cabinetRowId=''){
   document.getElementById('mov-handler').value=currentUser?.name||currentUser?.username||'';
   document.getElementById('mov-reference').value='';
   document.getElementById('mov-remarks').value='';
+  const alloc=document.getElementById('mov-new-id');if(alloc){alloc.value='';alloc.dataset.manual='0';}
   updateMovementCurrentCabinet();
+  refreshMovementAllocationSuggestion(true);
   form.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function closeMovementForm(){
@@ -7357,6 +7440,7 @@ function updateMovementCurrentCabinet(){
     const opts=[...status.options].map(o=>o.value);
     if(opts.includes(cab.status))status.value=cab.status;
   }
+  refreshMovementAllocationSuggestion(true);
 }
 async function saveMovement(){
   const err=document.getElementById('movement-err');err.style.display='none';
@@ -7368,14 +7452,24 @@ async function saveMovement(){
   const handledBy=document.getElementById('mov-handler').value.trim();
   const referenceNo=document.getElementById('mov-reference').value.trim();
   const remarks=document.getElementById('mov-remarks').value.trim();
+  const allocationAfter=document.getElementById('mov-new-id')?.value.trim()||'';
   if(!cabinetRowId||!movementDate||!movementType){err.textContent='Cabinet, movement date, and movement type are required.';err.style.display='block';return;}
   if(movementType!=='Status Change'&&!toLocation){err.textContent='Destination / new location is required.';err.style.display='block';return;}
+  if(movementType!=='Status Change'&&!allocationAfter){err.textContent='Allocation after movement is required. For a new outlet, enter the destination prefix and keep the permanent cabinet number.';err.style.display='block';return;}
+  const movingCabinet=cabinetRows.find(x=>String(x.id)===String(cabinetRowId));
+  if(movementType!=='Status Change'&&movingCabinet?.permanentNumber&&!allocationKeepsPermanentNumber(allocationAfter,movingCabinet)){
+    const permanent=normalizedPermanentCabinetNumber(movingCabinet.permanentNumber);
+    err.textContent=`Allocation must keep Cabinet #${permanent}. Example: STOCK${permanent} or SITE${permanent}.`;
+    err.style.display='block';
+    return;
+  }
   try{
     document.getElementById('movement-save-btn').disabled=true;
-    await apiPost('saveMovement',{record:{cabinetRowId,movementDate,movementType,toLocation,statusAfter,handledBy,referenceNo,remarks}});
+    const result=await apiPost('saveMovement',{record:{cabinetRowId,movementDate,movementType,toLocation,statusAfter,handledBy,referenceNo,remarks,allocationAfter}});
     await Promise.all([loadCabinets(),loadMovements()]);
     closeMovementForm();
     setSystemStatus('MOVEMENT SAVED','ok');
+    if(result?.allocationAfter)showToast('Cabinet allocation updated',`${result.allocationBefore||''} → ${result.allocationAfter}`,'ok');
   }catch(e){
     err.textContent=e.message||'Unable to save movement.';
     err.style.display='block';
@@ -7397,6 +7491,10 @@ document.getElementById('movement-add-btn')?.addEventListener('click',()=>openMo
 document.getElementById('movement-cancel-btn')?.addEventListener('click',closeMovementForm);
 document.getElementById('movement-save-btn')?.addEventListener('click',saveMovement);
 document.getElementById('mov-cabinet')?.addEventListener('change',()=>{document.getElementById('mov-to').value='';updateMovementCurrentCabinet();});
+document.getElementById('mov-to')?.addEventListener('input',()=>refreshMovementAllocationSuggestion(false));
+document.getElementById('mov-to')?.addEventListener('change',()=>refreshMovementAllocationSuggestion(false));
+document.getElementById('mov-type')?.addEventListener('change',()=>refreshMovementAllocationSuggestion(true));
+document.getElementById('mov-new-id')?.addEventListener('input',e=>{e.currentTarget.dataset.manual='1';});
 document.getElementById('movement-search')?.addEventListener('input',renderMovements);
 document.getElementById('movement-type-filter')?.addEventListener('change',renderMovements);
 document.getElementById('movement-body')?.addEventListener('click',e=>{const b=e.target.closest('[data-mov-cab]');if(b)openCabinetProfile(b.dataset.movCab);});
@@ -7405,7 +7503,10 @@ document.getElementById('movement-body')?.addEventListener('click',e=>{const b=e
 // ===== Cabinet Maintenance Record =====
 function normCabinetKey(v){return String(v||'').trim().toLowerCase().replace(/[\s_-]+/g,'');}
 function cabinetIdentifiers(cab){
-  return [cab.cabinetId,cab.label,cab.cabinetSerial,cab.mpuSerial,cab.bvSerial,cab.printerSerial]
+  const movementAliases=(movementRows||[])
+    .filter(m=>String(m.cabinetRowId)===String(cab.id))
+    .flatMap(m=>[m.cabinetId,m.allocationBefore,m.allocationAfter]);
+  return [cab.cabinetId,cab.label,cab.cabinetSerial,cab.mpuSerial,cab.bvSerial,cab.printerSerial,...movementAliases]
     .map(normCabinetKey).filter(Boolean);
 }
 function entryMatchesCabinet(entry,cab){
@@ -7453,8 +7554,9 @@ function openCabinetProfile(id){
   const content=document.getElementById('cabinet-profile-content');
   title.textContent=cab.cabinetId||cab.label||'Cabinet profile';
   sub.textContent=(cab.site||'Unknown site')+' · '+(cab.status||'No status');
+  const permanentDisplay=cab.permanentNumber?('Cabinet #'+String(cab.permanentNumber).padStart(3,'0')):'—';
   const details=[
-    ['Cabinet label',cab.label||'—'],['Site / Location',cab.site||'—'],['Status',cab.status||'—'],
+    ['Permanent Cabinet No.',permanentDisplay],['Current Cabinet Name / ID',cab.cabinetId||'—'],['Cabinet label',cab.label||'—'],['Site / Location',cab.site||'—'],['Status',cab.status||'—'],
     ['Cabinet Serial',cab.cabinetSerial||'—'],['Opexa / Game Token',cab.token||'—'],['TeamViewer ID',cab.teamviewerId||'—'],['System / MPU Serial',cab.mpuSerial||'—'],
     ['Bill Validator', [cab.bvModel,cab.bvSerial].filter(Boolean).join(' · ')||'—'],
     ['Printer', [cab.printerModel,cab.printerSerial].filter(Boolean).join(' · ')||'—'],
@@ -7465,7 +7567,7 @@ function openCabinetProfile(id){
   const rows=history.length?history.slice(0,20).map(e=>`<div class="cabinet-history-row" data-cab-visit="${escapeHtml(e.id)}"><div class="cabinet-history-date">${escapeHtml(e.date||'—')}</div><div><b>${escapeHtml(catLabel[e.category]||e.category||e.visitType||'Visit')}</b><div class="cabinet-history-meta">${escapeHtml(e.notes||e.resolution||'No visit notes')}</div>${e.parts?`<div class="cabinet-history-parts">Parts / Materials: ${escapeHtml(e.parts)}</div>`:''}</div><div>${escapeHtml(e.tech||'—')}<div class="cabinet-history-meta">${escapeHtml(e.component||e.assetNo||'')}</div></div><div><span class="status-pill status-${String(e.status||'').replace(' ','')}">${escapeHtml(e.status||'—')}</span></div></div>`).join(''):`<div class="cabinet-history-empty">No field visits are linked to this cabinet yet. To link future visits automatically, use the Cabinet ID <b>${escapeHtml(cab.cabinetId||'')}</b> in the “Machine / Equipment” field when logging a visit.</div>`;
   const repeatNote=repeat30>=3?`<div class="cabinet-history-note">⚠️ <b>Repeat activity detected:</b> this cabinet appears in ${repeat30} field visits within the last 30 days${mostCommon?` · most common: ${escapeHtml(mostCommon[0])}`:''}.</div>`:'';
   content.innerHTML=`
-    <div class="cabinet-profile-top"><div><div class="cabinet-profile-id">${escapeHtml(cab.cabinetId||'—')}</div><div class="cabinet-profile-site">${escapeHtml(cab.label||'')} ${cab.label?'· ':''}${escapeHtml(cab.site||'—')}</div></div><span class="inventory-status">${escapeHtml(cab.status||'—')}</span></div>
+    <div class="cabinet-profile-top"><div><div class="cabinet-profile-id">${escapeHtml(cab.cabinetId||'—')}</div><div class="cabinet-profile-site">${cab.permanentNumber?'Cabinet #'+escapeHtml(String(cab.permanentNumber).padStart(3,'0'))+' · ':''}${escapeHtml(cab.label||'')}${cab.label?' · ':''}${escapeHtml(cab.site||'—')}</div></div><span class="inventory-status">${escapeHtml(cab.status||'—')}</span></div>
     <div class="cabinet-profile-kpis">
       <div class="cabinet-kpi"><label>Total service visits</label><b>${history.length}</b><small>linked field logs</small></div>
       <div class="cabinet-kpi"><label>Open concerns</label><b>${open}</b><small>pending / monitoring</small></div>
