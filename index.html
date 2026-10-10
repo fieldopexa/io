@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- MASTER V38: responsive Asset Operations loading feedback -->
+<!-- MASTER V37: snappy Asset Operations navigation -->
 <!-- MASTER V36: permanent cabinet numbering + allocation prefix renaming -->
 <!-- MASTER V34: FSE can view Token + TeamViewer; editing remains management-only -->
 <html lang="en">
@@ -3051,6 +3053,55 @@ input,select,textarea{min-height:44px;font-size:16px!important}
 }
 </style>
 <style>.utility-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 14px;font-size:12px;color:var(--ink-soft)}.utility-strip>span{flex:1;min-width:160px}.utility-strip [hidden]{display:none!important}</style>
+
+<style id="asset-view-loading-feedback">
+#panel-inventory .inventory-subpanel{position:relative}
+.asset-view-loader{
+  position:absolute;
+  inset:0;
+  z-index:25;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding-top:min(18vh,150px);
+  background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(2px);
+}
+.asset-view-loader[hidden]{display:none!important}
+.asset-view-loader-card{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  min-width:210px;
+  max-width:calc(100% - 36px);
+  padding:12px 15px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card);
+  box-shadow:0 10px 28px #0002;
+  color:var(--ink);
+  font:600 12px/1.35 'Segoe UI',sans-serif;
+}
+.asset-view-spinner{
+  width:18px;
+  height:18px;
+  flex:0 0 18px;
+  border:2px solid color-mix(in srgb,var(--ink-soft) 28%,transparent);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:asset-view-spin .72s linear infinite;
+}
+.asset-view-loader small{
+  display:block;
+  margin-top:2px;
+  color:var(--ink-soft);
+  font-size:10px;
+  font-weight:500;
+}
+@keyframes asset-view-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.asset-view-spinner{animation:none;border-top-color:var(--ink)}}
+</style>
+
 <style id="asset-loading-animation">
 .asset-load-status{min-height:38px;flex-wrap:wrap}
 .asset-loading-logo{position:relative;display:inline-flex;align-items:center;justify-content:center;width:70px;height:32px;flex:0 0 70px;padding:5px 7px 8px}
@@ -5853,50 +5904,115 @@ function renderSites(){
   const q=normalizeSiteKey(document.getElementById('sites-search')?.value||'');
   const statusFilter=document.getElementById('sites-status-filter')?.value||'All';
   const known=allKnownSites();
+
   (window.__lifecycleSites||[]).forEach(r=>{
     if(!r.name||normalizeSiteKey(r.name)==='car')return;
     const display=siteIsWarehouse(r.name)?'Carmona Cavite Warehouse':r.name;
-    if(!known.some(n=>normalizeSiteKey(n)===normalizeSiteKey(display)))known.push(display);
+    const displayKey=normalizeSiteKey(display);
+    if(!known.some(n=>normalizeSiteKey(n)===displayKey))known.push(display);
   });
+
   const activeNames=known.filter(name=>!siteIsClosed(name)&&!siteIsWarehouse(name));
   const warehouseNames=known.filter(name=>!siteIsClosed(name)&&siteIsWarehouse(name));
   const closedNames=known.filter(name=>siteIsClosed(name)&&!siteIsWarehouse(name));
   const isClosedView=window.siteDirectoryView==='closed';
   const siteNames=isClosedView?closedNames:[...warehouseNames,...activeNames];
+
   const activeButton=document.getElementById('sites-active-view'),closedButton=document.getElementById('sites-closed-view');
   if(activeButton){activeButton.textContent=activeNames.length+' client sites · '+warehouseNames.length+' warehouse'+(warehouseNames.length===1?'':'s');activeButton.setAttribute('aria-pressed',String(!isClosedView));}
   if(closedButton){closedButton.textContent='Closed sites · '+closedNames.length;closedButton.setAttribute('aria-pressed',String(isClosedView));}
-  document.getElementById('sites-status-filter').disabled=isClosedView;
+  const statusSelect=document.getElementById('sites-status-filter');
+  if(statusSelect)statusSelect.disabled=isClosedView;
+
+  // Build lookup indexes ONCE. The old renderer filtered every cabinet and every
+  // visit again for every site, which became expensive as the FSM dataset grew.
+  const cabinetSiteMap=cabinetCanonicalSiteMap();
+  const cabinetStats=new Map();
+  const visitStats=new Map();
+  const inventoryStates=new Map();
+
+  const statFor=(map,key,make)=>{
+    let value=map.get(key);
+    if(!value){value=make();map.set(key,value);}
+    return value;
+  };
+
+  cabinetRows.forEach(c=>{
+    if(siteIsClosed(c.site))return;
+    const key=normalizeSiteKey(canonicalCabinetSite(c,cabinetSiteMap));
+    if(!key)return;
+    const stat=statFor(cabinetStats,key,()=>({count:0,operational:0,attention:0}));
+    stat.count++;
+    const state=normalizeSiteKey(c.status);
+    if(state==='operational')stat.operational++;
+    if(['non-operational','for repair','for assessment','for pull-out'].includes(state))stat.attention++;
+  });
+
+  entries.forEach(r=>{
+    if(r.status==='Voided')return;
+    const key=normalizeSiteKey(canonicalSiteName(r.site));
+    if(!key)return;
+    const stat=statFor(visitStats,key,()=>({open:0,last:null}));
+    if(!['resolved','closed','completed'].includes(normalizeSiteKey(r.status)))stat.open++;
+    if(!stat.last||String(r.date||'')>String(stat.last.date||''))stat.last=r;
+  });
+
+  inventoryRows.forEach(r=>{
+    const key=normalizeSiteKey(canonicalSiteName(r.site));
+    if(!key)return;
+    const state=String(r.operationalStatus||'').trim().toLowerCase();
+    if(!state)return;
+    let states=inventoryStates.get(key);
+    if(!states){states=new Set();inventoryStates.set(key,states);}
+    states.add(state);
+  });
+
+  const siteState=(site)=>{
+    if(siteIsClosed(site))return 'Closed';
+    const key=normalizeSiteKey(siteIsWarehouse(site)?'Carmona Cavite Warehouse':canonicalSiteName(site));
+    const inv=inventoryStates.get(key);
+    if(inv?.has('non-operational'))return 'Non-Operational';
+    if(inv?.has('operational'))return 'Operational';
+    const cab=cabinetStats.get(key);
+    if(cab?.operational>0)return 'Operational';
+    if(cab?.attention>0)return 'Non-Operational';
+    return 'No Status';
+  };
 
   const data=siteNames.map(site=>{
     const key=normalizeSiteKey(siteIsWarehouse(site)?'Carmona Cavite Warehouse':canonicalSiteName(site));
-    const siteMap=cabinetCanonicalSiteMap();
-    const cabinets=cabinetRows.filter(c=>normalizeSiteKey(canonicalCabinetSite(c,siteMap))===key);
-    const operational=cabinets.filter(c=>normalizeSiteKey(c.status)==='operational').length;
-    const attention=cabinets.filter(c=>[
-      'non-operational','for repair','for assessment','for pull-out'
-    ].includes(normalizeSiteKey(c.status))).length;
-    const visits=entries.filter(r=>normalizeSiteKey(canonicalSiteName(r.site))===key);
-    const open=visits.filter(r=>!['resolved','closed','completed'].includes(normalizeSiteKey(r.status))).length;
-    const last=[...visits].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0];
-    const siteStatus=isClosedView?'Closed':siteOperationalState(site);
-    return {site,cabinets:cabinets.length,operational,attention,open,last,siteStatus};
+    const cab=cabinetStats.get(key)||{count:0,operational:0,attention:0};
+    const visits=visitStats.get(key)||{open:0,last:null};
+    return {
+      site,
+      cabinets:cab.count,
+      operational:cab.operational,
+      attention:cab.attention,
+      open:visits.open,
+      last:visits.last,
+      siteStatus:isClosedView?'Closed':siteState(site)
+    };
   }).filter(x=>{
-    if(q && !normalizeSiteKey(x.site).includes(q))return false;
-    if(!isClosedView && statusFilter!=='All' && x.siteStatus!==statusFilter)return false;
+    if(q&&!normalizeSiteKey(x.site).includes(q))return false;
+    if(!isClosedView&&statusFilter!=='All'&&x.siteStatus!==statusFilter)return false;
     return true;
   });
 
-  const allData=activeNames.map(site=>({site,status:siteOperationalState(site)}));
+  let operationalSites=0,nonOperationalSites=0,totalOpen=0;
+  activeNames.forEach(site=>{
+    const state=siteState(site);
+    if(state==='Operational')operationalSites++;
+    if(state==='Non-Operational')nonOperationalSites++;
+    const key=normalizeSiteKey(canonicalSiteName(site));
+    totalOpen+=(visitStats.get(key)?.open||0);
+  });
+
   document.getElementById('sites-total').textContent=activeNames.length;
-  document.getElementById('sites-cabinets').textContent=registeredCabinetRows().length;
+  document.getElementById('sites-cabinets').textContent=cabinetRows.filter(c=>!siteIsClosed(c.site)).length;
   document.getElementById('sites-closed-total').textContent=closedNames.length;
-  document.getElementById('sites-operational').textContent=allData.filter(x=>x.status==='Operational').length;
-  document.getElementById('sites-nonoperational').textContent=allData.filter(x=>!siteIsClosed(x.site)&&x.status==='Non-Operational').length;
-  document.getElementById('sites-open').textContent=activeNames.reduce((n,site)=>{
-    const key=normalizeSiteKey(site);
-    return n+entries.filter(r=>normalizeSiteKey(canonicalSiteName(r.site))===key&&!['resolved','closed','completed'].includes(normalizeSiteKey(r.status))).length;
-  },0);
+  document.getElementById('sites-operational').textContent=operationalSites;
+  document.getElementById('sites-nonoperational').textContent=nonOperationalSites;
+  document.getElementById('sites-open').textContent=totalOpen;
 
   grid.innerHTML=data.length?data.map(x=>`<div class="site-directory-card site-simple-row">
     <div class="site-simple-main"><button type="button" class="site-simple-name" onclick="openSiteProfile('${escapeJs(x.site)}')">${escapeHtml(x.site)}</button>${siteIsWarehouse(x.site)?'<span class="warehouse-directory-badge">Warehouse</span>':''}<span class="site-simple-last">${x.last?.date?'Last visit '+escapeHtml(x.last.date):'No visits recorded'}</span></div>
@@ -5904,11 +6020,10 @@ function renderSites(){
     ${currentUser?.role==='management'?'<button type="button" class="site-status-edit site-lifecycle-edit" data-site-lifecycle="'+escapeHtml(x.site)+'">'+(isClosedView?'Edit / reopen':'Manage closure')+'</button>':''}</div>
     <div class="site-simple-count"><b>${x.cabinets}</b> cabinets</div><div class="site-simple-count ${x.open?'has-open':''}"><b>${x.open}</b> open</div>
     <button type="button" class="site-simple-open" aria-label="View profile for ${escapeHtml(x.site)}" onclick="openSiteProfile('${escapeJs(x.site)}')">View →</button>
-  </div>`)
-.join(''):'<div class="site-empty">No sites found.</div>';
+  </div>`).join(''):'<div class="site-empty">No sites found.</div>';
 }
-document.getElementById('sites-search')?.addEventListener('input',renderSites);
-document.getElementById('sites-status-filter')?.addEventListener('change',renderSites);
+document.getElementById('sites-search')?.addEventListener('input',()=>{renderSites();const s=assetViewRenderState.sites;if(s){s.painted=true;s.dirty=false;}});
+document.getElementById('sites-status-filter')?.addEventListener('change',()=>{renderSites();const s=assetViewRenderState.sites;if(s){s.painted=true;s.dirty=false;}});
 
 function siteAssetOverview(siteName){
   const warehouse=siteIsWarehouse(siteName);
@@ -7121,7 +7236,7 @@ function openCabinetsForSite(site){
   if(sf){sf.value=canonicalSiteName(site||'');renderCabinets();}
 }
 document.getElementById('cabinet-add-btn')?.addEventListener('click',()=>{clearCabinetForm();openCabinetForm();});
-document.getElementById('cabinet-cancel-btn')?.addEventListener('click',closeCabinetForm);document.getElementById('cabinet-save-btn')?.addEventListener('click',saveCabinet);document.getElementById('cabinet-search')?.addEventListener('input',renderCabinets);document.getElementById('cabinet-status-filter')?.addEventListener('change',renderCabinets);document.getElementById('cabinet-site-filter')?.addEventListener('change',renderCabinets);document.getElementById('cabinet-body')?.addEventListener('click',e=>{const pb=e.target.closest('[data-cab-profile]');if(pb)openCabinetProfile(pb.dataset.cabProfile);const eb=e.target.closest('[data-cab-edit]');if(eb)editCabinet(eb.dataset.cabEdit);const db=e.target.closest('[data-cab-delete]');if(db)deleteCabinet(db.dataset.cabDelete);});
+document.getElementById('cabinet-cancel-btn')?.addEventListener('click',closeCabinetForm);document.getElementById('cabinet-save-btn')?.addEventListener('click',saveCabinet);document.getElementById('cabinet-search')?.addEventListener('input',()=>{renderCabinets();const s=assetViewRenderState.cabinets;if(s){s.painted=true;s.dirty=false;}});document.getElementById('cabinet-status-filter')?.addEventListener('change',()=>{renderCabinets();const s=assetViewRenderState.cabinets;if(s){s.painted=true;s.dirty=false;}});document.getElementById('cabinet-site-filter')?.addEventListener('change',()=>{renderCabinets();const s=assetViewRenderState.cabinets;if(s){s.painted=true;s.dirty=false;}});document.getElementById('cabinet-body')?.addEventListener('click',e=>{const pb=e.target.closest('[data-cab-profile]');if(pb)openCabinetProfile(pb.dataset.cabProfile);const eb=e.target.closest('[data-cab-edit]');if(eb)editCabinet(eb.dataset.cabEdit);const db=e.target.closest('[data-cab-delete]');if(db)deleteCabinet(db.dataset.cabDelete);});
 
 
 
@@ -7136,20 +7251,122 @@ function assetNeedsAttention(kind,r){
 }
 
 let inventoryView='sites';
+
+// Asset subviews are expensive to build. Keep the already-painted DOM and
+// rebuild only after the underlying data changes or a filter/search changes.
+const assetViewRenderState={
+  sites:{painted:false,dirty:true},
+  overview:{painted:false,dirty:true},
+  cabinets:{painted:false,dirty:true},
+  components:{painted:false,dirty:true}
+};
+function markAssetViewsDirty(views=['sites','overview','cabinets','components']){
+  views.forEach(view=>{
+    if(assetViewRenderState[view])assetViewRenderState[view].dirty=true;
+  });
+}
+function assetViewNeedsRender(view){
+  const state=assetViewRenderState[view];
+  return !state||!state.painted||state.dirty;
+}
+function renderAssetViewIfNeeded(view,force=false){
+  const state=assetViewRenderState[view];
+  if(!force&&state&&state.painted&&!state.dirty)return false;
+  if(view==='sites')renderSites();
+  else if(view==='overview')renderInventory();
+  else if(view==='cabinets')renderCabinets();
+  else if(view==='components'&&typeof renderInstalledComponents==='function')renderInstalledComponents();
+  else return false;
+  if(state){state.painted=true;state.dirty=false;}
+  return true;
+}
+window.markAssetViewsDirty=markAssetViewsDirty;
+window.renderAssetViewIfNeeded=renderAssetViewIfNeeded;
+
 function setInventoryView(view){
   inventoryView=view||'overview';
   document.querySelectorAll('.inventory-subtab').forEach(b=>b.classList.toggle('active',b.dataset.inventoryView===inventoryView));
   document.querySelectorAll('.inventory-subpanel').forEach(p=>p.classList.toggle('active',p.id==='inventory-view-'+inventoryView));
-  if(inventoryView==='sites')renderSites();
-  if(inventoryView==='overview')renderInventory();
-  if(inventoryView==='cabinets')renderCabinets();
-  if(inventoryView==='components' && typeof renderInstalledComponents==='function')renderInstalledComponents();
-  // Movements and Spare/Repair data are rendered by their lazy loaders
-  // when those tabs are opened. Existing loaded data can still paint immediately.
-  if(inventoryView==='movements' && movementsLoadedOnce)renderMovements();
-  if(inventoryView==='spares' && (sparesLoadedOnce||cabinetPartsLoadedOnce))renderSpareParts();
+
+  // Switching tabs should be a DOM visibility change first. Expensive views
+  // render only once, then remain intact until their source data is dirty.
+  renderAssetViewIfNeeded(inventoryView);
+
+  if(inventoryView==='movements'&&movementsLoadedOnce)renderMovements();
+  if(inventoryView==='spares'&&(sparesLoadedOnce||cabinetPartsLoadedOnce))renderSpareParts();
 }
-document.querySelectorAll('.inventory-subtab').forEach(b=>b.addEventListener('click',()=>setInventoryView(b.dataset.inventoryView)));
+const ASSET_VIEW_LABELS={
+  sites:'Locations',
+  overview:'Asset Allocation',
+  cabinets:'Cabinet Registry',
+  components:'Component Coverage',
+  movements:'Activity',
+  spares:'Stock'
+};
+function ensureAssetViewLoader(view){
+  const panel=document.getElementById('inventory-view-'+view);
+  if(!panel)return null;
+  let loader=panel.querySelector(':scope > .asset-view-loader');
+  if(loader)return loader;
+  loader=document.createElement('div');
+  loader.className='asset-view-loader';
+  loader.hidden=true;
+  loader.setAttribute('aria-live','polite');
+  loader.innerHTML='<div class="asset-view-loader-card"><span class="asset-view-spinner" aria-hidden="true"></span><div><span class="asset-view-loader-title">Loading…</span><small>Please wait while this section is prepared.</small></div></div>';
+  panel.prepend(loader);
+  return loader;
+}
+function showAssetViewLoader(view){
+  const panel=document.getElementById('inventory-view-'+view);
+  const loader=ensureAssetViewLoader(view);
+  if(!panel||!loader)return;
+  const title=loader.querySelector('.asset-view-loader-title');
+  if(title)title.textContent='Loading '+(ASSET_VIEW_LABELS[view]||'section')+'…';
+  loader.hidden=false;
+  panel.setAttribute('aria-busy','true');
+}
+function hideAssetViewLoader(view){
+  const panel=document.getElementById('inventory-view-'+view);
+  const loader=panel?.querySelector(':scope > .asset-view-loader');
+  if(loader)loader.hidden=true;
+  panel?.setAttribute('aria-busy','false');
+}
+function nextPaint(){
+  return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+}
+async function openInventoryViewWithFeedback(view){
+  view=view||'overview';
+
+  const expensiveDirty=!!assetViewRenderState[view]&&assetViewNeedsRender(view);
+  const movementNeedsData=view==='movements'&&!movementsLoadedOnce;
+  const stockNeedsData=view==='spares'&&!(sparesLoadedOnce||cabinetPartsLoadedOnce);
+  const needsVisibleLoading=expensiveDirty||movementNeedsData||stockNeedsData;
+
+  // Make the selected category respond immediately before heavy JS starts.
+  inventoryView=view;
+  document.querySelectorAll('.inventory-subtab').forEach(b=>b.classList.toggle('active',b.dataset.inventoryView===inventoryView));
+  document.querySelectorAll('.inventory-subpanel').forEach(p=>p.classList.toggle('active',p.id==='inventory-view-'+inventoryView));
+
+  if(needsVisibleLoading){
+    showAssetViewLoader(view);
+    await nextPaint();
+  }
+
+  try{
+    renderAssetViewIfNeeded(view);
+    if(view==='movements'&&movementsLoadedOnce)renderMovements();
+    if(view==='spares'&&(sparesLoadedOnce||cabinetPartsLoadedOnce))renderSpareParts();
+  }finally{
+    if(needsVisibleLoading){
+      // Give the finished DOM one paint before removing the loading state.
+      requestAnimationFrame(()=>hideAssetViewLoader(view));
+    }
+  }
+}
+document.querySelectorAll('.inventory-subtab').forEach(b=>b.addEventListener('click',event=>{
+  event.preventDefault();
+  openInventoryViewWithFeedback(b.dataset.inventoryView);
+}));
 
 
 // ===== Spare Parts =====
@@ -8041,6 +8258,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 
   function applyAssetsData(data,paintTarget){
     if(!data)return;
+    if(typeof markAssetViewsDirty==='function')markAssetViewsDirty();
 
     if(Array.isArray(data.inventory)){
       inventoryRows=data.inventory;
@@ -8066,14 +8284,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
       if(typeof updateSystemBar==='function')updateSystemBar();
     }
 
-    // Only paint what the user is looking at to keep DOM work light.
+    // Paint only the currently requested expensive view. Other views stay
+    // dirty and will rebuild once when the user actually opens them.
     if(paintTarget==='sites'){
-      if(typeof renderSites==='function')renderSites();
+      if(typeof renderAssetViewIfNeeded==='function')renderAssetViewIfNeeded('sites');
     }else if(paintTarget==='inventory'){
-      if(inventoryView==='sites' && typeof renderSites==='function')renderSites();
-      if(inventoryView==='overview' && typeof renderInventory==='function')renderInventory();
-      if(inventoryView==='cabinets' && typeof renderCabinets==='function')renderCabinets();
-      if(inventoryView==='components' && typeof renderInstalledComponents==='function')renderInstalledComponents();
+      if(typeof renderAssetViewIfNeeded==='function')renderAssetViewIfNeeded(inventoryView);
     }else if(paintTarget==='dashboard'){
       if(typeof renderManagementOverview==='function')renderManagementOverview();
     }
@@ -8091,14 +8307,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   }
 
   function paintCurrentAssets(target){
-    if(target==='inventory'){
-      if(inventoryView==='sites')renderSites();
-      if(inventoryView==='overview')renderInventory();
-      if(inventoryView==='cabinets')renderCabinets();
-      if(inventoryView==='components' && typeof renderInstalledComponents==='function')renderInstalledComponents();
-    }
+    if(target==='inventory'&&typeof renderAssetViewIfNeeded==='function')renderAssetViewIfNeeded(inventoryView);
     if(target==='dashboard')renderManagementOverview();
-    if(target==='sites')renderSites();
+    if(target==='sites'&&typeof renderAssetViewIfNeeded==='function')renderAssetViewIfNeeded('sites');
   }
 
   async function refreshAssets(target,force){
@@ -8114,7 +8325,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     // Asset data changes only after an explicit save/update. Keep it warm while
     // navigating between Dashboard and Asset Operations so tab changes stay instant.
     if(!force && assetsBootstrapLoaded && Date.now()-lastAssetsFetch<300000){
-      if(target==='sites' && typeof renderSites==='function')renderSites();
       paintCurrentAssets(target);
       return Promise.resolve();
     }
@@ -8199,7 +8409,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
       if(view==='overview'||view==='sites'||view==='components')openFastAssets('inventory');
 
       if(view==='cabinets'){
-        paintCachedAssets('inventory');
+        if(!assetsBootstrapLoaded&&!cabinetsLoadedOnce)paintCachedAssets('inventory');
         if(!cabinetsLoadedOnce)refreshAssets('inventory',false);
       }
 
@@ -8273,6 +8483,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   const originalLoadInventoryFastCache=loadInventory;
   loadInventory=async function(){
     const result=await originalLoadInventoryFastCache();
+    if(typeof markAssetViewsDirty==='function')markAssetViewsDirty(['sites','overview']);
     syncAssetCacheFromMemory();
     return result;
   };
@@ -8280,6 +8491,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   const originalLoadCabinetsFastCache=loadCabinets;
   loadCabinets=async function(){
     const result=await originalLoadCabinetsFastCache();
+    if(typeof markAssetViewsDirty==='function')markAssetViewsDirty(['sites','cabinets','components','overview']);
     syncAssetCacheFromMemory();
     return result;
   };
@@ -8289,6 +8501,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 <div id="app-toast" class="app-toast" role="status" aria-live="polite"></div>
 
 <script>
+/* Asset-view invalidation: field visit changes affect Location metrics. */
+(function(){
+  if(typeof loadEntries!=='function')return;
+  const originalLoadEntriesAssetDirty=loadEntries;
+  loadEntries=async function(){
+    const result=await originalLoadEntriesAssetDirty.apply(this,arguments);
+    if(typeof markAssetViewsDirty==='function')markAssetViewsDirty(['sites']);
+    return result;
+  };
+})();
+
 /* Production UX helpers: presentation only, no API/data-model changes. */
 (function(){
   function enhanceMobileLogButtons(){
