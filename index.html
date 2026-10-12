@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<!-- MASTER V42: direct Google Drive attachments; no Firebase/Blaze billing -->
+<!-- MASTER V40: responsive background attachment upload + mobile upload UI -->
+<!-- MASTER V39: visit attachments stored privately in Google Drive -->
 <!-- MASTER V38: responsive Asset Operations loading feedback -->
 <!-- MASTER V37: snappy Asset Operations navigation -->
 <!-- MASTER V36: permanent cabinet numbering + allocation prefix renaming -->
@@ -3054,6 +3057,101 @@ input,select,textarea{min-height:44px;font-size:16px!important}
 </style>
 <style>.utility-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 14px;font-size:12px;color:var(--ink-soft)}.utility-strip>span{flex:1;min-width:160px}.utility-strip [hidden]{display:none!important}</style>
 
+
+<style id="visit-attachments-ui">
+.visit-attachments-box{
+  margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);
+}
+.visit-attachments-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.visit-attachments-head h2{font-size:12px;margin:0 0 3px}
+.visit-attachments-head p{margin:0;color:var(--ink-soft);font-size:11px}
+.visit-attachment-actions{display:flex;gap:8px;flex-wrap:wrap}
+.visit-attachment-pick{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 12px;
+  border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:600 11px/1 'Segoe UI',sans-serif;cursor:pointer;
+}
+.visit-attachment-pick:hover{border-color:var(--accent)}
+.visit-attachment-pending{display:grid;gap:7px;margin-top:10px}
+.visit-attachment-pending:empty{display:none}
+.visit-attachment-pending-row{
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);
+}
+.visit-attachment-pending-row b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.visit-attachment-pending-row small{color:var(--ink-soft);font-size:10px}
+.visit-attachment-remove{border:0;background:transparent;color:var(--danger,#c94b4b);cursor:pointer;font-size:16px;line-height:1}
+.visit-attachment-help{margin-top:9px;color:var(--ink-soft);font-size:10px}
+.vd-attachments{margin-top:14px}
+.vd-attachment-list{display:grid;gap:8px;margin-top:9px}
+.vd-attachment-row{
+  display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);
+}
+.vd-attachment-icon{
+  width:34px;height:34px;border-radius:8px;background:var(--bg);display:grid;place-items:center;font-size:15px;border:1px solid var(--line)
+}
+.vd-attachment-name{min-width:0}
+.vd-attachment-name b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vd-attachment-name small{display:block;color:var(--ink-soft);font-size:9px;margin-top:2px}
+.vd-attachment-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.vd-attachment-buttons button{min-height:30px;padding:0 9px;font-size:10px}
+.vd-attachment-loading{padding:12px 0;color:var(--ink-soft);font-size:11px}
+.vd-attachment-empty{padding:10px 0;color:var(--ink-soft);font-size:11px}
+.vd-attachment-uploading{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:10px;margin-top:8px}
+.vd-attachment-uploading .mini-spin{width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:asset-view-spin .72s linear infinite}
+@media(max-width:700px){
+  .visit-attachments-head{display:grid}
+  .visit-attachment-actions{width:100%}
+  .visit-attachment-pick{flex:1}
+  .vd-attachment-row{grid-template-columns:30px minmax(0,1fr)}
+  .vd-attachment-buttons{grid-column:1/-1;justify-content:flex-start}
+}
+
+.attachment-upload-dock{
+  position:fixed;right:18px;bottom:18px;z-index:100020;width:min(430px,calc(100vw - 36px));
+  border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 20px 55px #0006;
+  overflow:hidden;transform:translateY(18px);opacity:0;pointer-events:none;transition:.18s ease;
+}
+.attachment-upload-dock.show{transform:none;opacity:1;pointer-events:auto}
+.attachment-upload-dock-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:13px 14px 10px;border-bottom:1px solid var(--line)}
+.attachment-upload-dock-head b{display:block;font-size:12px}
+.attachment-upload-dock-head small{display:block;margin-top:3px;color:var(--ink-soft);font-size:10px}
+.attachment-upload-dock-close{border:0;background:transparent;color:var(--ink-soft);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px}
+.attachment-upload-progress{height:3px;background:var(--bg);overflow:hidden}
+.attachment-upload-progress>span{display:block;height:100%;width:0;background:var(--accent);transition:width .18s ease}
+.attachment-upload-files{display:grid;gap:0;max-height:280px;overflow:auto}
+.attachment-upload-file{display:grid;grid-template-columns:28px minmax(0,1fr) 46px;gap:9px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.attachment-upload-file:last-child{border-bottom:0}
+.attachment-upload-file-icon{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);display:grid;place-items:center;background:var(--bg);font-size:9px;font-weight:700}
+.attachment-upload-file-main{min-width:0}
+.attachment-upload-file-main b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px}
+.attachment-upload-file-main small{display:block;color:var(--ink-soft);font-size:9px;margin-top:2px}
+.attachment-upload-file-pct{text-align:right;font-size:10px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.attachment-upload-file.done .attachment-upload-file-pct{color:#5fbf86}
+.attachment-upload-file.failed .attachment-upload-file-pct{color:var(--danger,#d45b5b)}
+.attachment-upload-dock-foot{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 14px;color:var(--ink-soft);font-size:9px;background:var(--surface)}
+.attachment-upload-dock-foot button{border:0;background:transparent;color:var(--accent);padding:0;cursor:pointer;font:600 10px/1 'Segoe UI',sans-serif}
+@media(max-width:700px){
+  .visit-attachments-box{padding:13px;border-radius:12px}
+  .visit-attachments-head{gap:10px}
+  .visit-attachments-head h2{font-size:13px}
+  .visit-attachments-head p{font-size:10px;line-height:1.45}
+  .visit-attachment-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .visit-attachment-pick{width:100%;min-height:44px;padding:0 8px;font-size:10px}
+  .visit-attachment-pending-row{grid-template-columns:minmax(0,1fr) auto;padding:10px}
+  .visit-attachment-pending-row>small:nth-child(2){display:none}
+  .visit-attachment-remove{min-width:36px;min-height:36px}
+  .visit-attachment-help{line-height:1.45}
+  .attachment-upload-dock{
+    left:0;right:0;bottom:0;width:100%;border-radius:16px 16px 0 0;border-left:0;border-right:0;border-bottom:0;
+    padding-bottom:max(0px,env(safe-area-inset-bottom));box-shadow:0 -14px 45px #0008;
+  }
+  .attachment-upload-files{max-height:38vh}
+  .attachment-upload-dock-head{padding:14px 16px 11px}
+  .attachment-upload-file{padding:11px 16px}
+  .attachment-upload-dock-foot{padding:10px 16px}
+}
+
+</style>
+
 <style id="asset-view-loading-feedback">
 #panel-inventory .inventory-subpanel{position:relative}
 .asset-view-loader{
@@ -3877,6 +3975,21 @@ body:has(#spare-modal[style*="display:flex"]){
           <label>Issue / notes</label>
           <textarea id="f-notes" placeholder="What happened on this visit"></textarea>
         </div>
+      </div>
+
+      <div class="visit-attachments-box" id="visit-attachments-box">
+        <div class="visit-attachments-head">
+          <div>
+            <h2>Attachments <span class="muted">(optional)</span></h2>
+            <p>Add site photos, cabinet/component photos, screenshots, signed forms, or PDF documents.</p>
+          </div>
+          <div class="visit-attachment-actions">
+            <label class="visit-attachment-pick">＋ Choose Files<input id="f-attachments" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden></label>
+            <label class="visit-attachment-pick">📷 Take Photo<input id="f-attachment-camera" type="file" accept="image/*" capture="environment" hidden></label>
+          </div>
+        </div>
+        <div class="visit-attachment-pending" id="visit-attachment-pending"></div>
+        <div class="visit-attachment-help">JPG, PNG, WEBP, or PDF · up to 6 files per visit · uploads directly to the FSM Google Drive folder.</div>
       </div>
       </div>
       <div class="visit-edit-banner" id="visit-edit-banner"><span><b>Editing Field Log</b> — changes will update the existing record.</span><button type="button" id="cancel-visit-edit">Cancel edit</button></div>
@@ -5025,7 +5138,7 @@ async function apiPost(action,payload={},options={}){
     if(data&&data.status==='error')throw new Error(data.error||'Request failed.');
     timingOutcome="ok";
     noteSyncSuccess(source);
-    if(['addEntry','updateEntry','archiveEntry','deleteEntry','saveSiteRecord','deleteSiteRecord','addSite','removeSite','addFse','removeFse','saveInventory','deleteInventory','saveCabinet','deleteCabinet','saveSparePart','deleteSparePart','useSparePart','updateRemovedPart','returnRemovedPartToStock','saveMovement','addUser','setUserStatus','resetPassword'].includes(action))auditLoadedOnce=false;
+    if(['addEntry','updateEntry','archiveEntry','deleteEntry','saveSiteRecord','deleteSiteRecord','addSite','removeSite','addFse','removeFse','saveInventory','deleteInventory','saveCabinet','deleteCabinet','saveSparePart','deleteSparePart','useSparePart','updateRemovedPart','returnRemovedPartToStock','saveMovement','registerDirectDriveVisitAttachment','deleteVisitAttachment','addUser','setUserStatus','resetPassword'].includes(action))auditLoadedOnce=false;
     return data;
   }catch(err){
     timingOutcome=err.name==='AbortError'?'timeout':'error';
@@ -5293,7 +5406,7 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-document.getElementById('fieldlogs-new-btn')?.addEventListener('click',()=>{ cancelVisitEdit(); document.querySelector('.tab[data-tab="log"]')?.click(); });
+document.getElementById('fieldlogs-new-btn')?.addEventListener('click',()=>{ cancelVisitEdit(); if(typeof clearPendingVisitAttachments==='function')clearPendingVisitAttachments(); document.querySelector('.tab[data-tab="log"]')?.click(); });
 let editingEntryId='';
 let toastTimer=null;
 function showToast(title,message,type='ok'){
@@ -5309,6 +5422,488 @@ function setVisitEditMode(id){
   if(btn)btn.innerHTML=editingEntryId?'<span>Save changes</span><span class="submit-arrow">✓</span>':'<span>Log field visit</span><span class="submit-arrow">→</span>';
 }
 function cancelVisitEdit(){ setVisitEditMode(''); }
+
+const VISIT_ATTACHMENT_MAX_FILES=6;
+const VISIT_ATTACHMENT_MAX_BYTES=6*1024*1024;
+let pendingVisitAttachmentFiles=[];
+
+function attachmentSizeLabel(bytes){
+  bytes=Number(bytes||0);
+  if(bytes<1024)return bytes+' B';
+  if(bytes<1024*1024)return (bytes/1024).toFixed(bytes<10240?1:0)+' KB';
+  return (bytes/(1024*1024)).toFixed(1)+' MB';
+}
+function attachmentIcon(mime){
+  mime=String(mime||'').toLowerCase();
+  if(mime==='application/pdf')return 'PDF';
+  if(mime.startsWith('image/'))return 'IMG';
+  return 'FILE';
+}
+function renderPendingVisitAttachments(){
+  const box=document.getElementById('visit-attachment-pending');
+  if(!box)return;
+  box.innerHTML=pendingVisitAttachmentFiles.map((file,index)=>`
+    <div class="visit-attachment-pending-row">
+      <div><b title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</b><small>${escapeHtml(attachmentSizeLabel(file.size))}</small></div>
+      <small>${escapeHtml((file.type||'file').replace('image/','').toUpperCase())}</small>
+      <button class="visit-attachment-remove" type="button" data-remove-pending-attachment="${index}" aria-label="Remove ${escapeHtml(file.name)}">×</button>
+    </div>`).join('');
+}
+function addPendingVisitAttachments(fileList){
+  const incoming=Array.from(fileList||[]);
+  const allowed=['image/jpeg','image/png','image/webp','application/pdf'];
+  for(const file of incoming){
+    if(pendingVisitAttachmentFiles.length>=VISIT_ATTACHMENT_MAX_FILES){
+      showToast('Attachment limit','Maximum of '+VISIT_ATTACHMENT_MAX_FILES+' files per visit.','bad');
+      break;
+    }
+    if(!allowed.includes(String(file.type||'').toLowerCase())){
+      showToast('Unsupported file',file.name+' is not JPG, PNG, WEBP, or PDF.','bad');
+      continue;
+    }
+    const duplicate=pendingVisitAttachmentFiles.some(x=>x.name===file.name&&x.size===file.size&&x.lastModified===file.lastModified);
+    if(!duplicate)pendingVisitAttachmentFiles.push(file);
+  }
+  renderPendingVisitAttachments();
+}
+function clearPendingVisitAttachments(){
+  pendingVisitAttachmentFiles=[];
+  const input=document.getElementById('f-attachments');if(input)input.value='';
+  const camera=document.getElementById('f-attachment-camera');if(camera)camera.value='';
+  renderPendingVisitAttachments();
+}
+document.getElementById('f-attachments')?.addEventListener('change',e=>{addPendingVisitAttachments(e.target.files);e.target.value='';});
+document.getElementById('f-attachment-camera')?.addEventListener('change',e=>{addPendingVisitAttachments(e.target.files);e.target.value='';});
+document.getElementById('visit-attachment-pending')?.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-remove-pending-attachment]');if(!btn)return;
+  pendingVisitAttachmentFiles.splice(Number(btn.dataset.removePendingAttachment),1);
+  renderPendingVisitAttachments();
+});
+
+function yieldToUI(){
+  return new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));
+}
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(reader.error||new Error('Unable to read file.'));
+    reader.onload=()=>resolve(String(reader.result||'').split(',')[1]||'');
+    reader.readAsDataURL(blob);
+  });
+}
+function loadImageForCompression(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img);};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Unable to read '+file.name));};
+    img.src=url;
+  });
+}
+async function prepareVisitAttachmentFile(file,onStatus){
+  const type=String(file.type||'').toLowerCase();
+  if(type==='application/pdf'){
+    if(file.size>VISIT_ATTACHMENT_MAX_BYTES)throw new Error(file.name+' is larger than 6 MB.');
+    return {blob:file,name:file.name,mimeType:type};
+  }
+  if(!type.startsWith('image/'))throw new Error(file.name+' is not a supported attachment.');
+
+  // Phone-camera files are usually the slowest part. Compress earlier and
+  // smaller so uploads stay practical on mobile connections.
+  if(file.size<=1024*1024){
+    return {blob:file,name:file.name,mimeType:type};
+  }
+
+  if(onStatus)onStatus('Optimizing photo…',4);
+  await yieldToUI();
+  const img=await loadImageForCompression(file);
+  await yieldToUI();
+
+  const maxSide=1280;
+  const sourceW=img.naturalWidth||img.width;
+  const sourceH=img.naturalHeight||img.height;
+  const scale=Math.min(1,maxSide/Math.max(sourceW,sourceH));
+  const width=Math.max(1,Math.round(sourceW*scale));
+  const height=Math.max(1,Math.round(sourceH*scale));
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext('2d',{alpha:false});
+  ctx.drawImage(img,0,0,width,height);
+  await yieldToUI();
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.74));
+  canvas.width=1;canvas.height=1;
+  if(!blob)throw new Error('Unable to optimize '+file.name);
+  if(blob.size>VISIT_ATTACHMENT_MAX_BYTES)throw new Error(file.name+' is still larger than 6 MB after optimization.');
+  const base=file.name.replace(/\.[^.]+$/,'');
+  return {blob,name:base+'.jpg',mimeType:'image/jpeg'};
+}
+
+let activeAttachmentUploadJobs=0;
+let attachmentDockHideTimer=null;
+
+function ensureAttachmentUploadDock(){
+  let dock=document.getElementById('attachment-upload-dock');
+  if(dock)return dock;
+  dock=document.createElement('aside');
+  dock.id='attachment-upload-dock';
+  dock.className='attachment-upload-dock';
+  dock.setAttribute('aria-live','polite');
+  dock.innerHTML=`
+    <div class="attachment-upload-dock-head">
+      <div><b id="attachment-upload-title">Uploading attachments</b><small id="attachment-upload-subtitle">Your visit is already saved.</small></div>
+      <button type="button" class="attachment-upload-dock-close" id="attachment-upload-close" aria-label="Hide upload panel">×</button>
+    </div>
+    <div class="attachment-upload-progress"><span id="attachment-upload-progress-bar"></span></div>
+    <div class="attachment-upload-files" id="attachment-upload-files"></div>
+    <div class="attachment-upload-dock-foot"><span id="attachment-upload-summary">Preparing…</span><button type="button" id="attachment-upload-hide">Keep working</button></div>`;
+  document.body.appendChild(dock);
+  const hide=()=>dock.classList.remove('show');
+  dock.querySelector('#attachment-upload-close')?.addEventListener('click',hide);
+  dock.querySelector('#attachment-upload-hide')?.addEventListener('click',hide);
+  return dock;
+}
+function startAttachmentUploadUI(visitId,files){
+  clearTimeout(attachmentDockHideTimer);
+  const dock=ensureAttachmentUploadDock();
+  dock.classList.add('show');
+  dock.dataset.visitId=String(visitId||'');
+  const list=dock.querySelector('#attachment-upload-files');
+  const title=dock.querySelector('#attachment-upload-title');
+  const subtitle=dock.querySelector('#attachment-upload-subtitle');
+  if(title)title.textContent='Uploading '+files.length+' attachment'+(files.length===1?'':'s');
+  if(subtitle)subtitle.textContent='Visit saved · you can keep using FSM.';
+  if(list)list.innerHTML=files.map((file,index)=>`
+    <div class="attachment-upload-file" data-upload-index="${index}">
+      <div class="attachment-upload-file-icon">${escapeHtml(attachmentIcon(file.type))}</div>
+      <div class="attachment-upload-file-main"><b>${escapeHtml(file.name)}</b><small data-upload-status>Waiting…</small></div>
+      <div class="attachment-upload-file-pct" data-upload-pct>0%</div>
+    </div>`).join('');
+  updateAttachmentUploadSummary(files.map(()=>({pct:0,state:'waiting'})));
+  return dock;
+}
+function setAttachmentFileUploadState(index,status,pct,state='working'){
+  const dock=ensureAttachmentUploadDock();
+  const row=dock.querySelector(`[data-upload-index="${index}"]`);
+  if(!row)return;
+  row.classList.toggle('done',state==='done');
+  row.classList.toggle('failed',state==='failed');
+  const statusEl=row.querySelector('[data-upload-status]');
+  const pctEl=row.querySelector('[data-upload-pct]');
+  if(statusEl)statusEl.textContent=status;
+  if(pctEl)pctEl.textContent=state==='failed'?'Failed':state==='done'?'Done':Math.max(0,Math.min(100,Math.round(pct||0)))+'%';
+}
+function updateAttachmentUploadSummary(states){
+  const dock=ensureAttachmentUploadDock();
+  const completed=states.filter(x=>x.state==='done'||x.state==='failed').length;
+  const failed=states.filter(x=>x.state==='failed').length;
+  const aggregate=states.length?states.reduce((sum,x)=>sum+Number(x.pct||0),0)/states.length:0;
+  const bar=dock.querySelector('#attachment-upload-progress-bar');
+  const summary=dock.querySelector('#attachment-upload-summary');
+  if(bar)bar.style.width=Math.max(0,Math.min(100,aggregate))+'%';
+  if(summary){
+    if(completed<states.length)summary.textContent=`${completed} of ${states.length} finished`;
+    else summary.textContent=failed?`${states.length-failed} uploaded · ${failed} failed`:`All ${states.length} uploaded`;
+  }
+}
+
+let directDriveConfig=null;
+let directDriveAccessToken='';
+let directDriveTokenExpiresAt=0;
+let directDriveBootstrapPromise=null;
+let googleIdentityScriptPromise=null;
+
+function loadGoogleIdentityServices(){
+  if(globalThis.google?.accounts?.oauth2)return Promise.resolve();
+  if(googleIdentityScriptPromise)return googleIdentityScriptPromise;
+  googleIdentityScriptPromise=new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-fsm-google-identity]');
+    if(existing){
+      existing.addEventListener('load',resolve,{once:true});
+      existing.addEventListener('error',()=>reject(new Error('Could not load Google sign-in.')),{once:true});
+      return;
+    }
+    const script=document.createElement('script');
+    script.src='https://accounts.google.com/gsi/client';
+    script.async=true;
+    script.defer=true;
+    script.dataset.fsmGoogleIdentity='1';
+    script.onload=resolve;
+    script.onerror=()=>reject(new Error('Could not load Google sign-in.'));
+    document.head.appendChild(script);
+  });
+  return googleIdentityScriptPromise;
+}
+
+async function startDriveResumableUpload(prepared,visitId){
+  if(location.protocol==='file:') throw new Error('Open FSM on your published HTTPS website, not a local downloaded HTML file.');
+  const result=await apiPost('beginSeamlessDriveUpload',{
+    visitId,
+    file:{name:prepared.name,mimeType:prepared.mimeType,sizeBytes:prepared.blob.size}
+  });
+  if(!result?.sessionUrl)throw new Error('The FSM backend did not return a Drive upload session.');
+  return result.sessionUrl;
+}
+
+function uploadBlobToDriveSession(sessionUrl,prepared,onProgress){
+  return new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.open('PUT',sessionUrl,true);
+    xhr.timeout=120000;
+    xhr.setRequestHeader('Content-Type',prepared.mimeType);
+    xhr.upload.onprogress=event=>{
+      if(event.lengthComputable&&typeof onProgress==='function'){
+        onProgress(Math.round((event.loaded/event.total)*100));
+      }
+    };
+    xhr.onerror=()=>reject(new Error('Network error while uploading to Google Drive.'));
+    xhr.ontimeout=()=>reject(new Error('Google Drive upload timed out. Please try again.'));
+    xhr.onload=()=>{
+      if(xhr.status===401){
+        reject(Object.assign(new Error('Google Drive authorization expired.'),{code:'DRIVE_AUTH_EXPIRED'}));
+        return;
+      }
+      if(xhr.status<200||xhr.status>=300){
+        let detail='';
+        try{detail=JSON.parse(xhr.responseText||'{}')?.error?.message||'';}catch(error){}
+        reject(new Error(detail||('Google Drive upload failed ('+xhr.status+').')));
+        return;
+      }
+      try{resolve(JSON.parse(xhr.responseText||'{}'));}
+      catch(error){reject(new Error('Google Drive returned an invalid upload response.'));}
+    };
+    xhr.send(prepared.blob);
+  });
+}
+
+async function deleteDirectDriveFile(fileId){
+  // File cleanup requires a backend-authenticated action; never request Google sign-in.
+  // An orphan can be removed by the Drive owner if metadata registration fails.
+}
+
+async function uploadOneVisitAttachment(visitId,file,index,states){
+  let driveFileId='';
+  try{
+    states[index]={pct:2,state:'working'};
+    setAttachmentFileUploadState(index,'Preparing…',2);
+    updateAttachmentUploadSummary(states);
+    await yieldToUI();
+
+    const prepared=await prepareVisitAttachmentFile(file,(label,pct)=>{
+      states[index].pct=pct||5;
+      setAttachmentFileUploadState(index,label,states[index].pct);
+      updateAttachmentUploadSummary(states);
+    });
+
+    states[index].pct=7;
+    setAttachmentFileUploadState(index,'Connecting to Google Drive…',7);
+    updateAttachmentUploadSummary(states);
+    await yieldToUI();
+
+    const sessionUrl=await startDriveResumableUpload(prepared,visitId);
+
+    const driveFile=await uploadBlobToDriveSession(sessionUrl,prepared,rawPct=>{
+      // Reserve the last few percent for registering the attachment in FSM.
+      const pct=Math.max(9,Math.min(96,9+Math.round(rawPct*0.87)));
+      states[index].pct=pct;
+      setAttachmentFileUploadState(index,rawPct>=100?'Finalizing…':'Uploading to Drive…',pct);
+      updateAttachmentUploadSummary(states);
+    });
+
+    driveFileId=String(driveFile.id||'');
+    if(!driveFileId)throw new Error('Google Drive upload completed but no file ID was returned.');
+
+    states[index].pct=97;
+    setAttachmentFileUploadState(index,'Linking to visit…',97);
+    updateAttachmentUploadSummary(states);
+
+    const result=await apiPost('registerDirectDriveVisitAttachment',{
+      visitId,
+      attachment:{
+        fileId:driveFileId,
+        fileName:prepared.name,
+        mimeType:prepared.mimeType,
+        sizeBytes:Number(driveFile.size||prepared.blob.size),
+        webViewLink:String(driveFile.webViewLink||'')
+      }
+    });
+
+    states[index]={pct:100,state:'done'};
+    setAttachmentFileUploadState(index,'Uploaded to Google Drive',100,'done');
+    updateAttachmentUploadSummary(states);
+    return {ok:true,result};
+  }catch(error){
+    console.error('Direct Google Drive attachment upload failed',error);
+    if(driveFileId)await deleteDirectDriveFile(driveFileId);
+    states[index]={pct:100,state:'failed',error};
+    setAttachmentFileUploadState(index,error.message||'Upload failed',100,'failed');
+    updateAttachmentUploadSummary(states);
+    return {ok:false,error,file};
+  }
+}
+
+async function uploadVisitAttachmentFiles(visitId,files){
+  const list=Array.from(files||[]);
+  if(!list.length)return {uploaded:0,failed:[]};
+  const states=list.map(()=>({pct:0,state:'waiting'}));
+  startAttachmentUploadUI(visitId,list);
+  activeAttachmentUploadJobs++;
+  try{
+    let uploaded=0;const failed=[];
+    // One-at-a-time keeps memory usage low on field phones. Each file now
+    // goes directly from the browser to Google Drive; Apps Script only registers metadata.
+    for(let i=0;i<list.length;i++){
+      const outcome=await uploadOneVisitAttachment(visitId,list[i],i,states);
+      if(outcome.ok)uploaded++;
+      else failed.push({file:list[i],error:outcome.error});
+      await yieldToUI();
+    }
+    const dock=ensureAttachmentUploadDock();
+    const title=dock.querySelector('#attachment-upload-title');
+    const subtitle=dock.querySelector('#attachment-upload-subtitle');
+    if(title)title.textContent=failed.length?'Attachment upload finished with errors':'Attachments uploaded';
+    if(subtitle)subtitle.textContent=failed.length?'Open the visit later to retry failed files.':'Files are safely stored in Google Drive.';
+    if(!failed.length){
+      attachmentDockHideTimer=setTimeout(()=>dock.classList.remove('show'),4200);
+    }
+    return {uploaded,failed};
+  }finally{
+    activeAttachmentUploadJobs=Math.max(0,activeAttachmentUploadJobs-1);
+  }
+}
+function queueVisitAttachmentUpload(visitId,files){
+  const list=Array.from(files||[]);
+  if(!list.length)return;
+  uploadVisitAttachmentFiles(visitId,list).then(result=>{
+    if(result.uploaded){
+      const localSaved=entries.find(x=>String(x.id)===String(visitId));
+      if(localSaved)localSaved.attachmentCount=Number(localSaved.attachmentCount||0)+result.uploaded;
+      storageSet(STORAGE_KEY,entries);
+      render();
+      renderReport();
+    }
+    if(result.failed.length){
+      showToast('Attachment upload needs attention',result.failed.length+' file(s) failed. Open the visit to add them again.','bad');
+    }else{
+      showToast('Attachments uploaded',result.uploaded+' file(s) saved to Google Drive.','ok');
+    }
+  }).catch(error=>{
+    console.error(error);
+    showToast('Attachment upload failed',error.message||'Unable to upload attachments.','bad');
+  });
+}
+window.addEventListener('beforeunload',event=>{
+  if(activeAttachmentUploadJobs<=0)return;
+  event.preventDefault();
+  event.returnValue='';
+});
+
+async function listVisitAttachments(visitId){
+  const result=await apiPost('listVisitAttachments',{visitId});
+  return Array.isArray(result?.attachments)?result.attachments:[];
+}
+async function fetchVisitAttachmentContent(attachmentId){
+  return apiPost('getVisitAttachment',{attachmentId});
+}
+async function openAttachmentBlob(blob,fileName,download){
+  const url=URL.createObjectURL(blob);
+  if(download){
+    const a=document.createElement('a');
+    a.href=url;a.download=fileName||'attachment';
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1200);
+  }else{
+    const opened=window.open(url,'_blank','noopener');
+    if(!opened){
+      const a=document.createElement('a');
+      a.href=url;a.target='_blank';a.rel='noopener';
+      document.body.append(a);a.click();a.remove();
+    }
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
+}
+async function openVisitAttachmentFile(attachmentId,download=false){
+  try{
+    const panel=document.getElementById('visit-attachments-panel');
+    const row=panel?.querySelector(`[data-attachment-id="${CSS.escape(String(attachmentId))}"]`);
+    const provider=row?.dataset.provider||'';
+    const fileId=row?.dataset.fileId||'';
+    const fileName=row?.dataset.fileName||'attachment';
+
+    showToast('Opening attachment','Loading secure file…');
+
+    const data=await fetchVisitAttachmentContent(attachmentId);
+    const bytes=Uint8Array.from(atob(data.base64||''),c=>c.charCodeAt(0));
+    const blob=new Blob([bytes],{type:data.mimeType||'application/octet-stream'});
+    await openAttachmentBlob(blob,data.fileName||fileName,download);
+  }catch(error){
+    showToast('Attachment unavailable',error.message||'Unable to open the file.','bad');
+  }
+}
+
+function renderVisitAttachmentsPanel(visitId,attachments){
+  const panel=document.getElementById('visit-attachments-panel');
+  if(!panel||String(panel.dataset.visitId)!==String(visitId))return;
+  const list=panel.querySelector('.vd-attachment-list');
+  const count=panel.querySelector('[data-attachment-count]');
+  if(count)count.textContent=attachments.length+' file'+(attachments.length===1?'':'s');
+  const entry=entries.find(x=>String(x.id)===String(visitId));
+  if(entry){
+    entry.attachmentCount=attachments.length;
+    storageSet(STORAGE_KEY,entries);
+  }
+  if(!attachments.length){
+    list.innerHTML='<div class="vd-attachment-empty">No attachments recorded for this visit.</div>';
+    return;
+  }
+  list.innerHTML=attachments.map(item=>`
+    <div class="vd-attachment-row" data-attachment-id="${escapeHtml(item.id)}" data-provider="${escapeHtml(item.provider||'drive-backend')}" data-file-id="${escapeHtml(item.fileId||'')}" data-file-name="${escapeHtml(item.fileName||'attachment')}">
+      <div class="vd-attachment-icon">${escapeHtml(attachmentIcon(item.mimeType))}</div>
+      <div class="vd-attachment-name"><b title="${escapeHtml(item.fileName)}">${escapeHtml(item.fileName)}</b><small>${escapeHtml(attachmentSizeLabel(item.sizeBytes))} · ${escapeHtml(item.uploadedBy||'User')} · ${escapeHtml(item.uploadedAt?new Date(item.uploadedAt).toLocaleString():'')}</small></div>
+      <div class="vd-attachment-buttons">
+        <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',false)">Preview</button>
+        <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',true)">Download</button>
+        ${currentUser?.role==='management'?`<button class="btn-secondary" type="button" onclick="removeVisitAttachment('${escapeJs(visitId)}','${escapeJs(item.id)}')">Remove</button>`:''}
+      </div>
+    </div>`).join('');
+}
+async function loadVisitAttachmentsPanel(visitId){
+  const panel=document.getElementById('visit-attachments-panel');
+  if(!panel||String(panel.dataset.visitId)!==String(visitId))return;
+  const list=panel.querySelector('.vd-attachment-list');
+  if(list)list.innerHTML='<div class="vd-attachment-loading">Loading attachments…</div>';
+  try{
+    const attachments=await listVisitAttachments(visitId);
+    renderVisitAttachmentsPanel(visitId,attachments);
+  }catch(error){
+    if(list)list.innerHTML='<div class="vd-attachment-empty">Could not load attachments. '+escapeHtml(error.message||'')+'</div>';
+  }
+}
+async function addAttachmentToExistingVisit(visitId){
+  const input=document.createElement('input');input.type='file';input.multiple=true;input.accept='image/jpeg,image/png,image/webp,application/pdf';
+  input.onchange=()=>{
+    const files=Array.from(input.files||[]).slice(0,VISIT_ATTACHMENT_MAX_FILES);
+    if(!files.length)return;
+    queueVisitAttachmentUpload(visitId,files);
+    // Refresh the open drawer after the upload manager finishes in the background.
+    const refreshTimer=setInterval(()=>{
+      if(activeAttachmentUploadJobs>0)return;
+      clearInterval(refreshTimer);
+      loadVisitAttachmentsPanel(visitId);
+    },450);
+  };
+  input.click();
+}
+async function removeVisitAttachment(visitId,attachmentId){
+  if(currentUser?.role!=='management')return;
+  if(!confirm('Remove this attachment from the visit?'))return;
+  try{
+    await apiPost('deleteVisitAttachment',{attachmentId});
+    await loadVisitAttachmentsPanel(visitId);
+    showToast('Attachment removed','The visit attachment was deleted.','ok');
+  }catch(error){
+    showToast('Could not remove attachment',error.message||'Delete failed.','bad');
+  }
+}
+
 function visitDetailLayout(e,fields,tracking){
  const esc=value=>escapeHtml(String(value??''));
  const values=Object.fromEntries(fields);
@@ -5326,6 +5921,7 @@ function visitDetailLayout(e,fields,tracking){
  (e.status==='Follow-up'||filled(e.followupDate)||filled(e.followupReason)?'<section class="vd-followup"><h3 class="vd-title">Next step</h3>'+facts(['Follow-up Date'])+paragraph('Follow-up reason',e.followupReason,'No follow-up reason recorded.')+'</section>':'')+
  '<details class="vd-details"><summary>Equipment & parts'+(equipment.length?' · '+equipment.length:'')+'</summary>'+(equipment.length?facts(equipment):'<p class="vd-empty">No equipment or parts recorded for this visit.</p>')+'</details>'+
  '<details class="vd-details"><summary>Timing & record details</summary>'+facts(more)+'</details>'+
+ '<section class="vd-section vd-attachments" id="visit-attachments-panel" data-visit-id="'+esc(e.id)+'"><div class="section-title-row"><div><h3 class="vd-title">Attachments</h3><span class="muted" data-attachment-count>'+(Number(e.attachmentCount||0))+' file'+(Number(e.attachmentCount||0)===1?'':'s')+'</span></div><button class="btn-secondary" type="button" onclick="addAttachmentToExistingVisit('+esc(JSON.stringify(String(e.id)))+')">＋ Add attachment</button></div><div class="vd-attachment-list"><div class="vd-attachment-loading">Loading attachments…</div></div><div class="vd-attachment-upload-status"></div></section>'+
  '<div class="vd-footer"><span>Visit #'+esc(tracking)+'</span><div class="drawer-actions"><button class="btn-primary" type="button" onclick="editFieldLog('+esc(JSON.stringify(String(e.id)))+')">Edit visit</button><button class="btn-secondary" type="button" onclick="duplicateEntry('+esc(JSON.stringify(String(e.id)))+')">Duplicate</button></div></div>';
 }
 
@@ -5338,6 +5934,7 @@ function openDetail(id){
   document.getElementById('detail-overlay').querySelector('.detail-drawer').scrollTop=0;
   requestAnimationFrame(()=>document.getElementById('drawer-close').focus());
   const ov=document.getElementById('detail-overlay'); ov.classList.add('open'); ov.setAttribute('aria-hidden','false');
+  loadVisitAttachmentsPanel(e.id);
 }
 function closeDetail(){const ov=document.getElementById('detail-overlay');ov.classList.remove('open');ov.setAttribute('aria-hidden','true');}
 document.getElementById('drawer-close').addEventListener('click',closeDetail); document.getElementById('detail-overlay').addEventListener('click',e=>{if(e.target.id==='detail-overlay')closeDetail()}); document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
@@ -5582,6 +6179,11 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   try{
     submitBtn.textContent=isEdit?'Saving changes…':'Saving visit…';
     await apiPost(isEdit?'updateEntry':'addEntry',{id:entry.id,entry});
+    const filesToUpload=[...pendingVisitAttachmentFiles];
+    if(filesToUpload.length){
+      clearPendingVisitAttachments();
+      queueVisitAttachmentUpload(entry.id,filesToUpload);
+    }
     window.dispatchEvent(new CustomEvent('visit-committed',{detail:{isEdit,entry}}));
     if(!isEdit)window.dispatchEvent(new Event('visit-saved'));
     let spareWarning='';
@@ -5594,9 +6196,15 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     }
     // Keep the already-rendered optimistic record. The server has now confirmed it.
     storageSet(STORAGE_KEY,entries);
-    showToast('Saved to shared sheet',spareWarning||`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`,spareWarning?'bad':'ok');
+    const saveWarning=[spareWarning].filter(Boolean).join(' ');
+    showToast(
+      'Visit saved',
+      saveWarning||(filesToUpload.length?`${filesToUpload.length} attachment${filesToUpload.length===1?' is':'s are'} uploading in the background.`:`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`),
+      saveWarning?'bad':'ok'
+    );
     cancelVisitEdit();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
+    clearPendingVisitAttachments();
     if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category to see what it covers.';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);
     render();renderReport();renderDashboard();
   }catch(e){
@@ -5635,9 +6243,10 @@ document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListen
 document.getElementById('my-fse').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
+  clearPendingVisitAttachments();
   closeDetail(); document.querySelector('.tab[data-tab="log"]')?.click();
   setVisitEditMode(e.id);
   if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';
@@ -6347,7 +6956,7 @@ function renderReadableLog(e,tracking){
   <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
-  <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
+  <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
   <div class="readable-log-actions"><button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div><button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button><button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button></div></details></div></div>
  </article>`;
 }
