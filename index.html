@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- MASTER V42: direct Google Drive attachments; no Firebase/Blaze billing -->
+<!-- MASTER V45: seamless Google Drive attachments; attachment controls always visible in New Visit -->
 <!-- MASTER V40: responsive background attachment upload + mobile upload UI -->
 <!-- MASTER V39: visit attachments stored privately in Google Drive -->
 <!-- MASTER V38: responsive Asset Operations loading feedback -->
@@ -3060,7 +3060,7 @@ input,select,textarea{min-height:44px;font-size:16px!important}
 
 <style id="visit-attachments-ui">
 .visit-attachments-box{
-  margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);
+  display:block!important;margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card);
 }
 .visit-attachments-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .visit-attachments-head h2{font-size:12px;margin:0 0 3px}
@@ -3977,11 +3977,14 @@ body:has(#spare-modal[style*="display:flex"]){
         </div>
       </div>
 
+      </div>
+
+      <div class="smart-section-head" id="visit-attachments-section-head"><span>04</span><div><b>Attachments</b><small>Optional site photos, screenshots, signed forms, or PDF documents.</small></div></div>
       <div class="visit-attachments-box" id="visit-attachments-box">
         <div class="visit-attachments-head">
           <div>
             <h2>Attachments <span class="muted">(optional)</span></h2>
-            <p>Add site photos, cabinet/component photos, screenshots, signed forms, or PDF documents.</p>
+            <p>Files selected here will upload after the field visit is saved.</p>
           </div>
           <div class="visit-attachment-actions">
             <label class="visit-attachment-pick">＋ Choose Files<input id="f-attachments" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden></label>
@@ -3989,9 +3992,9 @@ body:has(#spare-modal[style*="display:flex"]){
           </div>
         </div>
         <div class="visit-attachment-pending" id="visit-attachment-pending"></div>
-        <div class="visit-attachment-help">JPG, PNG, WEBP, or PDF · up to 6 files per visit · uploads directly to the FSM Google Drive folder.</div>
+        <div class="visit-attachment-help">JPG, PNG, WEBP, or PDF · up to 6 files per visit · no Google sign-in required for FSE users.</div>
       </div>
-      </div>
+
       <div class="visit-edit-banner" id="visit-edit-banner"><span><b>Editing Field Log</b> — changes will update the existing record.</span><button type="button" id="cancel-visit-edit">Cancel edit</button></div>
       <button class="submit" id="submit-btn"><span>Log field visit</span><span class="submit-arrow">→</span></button>
 <button type="button" class="mobile-save-fab" id="mobile-save-fab"><span>Save Field Visit</span><b>→</b></button>
@@ -4617,6 +4620,7 @@ body:has(#spare-modal[style*="display:flex"]){
 </div>
 
 <script>
+console.info("FSM Master v45 loaded — seamless Drive attachments");
 let entries = [];
 let activeTab = 'log';
 let auditRowsCache=[];
