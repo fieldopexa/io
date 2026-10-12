@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- MASTER V49: seamless Google Drive attachments + large fast thumbnail preview -->
 <!-- MASTER V45: seamless Google Drive attachments; attachment controls always visible in New Visit -->
 <!-- MASTER V40: responsive background attachment upload + mobile upload UI -->
 <!-- MASTER V39: visit attachments stored privately in Google Drive -->
@@ -3149,6 +3150,34 @@ input,select,textarea{min-height:44px;font-size:16px!important}
   .attachment-upload-dock-foot{padding:10px 16px}
 }
 
+
+.attachment-preview-modal{
+  position:fixed;inset:0;z-index:100080;display:none;place-items:center;padding:20px;background:#000a;backdrop-filter:blur(3px)
+}
+.attachment-preview-modal.show{display:grid}
+.attachment-preview-card{
+  width:min(1280px,98vw);height:min(900px,96vh);max-height:96vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;
+  border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 24px 70px #0009;overflow:hidden
+}
+.attachment-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.attachment-preview-head b{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.attachment-preview-close{border:0;background:transparent;color:var(--ink-soft);font-size:22px;line-height:1;cursor:pointer;padding:2px 6px}
+.attachment-preview-body{min-height:360px;display:grid;place-items:center;overflow:auto;background:#0b0e13;padding:10px}
+.attachment-preview-body img{display:block;width:auto;height:auto;max-width:100%;max-height:84vh;object-fit:contain;border-radius:8px}
+.attachment-preview-loading{display:grid;place-items:center;gap:10px;color:var(--ink-soft);font-size:11px;text-align:center;padding:36px}
+.attachment-preview-spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:asset-view-spin .72s linear infinite}
+.attachment-preview-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface)}
+.attachment-preview-foot small{color:var(--ink-soft);font-size:9px}
+.attachment-preview-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:700px){
+  .attachment-preview-modal{padding:0;align-items:end}
+  .attachment-preview-card{width:100%;height:96vh;max-height:96vh;border-radius:16px 16px 0 0;border-left:0;border-right:0;border-bottom:0}
+  .attachment-preview-body{min-height:56vh;padding:6px}
+  .attachment-preview-body img{max-height:78vh}
+  .attachment-preview-foot{align-items:flex-start;flex-direction:column}
+  .attachment-preview-actions{width:100%}.attachment-preview-actions button{flex:1;min-height:42px}
+}
+
 </style>
 
 <style id="asset-view-loading-feedback">
@@ -5779,6 +5808,60 @@ async function listVisitAttachments(visitId){
 async function fetchVisitAttachmentContent(attachmentId){
   return apiPost('getVisitAttachment',{attachmentId});
 }
+const fastAttachmentPreviewCache=new Map();
+const fastAttachmentPreviewUrls=new Map();
+async function fetchVisitAttachmentPreview(attachmentId){
+  const key=String(attachmentId||'');
+  if(fastAttachmentPreviewCache.has(key))return fastAttachmentPreviewCache.get(key);
+  const promise=apiPost('getVisitAttachmentPreview',{attachmentId:key})
+    .then(data=>{fastAttachmentPreviewCache.set(key,data);return data;})
+    .catch(error=>{fastAttachmentPreviewCache.delete(key);throw error;});
+  fastAttachmentPreviewCache.set(key,promise);
+  return promise;
+}
+function attachmentDataToBlob(data){
+  const bytes=Uint8Array.from(atob(data?.base64||''),c=>c.charCodeAt(0));
+  return new Blob([bytes],{type:data?.mimeType||'application/octet-stream'});
+}
+function attachmentPreviewUrl(attachmentId,data){
+  const key=String(attachmentId||'');
+  if(fastAttachmentPreviewUrls.has(key))return fastAttachmentPreviewUrls.get(key);
+  const url=URL.createObjectURL(attachmentDataToBlob(data));
+  fastAttachmentPreviewUrls.set(key,url);
+  return url;
+}
+function ensureAttachmentPreviewModal(){
+  let modal=document.getElementById('attachment-preview-modal');
+  if(modal)return modal;
+  modal=document.createElement('div');
+  modal.id='attachment-preview-modal';
+  modal.className='attachment-preview-modal';
+  modal.setAttribute('role','dialog');
+  modal.setAttribute('aria-modal','true');
+  modal.innerHTML=`
+    <div class="attachment-preview-card">
+      <div class="attachment-preview-head"><b id="attachment-preview-name">Attachment preview</b><button type="button" class="attachment-preview-close" aria-label="Close preview">×</button></div>
+      <div class="attachment-preview-body" id="attachment-preview-body"><div class="attachment-preview-loading"><span class="attachment-preview-spinner"></span><span>Loading fast preview…</span></div></div>
+      <div class="attachment-preview-foot"><small id="attachment-preview-note">Secure FSM preview</small><div class="attachment-preview-actions"><button type="button" class="btn-secondary" id="attachment-preview-full">Open full file</button><button type="button" class="btn-secondary" id="attachment-preview-download">Download</button></div></div>
+    </div>`;
+  document.body.appendChild(modal);
+  const close=()=>modal.classList.remove('show');
+  modal.querySelector('.attachment-preview-close')?.addEventListener('click',close);
+  modal.addEventListener('click',e=>{if(e.target===modal)close();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('show'))close();});
+  return modal;
+}
+function showAttachmentPreviewLoading(fileName){
+  const modal=ensureAttachmentPreviewModal();
+  modal.dataset.attachmentId='';
+  modal.querySelector('#attachment-preview-name').textContent=fileName||'Attachment preview';
+  modal.querySelector('#attachment-preview-body').innerHTML='<div class="attachment-preview-loading"><span class="attachment-preview-spinner"></span><span>Loading fast preview…</span></div>';
+  modal.querySelector('#attachment-preview-note').textContent='Loading Drive thumbnail…';
+  modal.querySelector('#attachment-preview-full').disabled=true;
+  modal.querySelector('#attachment-preview-download').disabled=true;
+  modal.classList.add('show');
+  return modal;
+}
 async function openAttachmentBlob(blob,fileName,download){
   const url=URL.createObjectURL(blob);
   if(download){
@@ -5796,23 +5879,66 @@ async function openAttachmentBlob(blob,fileName,download){
     setTimeout(()=>URL.revokeObjectURL(url),60000);
   }
 }
+async function openVisitAttachmentFullFile(attachmentId,download=false){
+  const panel=document.getElementById('visit-attachments-panel');
+  const row=panel?.querySelector(`[data-attachment-id="${CSS.escape(String(attachmentId))}"]`);
+  const fileName=row?.dataset.fileName||'attachment';
+  showToast(download?'Downloading attachment':'Opening full attachment',download?'Preparing download…':'Loading full-resolution file…');
+  const data=await fetchVisitAttachmentContent(attachmentId);
+  const blob=attachmentDataToBlob(data);
+  await openAttachmentBlob(blob,data.fileName||fileName,download);
+}
 async function openVisitAttachmentFile(attachmentId,download=false){
-  try{
-    const panel=document.getElementById('visit-attachments-panel');
-    const row=panel?.querySelector(`[data-attachment-id="${CSS.escape(String(attachmentId))}"]`);
-    const provider=row?.dataset.provider||'';
-    const fileId=row?.dataset.fileId||'';
-    const fileName=row?.dataset.fileName||'attachment';
-
-    showToast('Opening attachment','Loading secure file…');
-
-    const data=await fetchVisitAttachmentContent(attachmentId);
-    const bytes=Uint8Array.from(atob(data.base64||''),c=>c.charCodeAt(0));
-    const blob=new Blob([bytes],{type:data.mimeType||'application/octet-stream'});
-    await openAttachmentBlob(blob,data.fileName||fileName,download);
-  }catch(error){
-    showToast('Attachment unavailable',error.message||'Unable to open the file.','bad');
+  if(download){
+    try{await openVisitAttachmentFullFile(attachmentId,true);}
+    catch(error){showToast('Attachment unavailable',error.message||'Unable to download the file.','bad');}
+    return;
   }
+  const panel=document.getElementById('visit-attachments-panel');
+  const row=panel?.querySelector(`[data-attachment-id="${CSS.escape(String(attachmentId))}"]`);
+  const fileName=row?.dataset.fileName||'attachment';
+  const modal=showAttachmentPreviewLoading(fileName);
+  modal.dataset.attachmentId=String(attachmentId);
+  const fullBtn=modal.querySelector('#attachment-preview-full');
+  const downloadBtn=modal.querySelector('#attachment-preview-download');
+  fullBtn.onclick=()=>openVisitAttachmentFullFile(attachmentId,false).catch(error=>showToast('Attachment unavailable',error.message||'Unable to open the full file.','bad'));
+  downloadBtn.onclick=()=>openVisitAttachmentFullFile(attachmentId,true).catch(error=>showToast('Attachment unavailable',error.message||'Unable to download the file.','bad'));
+  try{
+    const data=await fetchVisitAttachmentPreview(attachmentId);
+    if(String(modal.dataset.attachmentId)!==String(attachmentId))return;
+    const body=modal.querySelector('#attachment-preview-body');
+    const note=modal.querySelector('#attachment-preview-note');
+    fullBtn.disabled=false;downloadBtn.disabled=false;
+    if(data?.base64){
+      const url=attachmentPreviewUrl(attachmentId,data);
+      body.innerHTML='';
+      const img=document.createElement('img');img.src=url;img.alt=data.fileName||fileName;body.appendChild(img);
+      const sourceType=String(data.sourceMimeType||'');
+      note.textContent=sourceType==='application/pdf'?'Fast preview of first PDF page · use Open full file for the PDF':'Fast thumbnail preview · use Open full file for original resolution';
+    }else{
+      body.innerHTML='<div class="attachment-preview-loading"><span>Fast preview is not available for this file.</span><span>Use “Open full file” below.</span></div>';
+      note.textContent='Full file remains available securely.';
+    }
+  }catch(error){
+    if(String(modal.dataset.attachmentId)!==String(attachmentId))return;
+    modal.querySelector('#attachment-preview-body').innerHTML='<div class="attachment-preview-loading"><span>Preview could not be loaded.</span><span>'+escapeHtml(error.message||'Please open the full file instead.')+'</span></div>';
+    modal.querySelector('#attachment-preview-note').textContent='Full file remains available.';
+    fullBtn.disabled=false;downloadBtn.disabled=false;
+  }
+}
+function prefetchVisitAttachmentPreviews(attachments){
+  const candidates=(attachments||[]).filter(item=>/^image\//.test(String(item.mimeType||''))||String(item.mimeType||'')==='application/pdf').slice(0,3);
+  if(!candidates.length)return;
+  const run=async()=>{
+    for(const item of candidates){
+      const key=String(item.id||'');
+      if(!key||fastAttachmentPreviewCache.has(key))continue;
+      try{await fetchVisitAttachmentPreview(key);}catch(error){}
+      await yieldToUI();
+    }
+  };
+  if('requestIdleCallback' in window)requestIdleCallback(()=>run(),{timeout:1800});
+  else setTimeout(run,350);
 }
 
 function renderVisitAttachmentsPanel(visitId,attachments){
@@ -5840,6 +5966,7 @@ function renderVisitAttachmentsPanel(visitId,attachments){
         ${currentUser?.role==='management'?`<button class="btn-secondary" type="button" onclick="removeVisitAttachment('${escapeJs(visitId)}','${escapeJs(item.id)}')">Remove</button>`:''}
       </div>
     </div>`).join('');
+  prefetchVisitAttachmentPreviews(attachments);
 }
 async function loadVisitAttachmentsPanel(visitId){
   const panel=document.getElementById('visit-attachments-panel');
@@ -9485,7 +9612,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  const writes=new Map();
  apiPost=function(action,payload={},options={}){
   const key=JSON.stringify([authToken,action,payload,options]);if(writes.has(key))return writes.get(key);
-  const request=track(action,!['planningList','planningSnapshot','listUsers','assetsBootstrap','me','beginSeamlessDriveUpload','registerDirectDriveVisitAttachment'].includes(action),()=>post(action,payload,options));writes.set(key,request);
+  const request=track(action,!['planningList','planningSnapshot','listUsers','assetsBootstrap','me','beginSeamlessDriveUpload','registerDirectDriveVisitAttachment','listVisitAttachments','getVisitAttachmentPreview','getVisitAttachment'].includes(action),()=>post(action,payload,options));writes.set(key,request);
   request.then(()=>writes.delete(key),()=>writes.delete(key));return request;
  };
  window.addEventListener('online',()=>{if(pending.size)paint();});window.addEventListener('offline',()=>{if(pending.size)paint();});
