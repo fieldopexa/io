@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- MASTER V49: seamless Google Drive attachments + large fast thumbnail preview -->
+<!-- MASTER V50: stable seamless upload + large on-demand thumbnail preview -->
 <!-- MASTER V45: seamless Google Drive attachments; attachment controls always visible in New Visit -->
 <!-- MASTER V40: responsive background attachment upload + mobile upload UI -->
 <!-- MASTER V39: visit attachments stored privately in Google Drive -->
@@ -5841,7 +5841,7 @@ function ensureAttachmentPreviewModal(){
   modal.innerHTML=`
     <div class="attachment-preview-card">
       <div class="attachment-preview-head"><b id="attachment-preview-name">Attachment preview</b><button type="button" class="attachment-preview-close" aria-label="Close preview">×</button></div>
-      <div class="attachment-preview-body" id="attachment-preview-body"><div class="attachment-preview-loading"><span class="attachment-preview-spinner"></span><span>Loading fast preview…</span></div></div>
+      <div class="attachment-preview-body" id="attachment-preview-body"><div class="attachment-preview-loading"><span class="attachment-preview-spinner"></span><span>Loading preview…</span></div></div>
       <div class="attachment-preview-foot"><small id="attachment-preview-note">Secure FSM preview</small><div class="attachment-preview-actions"><button type="button" class="btn-secondary" id="attachment-preview-full">Open full file</button><button type="button" class="btn-secondary" id="attachment-preview-download">Download</button></div></div>
     </div>`;
   document.body.appendChild(modal);
@@ -5855,7 +5855,7 @@ function showAttachmentPreviewLoading(fileName){
   const modal=ensureAttachmentPreviewModal();
   modal.dataset.attachmentId='';
   modal.querySelector('#attachment-preview-name').textContent=fileName||'Attachment preview';
-  modal.querySelector('#attachment-preview-body').innerHTML='<div class="attachment-preview-loading"><span class="attachment-preview-spinner"></span><span>Loading fast preview…</span></div>';
+  modal.querySelector('#attachment-preview-body').innerHTML='<div class="attachment-preview-loading"><span class="attachment-preview-spinner"></span><span>Loading preview…</span></div>';
   modal.querySelector('#attachment-preview-note').textContent='Loading Drive thumbnail…';
   modal.querySelector('#attachment-preview-full').disabled=true;
   modal.querySelector('#attachment-preview-download').disabled=true;
@@ -5914,7 +5914,7 @@ async function openVisitAttachmentFile(attachmentId,download=false){
       body.innerHTML='';
       const img=document.createElement('img');img.src=url;img.alt=data.fileName||fileName;body.appendChild(img);
       const sourceType=String(data.sourceMimeType||'');
-      note.textContent=sourceType==='application/pdf'?'Fast preview of first PDF page · use Open full file for the PDF':'Fast thumbnail preview · use Open full file for original resolution';
+      note.textContent=sourceType==='application/pdf'?'Large lightweight preview · use Open full file for the PDF':'Large lightweight preview · use Open full file for original resolution';
     }else{
       body.innerHTML='<div class="attachment-preview-loading"><span>Fast preview is not available for this file.</span><span>Use “Open full file” below.</span></div>';
       note.textContent='Full file remains available securely.';
@@ -5926,21 +5926,6 @@ async function openVisitAttachmentFile(attachmentId,download=false){
     fullBtn.disabled=false;downloadBtn.disabled=false;
   }
 }
-function prefetchVisitAttachmentPreviews(attachments){
-  const candidates=(attachments||[]).filter(item=>/^image\//.test(String(item.mimeType||''))||String(item.mimeType||'')==='application/pdf').slice(0,3);
-  if(!candidates.length)return;
-  const run=async()=>{
-    for(const item of candidates){
-      const key=String(item.id||'');
-      if(!key||fastAttachmentPreviewCache.has(key))continue;
-      try{await fetchVisitAttachmentPreview(key);}catch(error){}
-      await yieldToUI();
-    }
-  };
-  if('requestIdleCallback' in window)requestIdleCallback(()=>run(),{timeout:1800});
-  else setTimeout(run,350);
-}
-
 function renderVisitAttachmentsPanel(visitId,attachments){
   const panel=document.getElementById('visit-attachments-panel');
   if(!panel||String(panel.dataset.visitId)!==String(visitId))return;
@@ -5966,7 +5951,6 @@ function renderVisitAttachmentsPanel(visitId,attachments){
         ${currentUser?.role==='management'?`<button class="btn-secondary" type="button" onclick="removeVisitAttachment('${escapeJs(visitId)}','${escapeJs(item.id)}')">Remove</button>`:''}
       </div>
     </div>`).join('');
-  prefetchVisitAttachmentPreviews(attachments);
 }
 async function loadVisitAttachmentsPanel(visitId){
   const panel=document.getElementById('visit-attachments-panel');
