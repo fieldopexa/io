@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- MASTER V50: stable seamless upload + large on-demand thumbnail preview -->
+<!-- MASTER V51: stable seamless upload + automatic large attachment thumbnails -->
 <!-- MASTER V45: seamless Google Drive attachments; attachment controls always visible in New Visit -->
 <!-- MASTER V40: responsive background attachment upload + mobile upload UI -->
 <!-- MASTER V39: visit attachments stored privately in Google Drive -->
@@ -3081,18 +3081,24 @@ input,select,textarea{min-height:44px;font-size:16px!important}
 .visit-attachment-remove{border:0;background:transparent;color:var(--danger,#c94b4b);cursor:pointer;font-size:16px;line-height:1}
 .visit-attachment-help{margin-top:9px;color:var(--ink-soft);font-size:10px}
 .vd-attachments{margin-top:14px}
-.vd-attachment-list{display:grid;gap:8px;margin-top:9px}
+ .vd-attachment-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px;margin-top:12px;align-items:start}
 .vd-attachment-row{
-  display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);
 }
-.vd-attachment-icon{
-  width:34px;height:34px;border-radius:8px;background:var(--bg);display:grid;place-items:center;font-size:15px;border:1px solid var(--line)
+.vd-attachment-thumb{
+  position:relative;width:100%;height:260px;display:grid;place-items:center;overflow:hidden;background:var(--bg);border-bottom:1px solid var(--line);color:var(--ink-soft);font-size:11px;text-align:center;
 }
+.vd-attachment-thumb img{display:block;width:100%;height:100%;object-fit:contain;cursor:zoom-in;background:var(--bg)}
+.vd-attachment-thumb .vd-thumb-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;max-width:100%;overflow-wrap:anywhere}
+.vd-attachment-thumb .vd-thumb-placeholder strong{font-size:30px;font-weight:500;line-height:1}
+.vd-attachment-thumb .vd-thumb-placeholder small{font-size:10px;color:var(--ink-soft)}
+.vd-attachment-thumb .vd-thumb-spinner{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:asset-view-spin .72s linear infinite}
+.vd-attachment-card-info{width:100%;min-width:0;padding:12px;display:grid;gap:7px}
 .vd-attachment-name{min-width:0}
-.vd-attachment-name b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vd-attachment-name small{display:block;color:var(--ink-soft);font-size:9px;margin-top:2px}
-.vd-attachment-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.vd-attachment-buttons button{min-height:30px;padding:0 9px;font-size:10px}
+.vd-attachment-name b{display:block;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.vd-attachment-name small{display:block;color:var(--ink-soft);font-size:10px;line-height:1.45;margin-top:4px}
+.vd-attachment-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;margin-top:2px}
+.vd-attachment-buttons button{min-height:32px;padding:0 10px;font-size:10px}
 .vd-attachment-loading{padding:12px 0;color:var(--ink-soft);font-size:11px}
 .vd-attachment-empty{padding:10px 0;color:var(--ink-soft);font-size:11px}
 .vd-attachment-uploading{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:10px;margin-top:8px}
@@ -3101,8 +3107,9 @@ input,select,textarea{min-height:44px;font-size:16px!important}
   .visit-attachments-head{display:grid}
   .visit-attachment-actions{width:100%}
   .visit-attachment-pick{flex:1}
-  .vd-attachment-row{grid-template-columns:30px minmax(0,1fr)}
-  .vd-attachment-buttons{grid-column:1/-1;justify-content:flex-start}
+  .vd-attachment-list{grid-template-columns:1fr}
+  .vd-attachment-thumb{height:min(72vw,320px);min-height:210px}
+  .vd-attachment-buttons{justify-content:flex-start}
 }
 
 .attachment-upload-dock{
@@ -5943,14 +5950,49 @@ function renderVisitAttachmentsPanel(visitId,attachments){
   }
   list.innerHTML=attachments.map(item=>`
     <div class="vd-attachment-row" data-attachment-id="${escapeHtml(item.id)}" data-provider="${escapeHtml(item.provider||'drive-backend')}" data-file-id="${escapeHtml(item.fileId||'')}" data-file-name="${escapeHtml(item.fileName||'attachment')}">
-      <div class="vd-attachment-icon">${escapeHtml(attachmentIcon(item.mimeType))}</div>
-      <div class="vd-attachment-name"><b title="${escapeHtml(item.fileName)}">${escapeHtml(item.fileName)}</b><small>${escapeHtml(attachmentSizeLabel(item.sizeBytes))} · ${escapeHtml(item.uploadedBy||'User')} · ${escapeHtml(item.uploadedAt?new Date(item.uploadedAt).toLocaleString():'')}</small></div>
-      <div class="vd-attachment-buttons">
-        <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',false)">Preview</button>
-        <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',true)">Download</button>
-        ${currentUser?.role==='management'?`<button class="btn-secondary" type="button" onclick="removeVisitAttachment('${escapeJs(visitId)}','${escapeJs(item.id)}')">Remove</button>`:''}
+      <div class="vd-attachment-thumb" data-thumbnail-for="${escapeHtml(item.id)}" aria-label="Thumbnail for ${escapeHtml(item.fileName||'attachment')}">
+        <div class="vd-thumb-placeholder"><span class="vd-thumb-spinner"></span><span>Loading thumbnail…</span></div>
+      </div>
+      <div class="vd-attachment-card-info">
+        <div class="vd-attachment-name"><b title="${escapeHtml(item.fileName||'attachment')}">${escapeHtml(item.fileName||'attachment')}</b><small>${escapeHtml(attachmentSizeLabel(item.sizeBytes))} · ${escapeHtml(item.uploadedBy||'User')} · ${escapeHtml(item.uploadedAt?new Date(item.uploadedAt).toLocaleString():'')}</small></div>
+        <div class="vd-attachment-buttons">
+          <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',true)">Download</button>
+          ${currentUser?.role==='management'?`<button class="btn-secondary" type="button" onclick="removeVisitAttachment('${escapeJs(visitId)}','${escapeJs(item.id)}')">Remove</button>`:''}
+        </div>
       </div>
     </div>`).join('');
+  // Load all lightweight Drive thumbnails automatically when the Attachments section opens.
+  attachments.forEach(item=>loadVisitAttachmentThumbnail(item));
+}
+async function loadVisitAttachmentThumbnail(item){
+  const attachmentId=String(item?.id||'');
+  if(!attachmentId)return;
+  const panel=document.getElementById('visit-attachments-panel');
+  const row=panel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"]`);
+  const thumb=row?.querySelector('.vd-attachment-thumb');
+  if(!thumb)return;
+  try{
+    const data=await fetchVisitAttachmentPreview(attachmentId);
+    const currentPanel=document.getElementById('visit-attachments-panel');
+    const currentThumb=currentPanel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
+    if(!currentThumb)return;
+    if(data?.base64){
+      const img=document.createElement('img');
+      img.src=attachmentPreviewUrl(attachmentId,data);
+      img.alt=data.fileName||item.fileName||'Attachment thumbnail';
+      img.title='Click to open a larger preview';
+      img.addEventListener('click',()=>openVisitAttachmentFile(attachmentId,false));
+      currentThumb.replaceChildren(img);
+    }else{
+      const isPdf=String(item.mimeType||'').toLowerCase()==='application/pdf';
+      currentThumb.innerHTML=`<div class="vd-thumb-placeholder"><strong>${isPdf?'PDF':'▧'}</strong><span>Thumbnail unavailable</span><small>Use Download to open this file</small></div>`;
+    }
+  }catch(error){
+    const currentPanel=document.getElementById('visit-attachments-panel');
+    const currentThumb=currentPanel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
+    if(currentThumb)currentThumb.innerHTML='<div class="vd-thumb-placeholder"><strong>▧</strong><span>Preview unavailable</span><small>Use Download to open this file</small></div>';
+    console.warn('Attachment thumbnail could not be loaded:',attachmentId,error);
+  }
 }
 async function loadVisitAttachmentsPanel(visitId){
   const panel=document.getElementById('visit-attachments-panel');
