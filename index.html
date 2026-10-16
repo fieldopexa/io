@@ -4079,7 +4079,7 @@ body:has(#spare-modal[style*="display:flex"]){
     <div class="ticket smart-visit-form">
       <div class="visit-step-progress" id="visit-step-progress" role="status" aria-live="polite"><span id="visit-step-count">Step 1 of 4</span><div class="visit-step-progress-track"><i id="visit-step-progress-fill"></i></div></div>
       <div class="visit-step-panel" data-visit-step="1">
-      <div class="smart-section-head"><span>01</span><div><b>Visit Information</b></div></div>
+      
       <div class="row">
         <div class="field">
           <label>Date</label>
@@ -6431,6 +6431,13 @@ function renderIssueTypeOptions(selected=''){
     sel.innerHTML='';
     return;
   }
+  if(selectedCat==='General'){
+    const activity=document.getElementById('f-visit-type')?.value||'';
+    box.style.display='none';
+    sel.replaceChildren(new Option(activity,activity));
+    sel.value=activity;
+    return;
+  }
   const list=issueTypes[selectedCat]||[];
   box.style.display='block';
   if(label)label.textContent=selectedCat==='General'?'Activity Type':'Issue Type';
@@ -6444,6 +6451,8 @@ function renderIssueTypeOptions(selected=''){
 }
 
 
+const AUTO_GENERAL_ACTIVITY_TYPES=['Routine Visit','Post-Op','Pre-Ops','Pull-out','Transfer','Ocular / Inspection'];
+function isAutoGeneralActivity(value){return AUTO_GENERAL_ACTIVITY_TYPES.includes(value===undefined?(document.getElementById('f-visit-type')?.value||''):value);}
 const SIMPLE_ACTIVITY_VISIT_TYPES=['Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'];
 function isSimpleActivityVisit(value){
   const type=value===undefined?(document.getElementById('f-visit-type')?.value||''):String(value||'');
@@ -6491,7 +6500,7 @@ function updateVisitTypeFlow(resetCategory=false){
   const notes=document.getElementById('f-notes');
   const err=document.getElementById('err-msg');
 
-  if(categoryRow)categoryRow.style.display=simple?'none':'flex';
+  if(categoryRow)categoryRow.style.display=(simple||isAutoGeneralActivity(type))?'none':'flex';
   if(priorityRow)priorityRow.style.display='flex';
   const statusField=priorityRow?.querySelector('.field:nth-child(2)');
   if(statusField)statusField.style.display=simple?'none':'';
@@ -6521,6 +6530,11 @@ function updateVisitTypeFlow(resetCategory=false){
       renderIssueTypeOptions();
     }
   }
+  if(isAutoGeneralActivity(type)){
+    selectedCat='General';
+    document.querySelectorAll('#cat-picker .cat-opt').forEach(option=>{option.className='cat-opt';if(option.dataset.cat==='General')option.classList.add('sel-General');});
+    if(!simple)renderIssueTypeOptions();
+  }
   updateCategoryFields();
   updateResolutionExtra();
 }
@@ -6542,6 +6556,7 @@ function updateCategoryFields(){
   updateAutoVisitPriority();
   const simpleVisit=isSimpleActivityVisit();
   const general=selectedCat==='General';
+  if(general)renderIssueTypeOptions();
   const equipmentDetails=document.getElementById('visit-equipment-details');
   const mobileVisitForm=window.matchMedia('(max-width: 900px)').matches;
   const showEquipmentDetails=!simpleVisit&&!general&&(!mobileVisitForm||!!selectedCat);
@@ -6668,6 +6683,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const err=document.getElementById('err-msg');
   const visitType=document.getElementById('f-visit-type').value;
   const simpleVisit=isSimpleActivityVisit(visitType);
+  if(isAutoGeneralActivity(visitType))selectedCat='General';
   if(!site||(!simpleVisit&&!selectedCat)){
     err.style.display='block';
     if(!site){
@@ -6694,7 +6710,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:simpleVisit?'':selectedCat,issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:simpleVisit?visitType:(selectedCat==='General'?(document.getElementById('f-issue-type')?.value||''):''),notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   // FAST SAVE: update the browser state immediately so Dashboard / Field Logs
   // reflect the visit without waiting for Google Apps Script. If the server
@@ -10067,7 +10083,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   const applyFields=()=>controls().forEach(el=>{if(!Object.prototype.hasOwnProperty.call(d.fields,el.id))return;const value=d.fields[el.id];if(el.tagName==='SELECT'&&value&&!Array.from(el.options).some(o=>o.value===value)){const opt=document.createElement('option');opt.value=value;opt.textContent=value;el.append(opt);}if(el.type==='checkbox')el.checked=!!value;else el.value=value==null?'':String(value);});
   renderSiteOptions(d.fields['f-site']);
   applyFields();updateVisitTypeFlow(false);
-  selectedCat=d.category||null;
+  selectedCat=isAutoGeneralActivity()?'General':(d.category||null);
   document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{el.className='cat-opt';if(el.dataset.cat===selectedCat)el.classList.add('sel-'+selectedCat);});
   document.getElementById('cat-desc').textContent=catDesc[selectedCat]||'';
   updateCategoryFields();renderIssueTypeOptions(d.fields['f-issue-type']||'');applyFields();
@@ -11338,7 +11354,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
       document.getElementById('f-site')?.focus();return;
     }
-    if(activeStep===2&&!isSimple()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
+    if(activeStep===2&&!isSimple()&&!isAutoGeneralActivity()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
       if(error){error.textContent='Choose a concern to continue.';error.style.display='block';}
       document.querySelector('#cat-picker .cat-opt')?.focus();return;
     }
@@ -12011,3 +12027,9 @@ window.addEventListener('DOMContentLoaded',()=>{
  new MutationObserver(sync).observe(select,{attributes:true,attributeFilter:['disabled']});sync();
 })();
 </script>
+
+<style id="visit-details-heading-cleanup">
+#panel-log #visit-additional-details>summary{display:none!important}
+#panel-log #visit-additional-details{border:0!important;background:transparent!important;padding:0!important;margin-top:14px!important;box-shadow:none!important}
+#panel-log #visit-additional-details .visit-additional-fields{padding:0!important}
+</style>
