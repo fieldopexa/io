@@ -4090,8 +4090,8 @@ body:has(#spare-modal[style*="display:flex"]){
           <label>Time in</label>
           <input type="time" id="f-time-in">
         </div>
-        <div class="field">
-          <label>Primary FSE</label>
+        <div class="field" id="primary-fse-field" data-role="management">
+          <label for="f-tech">Primary FSE</label>
           <div style="display:flex; gap:6px;">
             <select id="f-tech" style="flex:1;"></select>
           </div>
@@ -5034,7 +5034,7 @@ let movementRows=[];
 let sparePartRows=[];
 let cabinetPartRows=[];
 let removedPartRows=[];
-function applyRoleUI(){const isMgmt=currentUser?.role==='management';document.querySelectorAll('[data-role="management"]').forEach(el=>{if(isMgmt){el.style.removeProperty('display');}else{el.style.setProperty('display','none','important');}});const role=document.getElementById('logged-role');if(role)role.textContent=isMgmt?'Management':'FSE';if(!isMgmt){activeWork='all';const mineBtn=document.querySelector('#work-toggle [data-work="mine"]');const allBtn=document.querySelector('#work-toggle [data-work="all"]');if(mineBtn&&allBtn){allBtn.classList.add('active');mineBtn.classList.remove('active');}const sel=document.getElementById('my-fse');if(sel){sel.style.display='none';if(currentUser?.fse)sel.value=currentUser.fse;}const tech=document.getElementById('f-tech');if(tech&&currentUser?.fse){tech.value=currentUser.fse;tech.disabled=true;}}const mgmtInventoryIds=['inventory-add-btn','cabinet-add-btn','movement-add-btn','spare-add-btn'];
+function applyRoleUI(){const isMgmt=currentUser?.role==='management';const primarySelect=document.getElementById('f-tech');if(primarySelect)primarySelect.disabled=!isMgmt;document.querySelectorAll('[data-role="management"]').forEach(el=>{if(isMgmt){el.style.removeProperty('display');}else{el.style.setProperty('display','none','important');}});const role=document.getElementById('logged-role');if(role)role.textContent=isMgmt?'Management':'FSE';if(!isMgmt){activeWork='all';const mineBtn=document.querySelector('#work-toggle [data-work="mine"]');const allBtn=document.querySelector('#work-toggle [data-work="all"]');if(mineBtn&&allBtn){allBtn.classList.add('active');mineBtn.classList.remove('active');}const sel=document.getElementById('my-fse');if(sel){sel.style.display='none';if(currentUser?.fse)sel.value=currentUser.fse;}const tech=document.getElementById('f-tech');if(tech&&currentUser?.fse){tech.value=currentUser.fse;tech.disabled=true;}}const mgmtInventoryIds=['inventory-add-btn','cabinet-add-btn','movement-add-btn','spare-add-btn'];
 mgmtInventoryIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isMgmt?'':'none';});
 if(!isMgmt){
   document.getElementById('inventory-form')?.classList.remove('open');
@@ -5646,6 +5646,11 @@ function renderFseOptions(selectValue){
   const previous=selectValue||select?.value||'';
   select.innerHTML = fses.map(n=>`<option value="${escapeHtml(n)}"${isActiveVisitFse(n)?'': ' disabled'}>${escapeHtml(n)}${isActiveVisitFse(n)?'':' (inactive)'}</option>`).join('');
   if(previous && fses.includes(previous) && (isActiveVisitFse(previous)||editingEntryId)) select.value = previous; else select.value = fses.find(isActiveVisitFse)||'';
+  if(currentUser?.role==='fse'){
+    const assigned=String(currentUser.fse||'').trim();
+    if(assigned&&!Array.from(select.options).some(option=>option.value===assigned))select.add(new Option(assigned,assigned));
+    select.value=assigned;select.disabled=true;
+  }else select.disabled=false;
   renderSupportingFses();
 }
 document.getElementById('f-tech').addEventListener('change',()=>renderSupportingFses());
