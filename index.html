@@ -1,5 +1,24 @@
+<!-- FSM MASTER V58: Removed Add/Remove FSE (+/-) controls from New Visit; preserved FSE selection and supporting FSE chips. -->
 <!DOCTYPE html>
-<!-- MASTER V51: stable seamless upload + automatic large attachment thumbnails -->
+<!-- MASTER V56: load cabinet data on New Visit and keep dropdown fallback -->
+<!-- MASTER V94: use the v47 cabinet data-loading path; uppercase New Visit labels -->
+<!-- MASTER V93: surface cabinet picker load failures and add retry -->
+<!-- MASTER V92: restore visible multi-cabinet checklist in New Visit -->
+<!-- MASTER V91: v47-inspired New Visit visual restoration -->
+<!-- MASTER V83: match multi-cabinet choices from site-filtered cabinet labels -->
+<!-- MASTER V82: restore cached multi-cabinet choices after site selection -->
+<!-- MASTER V81: visible cabinet fallback + align visit mode with visit type -->
+<!-- MASTER V80: restore site-specific cabinet choices in New Visit -->
+<!-- MASTER V79: cleaner Dashboard and New Visit presentation -->
+<!-- MASTER V78: restore cabinet choices when asset load state is stale -->
+<!-- MASTER V77: keep cabinet picker updates lightweight and responsive -->
+<!-- MASTER V58: form errors clear after correction; category choices synced -->
+<!-- MASTER V57: clearer mobile visit form and accessible category choices -->
+<!-- MASTER V56: mobile save action stays in flow below attachments -->
+<!-- MASTER V55: one mobile save action; remove duplicate form button -->
+<!-- MASTER V54: mobile cabinet cards + primary bottom navigation -->
+<!-- MASTER V53: mobile touch targets + attachment and cabinet layout refinements -->
+<!-- MASTER V52: stable seamless upload + on-demand attachment previews -->
 <!-- MASTER V45: seamless Google Drive attachments; attachment controls always visible in New Visit -->
 <!-- MASTER V40: responsive background attachment upload + mobile upload UI -->
 <!-- MASTER V39: visit attachments stored privately in Google Drive -->
@@ -859,6 +878,79 @@ tbody tr:hover{
   }
 }
 
+</style>
+<style id="new-visit-uppercase-labels">
+@media (max-width: 900px) {
+#panel-log .smart-visit-form .field>label,#panel-log .smart-visit-form .field-label{ text-transform:uppercase!important; letter-spacing:.065em!important; }
+#panel-log .smart-visit-form .field>label .field-required,#panel-log .smart-visit-form .field>label .muted{ text-transform:none!important; letter-spacing:0!important; }
+}
+</style>
+
+
+
+<style id="dashboard-and-visit-clarity-v79">
+@media (max-width: 900px) {
+/* Scoped visual cleanup for Dashboard and New Visit only. */
+#panel-dashboard{max-width:1180px;margin:0 auto}
+#panel-dashboard .dashboard-head-premium{align-items:center;gap:18px;margin:0 0 18px;padding:20px 22px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(115deg,rgba(109,140,255,.09),rgba(17,19,23,.72) 55%)}
+#panel-dashboard .dashboard-eyebrow{display:block!important;margin-bottom:6px;color:#9eafff!important;font-size:10px!important;font-weight:700;letter-spacing:.12em}
+#panel-dashboard .dashboard-head-premium h2{margin:0;color:#f1f3f5;font-size:24px!important;font-weight:650!important;letter-spacing:-.035em}
+#panel-dashboard .dashboard-head-premium p{max-width:600px;margin:6px 0 0;color:#9ba4b2!important;font-size:12px!important;line-height:1.5!important}
+#panel-dashboard .dashboard-date{padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(10,12,16,.36);white-space:nowrap}
+#panel-dashboard .mgmt-period-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#11151a}
+#panel-dashboard .mgmt-period-bar>div:first-child{display:grid;gap:3px;color:#8e96a3;font-size:10px}
+#panel-dashboard .mgmt-period-bar>div:first-child b{color:#e1e6ef;font-size:12px;font-weight:600}
+#panel-dashboard .mgmt-period-actions{display:flex;flex-wrap:wrap;gap:6px}
+#panel-dashboard .mgmt-period-actions .btn-secondary{min-height:34px;padding:0 11px;color:#aab3c1;font-size:11px}
+#panel-dashboard .mgmt-period-actions .btn-secondary.active{border-color:rgba(142,163,255,.42);background:rgba(109,140,255,.12);color:#dbe3ff}
+#panel-dashboard .mgmt-snapshot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 16px}
+#panel-dashboard .mgmt-snapshot>.mgmt-kpi:nth-child(n+5){display:none!important}
+#panel-dashboard .mgmt-kpi,#panel-dashboard .mgmt-kpi:first-child{min-width:0;padding:14px 16px!important;border:1px solid var(--line)!important;border-radius:11px!important;background:#11151a!important}
+#panel-dashboard .mgmt-kpi>span{color:#9ba5b4!important;font-size:10px!important;font-weight:600;letter-spacing:.04em}
+#panel-dashboard .mgmt-kpi b{display:block;margin-bottom:4px;color:#edf0f5;font-size:24px!important;font-weight:650}
+#panel-dashboard .mgmt-kpi small{color:#929cab!important;font-size:10px!important;line-height:1.4}
+#panel-dashboard .chart-card{padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:#11151a;box-shadow:none}
+#panel-dashboard .chart-card h2{margin:0 0 12px;color:#dfe4ed;font-size:13px;font-weight:600;letter-spacing:0}
+#panel-dashboard>.chart-card{margin:0 0 14px}
+#panel-dashboard .calm-recent-row{align-items:center;min-height:54px;padding:10px 2px}
+#panel-dashboard .calm-recent-row button{color:#e2e7f0;font-weight:550}
+#panel-dashboard .calm-recent-row button:hover{color:#b8c7ff}
+#panel-dashboard .calm-recent-row small{color:#8e96a3;font-size:10px}
+#panel-dashboard .calm-recent-row>span{padding:4px 8px;border:1px solid rgba(255,255,255,.08);border-radius:99px;color:#b6bfce;font-size:10px}
+#panel-dashboard .calm-disclosure{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:#11151a}
+#panel-dashboard .calm-disclosure>summary{padding:13px 15px}
+#panel-dashboard .calm-disclosure[open]>summary{border-bottom:1px solid var(--line)}
+#panel-dashboard .calm-disclosure>:not(summary){margin-right:14px;margin-left:14px}
+
+#panel-log .smart-section-head{align-items:center;gap:11px}
+#panel-log .smart-section-head>span{display:grid;place-items:center;width:30px!important;height:30px;flex:0 0 30px;border:1px solid rgba(167,184,255,.15);border-radius:9px;background:rgba(109,140,255,.09)!important;color:#aebeff!important;font-size:10px;font-weight:650}
+#panel-log .smart-section-head b{display:block;color:#e4e9f1;font-size:14px;font-weight:650;letter-spacing:-.01em}
+#panel-log .smart-section-head small{display:block!important;margin-top:3px;color:#929cab;font-size:10px;line-height:1.45}
+#panel-log #visit-draft-controls{display:flex;align-items:center;gap:8px;min-height:38px;margin:0 auto 12px;padding:6px 10px;border:1px solid rgba(255,255,255,.07);border-radius:9px;background:rgba(17,21,26,.65);color:#929cab;font-size:10px}
+#panel-log #visit-draft-controls span{flex:1;min-width:0}
+#panel-log #visit-draft-controls .btn-secondary{min-height:30px;padding:0 9px;font-size:10px}
+#panel-log .field>label,#panel-log .field-label{color:#d0d7e2!important;font-size:12px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important}
+#panel-log .field-required{vertical-align:middle}
+#panel-log .cat-opt{min-height:44px!important}
+#panel-log .visit-more-details{border-color:rgba(226,233,245,.10)}
+#panel-log .visit-attachments-box{border-radius:11px}
+#panel-log #err-msg:empty{display:none}
+@media(max-width:900px){
+ #panel-dashboard .dashboard-head-premium{align-items:flex-start;margin-bottom:12px;padding:15px 14px}
+ #panel-dashboard .dashboard-head-premium h2{font-size:20px!important}
+ #panel-dashboard .dashboard-date{align-self:flex-start;font-size:9px}
+ #panel-dashboard .mgmt-period-bar{align-items:flex-start;flex-direction:column;padding:11px}
+ #panel-dashboard .mgmt-period-actions{display:grid;width:100%;grid-template-columns:repeat(3,minmax(0,1fr))}
+ #panel-dashboard .mgmt-period-actions .btn-secondary{padding:0 5px;font-size:10px}
+ #panel-dashboard .mgmt-snapshot{gap:8px}
+ #panel-dashboard .mgmt-kpi,#panel-dashboard .mgmt-kpi:first-child{padding:11px 12px!important}
+ #panel-dashboard .mgmt-kpi b{font-size:21px!important}
+ #panel-dashboard .chart-card{padding:14px}
+ #panel-log #visit-draft-controls{flex-wrap:wrap}
+ #panel-log .smart-section-head small{max-width:34ch}
+}
+@media(prefers-reduced-motion:reduce){#panel-dashboard *,#panel-log *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+}
 </style>
 
 <style>
@@ -2536,7 +2628,7 @@ thead th{
     width:100%!important;
     min-width:0!important;
   }
-  #add-fse-btn,#remove-fse-btn,#add-site-btn{
+  #add-site-btn{
     flex:0 0 48px!important;
     width:48px!important;
     height:48px!important;
@@ -2713,7 +2805,6 @@ thead th{
   .mobile-save-fab{left:10px;right:10px}
 }
 </style>
-
 
 <style>
 /* Production login refinements */
@@ -3086,11 +3177,11 @@ input,select,textarea{min-height:44px;font-size:16px!important}
   min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);
 }
 .vd-attachment-thumb{
-  position:relative;width:100%;height:260px;display:grid;place-items:center;overflow:hidden;background:var(--bg);border-bottom:1px solid var(--line);color:var(--ink-soft);font-size:11px;text-align:center;
+  position:relative;width:100%;height:132px;display:grid;place-items:center;overflow:hidden;background:var(--bg);border-bottom:1px solid var(--line);color:var(--ink-soft);font-size:11px;text-align:center;
 }
 .vd-attachment-thumb img{display:block;width:100%;height:100%;object-fit:contain;cursor:zoom-in;background:var(--bg)}
 .vd-attachment-thumb .vd-thumb-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;max-width:100%;overflow-wrap:anywhere}
-.vd-attachment-thumb .vd-thumb-placeholder strong{font-size:30px;font-weight:500;line-height:1}
+.vd-attachment-thumb .vd-thumb-placeholder strong{font-size:24px;font-weight:500;line-height:1}
 .vd-attachment-thumb .vd-thumb-placeholder small{font-size:10px;color:var(--ink-soft)}
 .vd-attachment-thumb .vd-thumb-spinner{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:asset-view-spin .72s linear infinite}
 .vd-attachment-card-info{width:100%;min-width:0;padding:12px;display:grid;gap:7px}
@@ -3098,8 +3189,9 @@ input,select,textarea{min-height:44px;font-size:16px!important}
 .vd-attachment-name b{display:block;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
 .vd-attachment-name small{display:block;color:var(--ink-soft);font-size:10px;line-height:1.45;margin-top:4px}
 .vd-attachment-buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start;margin-top:2px}
-.vd-attachment-buttons button{min-height:32px;padding:0 10px;font-size:10px}
-.vd-attachment-loading{padding:12px 0;color:var(--ink-soft);font-size:11px}
+.vd-attachment-buttons button{min-height:38px;padding:0 10px;font-size:10px}
+.vd-attachment-loading{display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--ink-soft);font-size:11px}
+.vd-attachment-loading .mini-spin{width:14px;height:14px;flex:0 0 14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:asset-view-spin .72s linear infinite}
 .vd-attachment-empty{padding:10px 0;color:var(--ink-soft);font-size:11px}
 .vd-attachment-uploading{display:flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:10px;margin-top:8px}
 .vd-attachment-uploading .mini-spin{width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:asset-view-spin .72s linear infinite}
@@ -3108,8 +3200,11 @@ input,select,textarea{min-height:44px;font-size:16px!important}
   .visit-attachment-actions{width:100%}
   .visit-attachment-pick{flex:1}
   .vd-attachment-list{grid-template-columns:1fr}
-  .vd-attachment-thumb{height:min(72vw,320px);min-height:210px}
-  .vd-attachment-buttons{justify-content:flex-start}
+  .vd-attachment-thumb{height:min(58vw,210px);min-height:150px}
+  .vd-attachment-card-info{padding:12px}
+  .vd-attachment-buttons{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px}
+  .vd-attachment-buttons button{min-height:44px;font-size:11px}
+  .vd-attachment-loading{min-height:44px}
 }
 
 .attachment-upload-dock{
@@ -3181,7 +3276,7 @@ input,select,textarea{min-height:44px;font-size:16px!important}
   .attachment-preview-card{width:100%;height:96vh;max-height:96vh;border-radius:16px 16px 0 0;border-left:0;border-right:0;border-bottom:0}
   .attachment-preview-body{min-height:56vh;padding:6px}
   .attachment-preview-body img{max-height:78vh}
-  .attachment-preview-foot{align-items:flex-start;flex-direction:column}
+  .attachment-preview-foot{align-items:flex-start;flex-direction:column;padding-bottom:max(10px,env(safe-area-inset-bottom))}
   .attachment-preview-actions{width:100%}.attachment-preview-actions button{flex:1;min-height:42px}
 }
 
@@ -3541,6 +3636,7 @@ table tbody tr:hover{background:#ffffff03!important}
 
 </script>
 
+
 <style id="weekly-agenda-style">
 .agenda-editor{margin:14px 0 20px;padding:16px 18px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
 .agenda-editor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px}
@@ -3726,6 +3822,151 @@ body:has(#spare-modal[style*="display:flex"]){
 }
 </style>
 
+<style id="mobile-safe-area-polish">
+@media(max-width:900px){
+  .mobile-app-header{height:calc(64px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
+  .app-content{padding-bottom:calc(96px + env(safe-area-inset-bottom))!important}
+  .mobile-save-fab{bottom:max(10px,env(safe-area-inset-bottom))!important}
+}
+</style>
+
+<!-- v52: preserve Codex mobile layout; desktop visuals inherit v51 styling. -->
+<style id="dashboard-v50-desktop-restore">
+/* Restore the V50 dashboard presentation on desktop only; leave the Codex mobile layout intact. */
+@media (min-width: 901px) {
+  #panel-dashboard { max-width: none !important; margin: 0 !important; }
+  #panel-dashboard .dashboard-head-premium {
+    position: relative !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: space-between !important;
+    gap: 15px !important;
+    margin: 26px 0 22px !important;
+    padding: 0 2px 18px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,.065) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #panel-dashboard .dashboard-head-premium::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    bottom: -1px !important;
+    width: 92px !important;
+    height: 1px !important;
+    background: linear-gradient(90deg,rgba(109,140,255,.75),rgba(109,140,255,0)) !important;
+  }
+  #panel-dashboard .dashboard-title-block { min-width: 0 !important; }
+  #panel-dashboard .dashboard-eyebrow { display: none !important; }
+  #panel-dashboard .dashboard-head-premium h2 {
+    margin: 0 !important;
+    color: #f4f6f8 !important;
+    font-size: 24px !important;
+    font-weight: 680 !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.025em !important;
+  }
+  #panel-dashboard .dashboard-head-premium p {
+    max-width: 650px !important;
+    margin: 7px 0 0 !important;
+    color: #818a98 !important;
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+  #panel-dashboard .dashboard-date {
+    flex: 0 0 auto !important;
+    margin-bottom: 2px !important;
+    padding: 5px 8px !important;
+    border: 1px solid rgba(255,255,255,.06) !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.015) !important;
+    color: #747d8a !important;
+    font-size: 9px !important;
+    letter-spacing: .04em !important;
+    white-space: nowrap !important;
+  }
+  #panel-dashboard .mgmt-period-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin: 0 0 12px !important;
+    padding: 10px 12px !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.018) !important;
+  }
+  #panel-dashboard .mgmt-period-bar > div:first-child span {
+    display: block !important;
+    color: var(--ink-soft) !important;
+    font-size: 8px !important;
+    letter-spacing: .09em !important;
+    text-transform: uppercase !important;
+  }
+  #panel-dashboard .mgmt-period-bar > div:first-child b { font-size: 11px !important; }
+  #panel-dashboard .mgmt-period-actions { display: flex !important; flex-wrap: wrap !important; gap: 5px !important; }
+  #panel-dashboard .mgmt-period-actions .btn-secondary { padding: 7px 9px !important; font-size: 9px !important; }
+  #panel-dashboard .mgmt-period-actions .active {
+    border-color: rgba(125,98,255,.45) !important;
+    background: rgba(125,98,255,.12) !important;
+    color: #fff !important;
+  }
+  #panel-dashboard .mgmt-snapshot {
+    display: grid !important;
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    gap: 9px !important;
+    margin: 0 0 12px !important;
+  }
+  #panel-dashboard .mgmt-snapshot > .mgmt-kpi:nth-child(n+5) { display: none !important; }
+  #panel-dashboard .mgmt-kpi,
+  #panel-dashboard .mgmt-kpi:first-child {
+    position: relative !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 8px 16px !important;
+    border: 0 !important;
+    border-left: 1px solid var(--line) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #panel-dashboard .mgmt-kpi:first-child { border-left: 0 !important; }
+  #panel-dashboard .mgmt-kpi::after { display: none !important; }
+  #panel-dashboard .mgmt-kpi > span {
+    color: var(--ink-soft) !important;
+    font-size: 8px !important;
+    font-weight: 500 !important;
+    letter-spacing: .08em !important;
+    text-transform: uppercase !important;
+  }
+  #panel-dashboard .mgmt-kpi > b { display: block !important; margin: 8px 0 5px !important; font-size: 26px !important; line-height: 1.1 !important; }
+  #panel-dashboard .mgmt-kpi > small { margin-top: auto !important; color: var(--ink-soft) !important; font-size: 11px !important; }
+  #panel-dashboard .mgmt-grid { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 10px !important; margin-bottom: 12px !important; }
+  #panel-dashboard .chart-card {
+    padding: 18px !important;
+    margin-bottom: 14px !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 10px !important;
+    background: var(--card) !important;
+    box-shadow: none !important;
+  }
+  #panel-dashboard .chart-card h2 { color: var(--ink) !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; }
+  #panel-dashboard .section-title-row { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; }
+  #panel-dashboard .section-title-row h2 { margin: 0 0 12px !important; }
+  #panel-dashboard .calm-disclosure { margin-top: 16px !important; border: 0 !important; border-top: 1px solid var(--line) !important; border-radius: 0 !important; background: transparent !important; }
+  #panel-dashboard .calm-disclosure > summary { padding: 14px 0 !important; }
+}
+</style>
+
+<style id="v57-cabinet-multi-choice-guard">
+#panel-log #f-cabinet-quick{display:none!important;visibility:hidden!important}
+#panel-log #cabinet-multi-picker{display:block!important;visibility:visible!important;min-height:40px;min-width:0;width:100%}
+#panel-log #cabinet-multi-picker .cabinet-picker-message{margin:8px 0;padding:10px 12px;font-size:12px;color:var(--ink-soft);border:1px dashed var(--line);border-radius:8px}
+#panel-log #cabinet-multi-picker .cabinet-picker-choices{width:100%}
+@media(max-width:900px){#panel-log #cabinet-multi-picker .cabinet-picker-choices{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+</style>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -3752,6 +3993,13 @@ body:has(#spare-modal[style*="display:flex"]){
     </div>
     <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">☰</button>
   </div>
+
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Main navigation">
+    <button type="button" data-mobile-tab="log" class="active" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>New Visit</span></button>
+    <button type="button" data-mobile-tab="fieldlogs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span>Logs</span></button>
+    <button type="button" data-mobile-tab="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Home</span></button>
+    <button type="button" data-mobile-tab="inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>Assets</span></button>
+  </nav>
 
   <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
   <aside class="mobile-nav-drawer" id="mobile-nav-drawer" aria-hidden="true">
@@ -3799,7 +4047,7 @@ body:has(#spare-modal[style*="display:flex"]){
   <div class="app-content">
   <h1 style="display:none">Field Operations</h1>
   <p class="sub" style="display:none">Field service activity, visit records, and operational performance.</p>
-  <div class="mobile-page-head">
+  <div class="mobile-page-head is-new-visit">
     <div>
       <span class="mobile-page-kicker">FIELD OPERATIONS</span>
       <h1 id="mobile-page-title">New Field Visit</h1>
@@ -3811,7 +4059,7 @@ body:has(#spare-modal[style*="display:flex"]){
   </div>
   <div class="system-bar" id="system-bar">
     <span class="system-title">OPERATIONS CONTROL CENTER</span>
-    <span class="system-meta">
+      <span class="system-meta" id="system-meta">
       <span class="system-chip system-chip-online"><span class="online-dot"></span><span id="system-status">SYSTEM ONLINE</span></span>
       <span class="system-chip" id="system-sites">0 SITES</span>
       <span class="system-chip" id="system-fses">0 FSE</span>
@@ -3822,6 +4070,8 @@ body:has(#spare-modal[style*="display:flex"]){
 
   <div class="panel active" id="panel-log">
     <div class="ticket smart-visit-form">
+      <div class="visit-step-progress" id="visit-step-progress" role="status" aria-live="polite"><span id="visit-step-count">Step 1 of 4</span><div class="visit-step-progress-track"><i id="visit-step-progress-fill"></i></div></div>
+      <div class="visit-step-panel" data-visit-step="1">
       <div class="smart-section-head"><span>01</span><div><b>Visit Information</b><small>Who, where and what visit is being logged.</small></div></div>
       <div class="row">
         <div class="field">
@@ -3829,7 +4079,7 @@ body:has(#spare-modal[style*="display:flex"]){
           <input type="date" id="f-date">
           <div class="week-hint" id="week-hint"></div>
         </div>
-        <div class="field" style="max-width:130px;">
+        <div class="field" id="visit-time-in-field" style="max-width:130px;display:none;">
           <label>Time in</label>
           <input type="time" id="f-time-in">
         </div>
@@ -3837,22 +4087,29 @@ body:has(#spare-modal[style*="display:flex"]){
           <label>Primary FSE</label>
           <div style="display:flex; gap:6px;">
             <select id="f-tech" style="flex:1;"></select>
-            <button type="button" id="add-fse-btn" title="Add FSE" style="width:36px; border:1px solid var(--line); border-radius:2px; background:var(--input-bg); font-size:16px; cursor:pointer; color:var(--ink-soft);">+</button>
-            <button type="button" id="remove-fse-btn" title="Remove selected FSE" style="width:36px; border:1px solid var(--line); border-radius:2px; background:var(--input-bg); font-size:14px; cursor:pointer; color:var(--ink-soft);">&minus;</button>
           </div>
-          <div class="team-support-box">
-            <div class="team-support-head"><span>With / Supporting FSEs</span><small>Optional — select everyone who joined the activity.</small></div>
-            <div id="f-supporting-options" class="team-chip-list"></div>
-          </div>
-          <div id="add-fse-row" style="display:none; gap:6px; margin-top:6px;">
-            <input type="text" id="new-fse-input" placeholder="New FSE name" style="flex:1;">
-            <button type="button" id="save-fse-btn" style="padding:0 12px; border:1px solid var(--line); border-radius:2px; background:var(--ink); color:var(--paper); font-size:12px; cursor:pointer;">Save</button>
-          </div>
+        </div>
+      </div>
+      <div class="row" id="visit-type-row">
+        <div class="field">
+          <label>Visit Type</label>
+          <select id="f-visit-type">
+            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option>
+            <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
+            <option hidden>Follow-up</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field" id="field-visit-support-mode">
+          <label for="f-resolved-via">Support type</label>
+          <select id="f-resolved-via">
+            <option>Site visit</option>
+            <option>Remote</option>
+          </select>
         </div>
       </div>
       <div class="row">
         <div class="field">
-          <label>Client / site</label>
+            <label for="f-site">Client <span class="field-required">Required</span></label>
           <div style="display:flex; gap:6px;">
             <select id="f-site" style="flex:1;"></select>
             <button type="button" id="add-site-btn" title="Add new site" style="width:36px; border:1px solid var(--line); border-radius:9px; background:var(--input-bg); font-size:16px; cursor:pointer; color:var(--ink-soft);">+</button>
@@ -3865,31 +4122,38 @@ body:has(#spare-modal[style*="display:flex"]){
         </div>
         <div class="field">
           <label>Cabinet <span class="muted">(optional)</span></label>
-          <select id="f-cabinet-quick">
+          <select id="f-cabinet-quick" tabindex="-1" aria-hidden="true">
             <option value="">No cabinet selected</option>
           </select>
-          <div class="cat-desc">Select the site first, then choose from only the cabinets assigned to that site.</div>
+          <div id="cabinet-multi-picker" class="cabinet-multi-picker" role="group" aria-label="Choose multiple cabinets">
+            <p class="cabinet-picker-message">Select a client to see its cabinets.</p>
+          </div>
+          <div class="cat-desc">Select one or more cabinets. Leave all unchecked if this visit is not cabinet-specific.</div>
         </div>
       </div>
       <div id="visit-cabinet-card" class="visit-cabinet-card" style="display:none"></div>
       <div id="site-profile" class="site-profile" style="display:none;"></div>
-      <div class="row">
-        <div class="field">
-          <label>Ticket / Incident # <span class="muted">(optional)</span></label>
-          <input type="text" id="f-ticket" placeholder="e.g. 839251">
+      <details class="visit-more-details" id="visit-additional-details" open>
+        <summary><span><b>Additional details</b></span><span class="visit-details-mark" aria-hidden="true">＋</span></summary>
+        <div class="row visit-additional-fields">
+          <div class="field">
+            <label for="f-ticket">Ticket / Incident # <span class="muted">(optional)</span></label>
+            <input type="text" id="f-ticket" placeholder="e.g. 839251">
+          </div>
+          <div class="field">
+            <label>Supporting FSEs <span class="muted">(optional)</span></label>
+            <div class="team-support-box">
+              <div class="team-support-head"><span>Who joined this activity?</span><small>Select everyone who supported the visit.</small></div>
+              <div id="f-supporting-options" class="team-chip-list"></div>
+            </div>
+          </div>
         </div>
-        <div class="field">
-          <label>Visit Type</label>
-          <select id="f-visit-type">
-            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option>
-            <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
-            <option>Follow-up</option><option>Other</option>
-          </select>
-        </div>
+      </details>
       </div>
-      <div class="smart-section-head" id="concern-activity-section-head"><span>02</span><div><b>Concern / Activity</b><small>Choose the category and only the relevant fields will remain visible.</small></div></div>
+      <div class="visit-step-panel" data-visit-step="2">
+      <div class="smart-section-head" id="concern-activity-section-head"><span>02</span><div><b>Concern / Activity</b></div></div>
       <div id="advanced-fields">
-      <div class="row">
+      <div class="row" id="visit-time-details" style="display:none;">
         <div class="field" style="max-width:150px;">
           <label>Time out</label>
           <input type="time" id="f-time-out">
@@ -3901,15 +4165,15 @@ body:has(#spare-modal[style*="display:flex"]){
       </div>
       <div class="row" id="visit-category-row">
         <div class="field">
-          <label>Category</label>
-          <div class="cats" id="cat-picker">
-            <div class="cat-opt" data-cat="Hardware">Hardware</div>
-            <div class="cat-opt" data-cat="Software">Software</div>
-            <div class="cat-opt" data-cat="Network">Network</div>
-            <div class="cat-opt" data-cat="Backoffice">Back Office</div>
-            <div class="cat-opt" data-cat="General">General</div>
+          <div class="field-label" id="category-label">Category</div>
+          <div class="cats" id="cat-picker" role="group" aria-labelledby="category-label">
+            <button type="button" class="cat-opt" data-cat="Hardware" aria-pressed="false">Hardware</button>
+            <button type="button" class="cat-opt" data-cat="Software" aria-pressed="false">Software</button>
+            <button type="button" class="cat-opt" data-cat="Network" aria-pressed="false">Network</button>
+            <button type="button" class="cat-opt" data-cat="Backoffice" aria-pressed="false">Back Office</button>
+            <button type="button" class="cat-opt" data-cat="General" aria-pressed="false">General</button>
           </div>
-          <div class="cat-desc" id="cat-desc">Select a category to see what it covers.</div>
+          <div class="cat-desc" id="cat-desc"></div>
           <div id="issue-type-options" class="conditional-box" style="display:none; margin-top:10px;">
             <label id="issue-type-label">Issue Type</label>
             <select id="f-issue-type"></select>
@@ -3919,8 +4183,11 @@ body:has(#spare-modal[style*="display:flex"]){
       </div>
       <div class="row" id="visit-priority-status-row">
         <div class="field" style="max-width:180px;">
-          <label>Priority</label>
-          <select id="f-priority">
+          <label>Auto priority</label>
+          <span id="auto-priority-tag" class="priority-pill priority-Medium">Medium</span>
+          <small id="auto-priority-reason" class="cat-desc">Set from the selected concern.</small>
+          <input type="checkbox" id="f-operation-stopped" hidden aria-hidden="true" style="display:none!important">
+          <select id="f-priority" style="display:none;">
             <option>Critical</option>
             <option>High</option>
             <option selected>Medium</option>
@@ -3932,19 +4199,15 @@ body:has(#spare-modal[style*="display:flex"]){
           <select id="f-status">
             <option>Resolved</option>
             <option>Pending</option>
-            <option>Follow-up</option>
+            <option hidden>Follow-up</option>
           </select>
         </div>
       </div>
-      <div class="smart-section-head" id="action-taken-section-head"><span>03</span><div><b>Action Taken</b><small>Record what was done and any next step required.</small></div></div>
+      </div>
+      </div>
+      <div class="visit-step-panel" data-visit-step="3">
+      <div class="smart-section-head" id="action-taken-section-head"><span>03</span><div><b>Action Taken</b></div></div>
       <div class="row" id="resolution-extra" style="display:none;">
-        <div class="field">
-          <label>Visit / Support Mode</label>
-          <select id="f-resolved-via">
-            <option>Site visit</option>
-            <option>Remote</option>
-          </select>
-        </div>
         <div class="field" id="field-time-resolved" style="max-width:150px;">
           <label>Time resolved</label>
           <input type="time" id="f-time-resolved">
@@ -3966,6 +4229,8 @@ body:has(#spare-modal[style*="display:flex"]){
           <textarea id="f-resolution" placeholder="What was done to resolve or address the issue?"></textarea>
         </div>
       </div>
+      <details class="visit-more-details visit-equipment-details" id="visit-equipment-details" hidden>
+        <summary><span><b>Equipment & parts</b><small>Category-specific serials, materials, and tracked spares</small></span><span class="visit-details-mark" aria-hidden="true">＋</span></summary>
       <div class="row" id="field-resolution-type">
         <div class="field">
           <label>Resolution type</label>
@@ -4004,6 +4269,7 @@ body:has(#spare-modal[style*="display:flex"]){
           <div class="field"><label>Removed Part Location</label><input id="f-removed-location" placeholder="Warehouse / office / repair area"></div>
         </div>
       </div>
+      </details>
 
       <div class="row" id="visit-notes-row">
         <div class="field">
@@ -4013,7 +4279,7 @@ body:has(#spare-modal[style*="display:flex"]){
       </div>
 
       </div>
-
+      <div class="visit-step-panel" data-visit-step="4">
       <div class="smart-section-head" id="visit-attachments-section-head"><span>04</span><div><b>Attachments</b><small>Optional site photos, screenshots, signed forms, or PDF documents.</small></div></div>
       <div class="visit-attachments-box" id="visit-attachments-box">
         <div class="visit-attachments-head">
@@ -4033,7 +4299,10 @@ body:has(#spare-modal[style*="display:flex"]){
       <div class="visit-edit-banner" id="visit-edit-banner"><span><b>Editing Field Log</b> — changes will update the existing record.</span><button type="button" id="cancel-visit-edit">Cancel edit</button></div>
       <button class="submit" id="submit-btn"><span>Log field visit</span><span class="submit-arrow">→</span></button>
 <button type="button" class="mobile-save-fab" id="mobile-save-fab"><span>Save Field Visit</span><b>→</b></button>
-      <div class="err" id="err-msg">Fill in the site and category before logging.</div>
+      <div class="err" id="err-msg" role="alert" aria-live="polite">Fill in the site and category before logging.</div>
+      </div>
+      <div class="visit-step-error" id="visit-step-error" role="alert" aria-live="polite"></div>
+      <div class="visit-step-controls" id="visit-step-controls"><button type="button" id="visit-step-back" aria-label="Previous step">← Back</button><span id="visit-step-short-title">Visit details</span><button type="button" id="visit-step-next">Next →</button></div>
     </div>
 
 
@@ -4222,6 +4491,7 @@ body:has(#spare-modal[style*="display:flex"]){
     </div>
 
     <div class="cabinet-table-wrap"><table class="cabinet-table"><thead><tr><th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Serial Number</th><th>Token</th><th>TeamViewer</th><th>Updated</th><th></th></tr></thead><tbody id="cabinet-body"></tbody></table></div>
+    <div class="cabinet-mobile-list" id="cabinet-mobile-list" role="list" aria-label="Cabinet registry cards"></div>
 
     </div>
 
@@ -4757,7 +5027,7 @@ let movementRows=[];
 let sparePartRows=[];
 let cabinetPartRows=[];
 let removedPartRows=[];
-function applyRoleUI(){const isMgmt=currentUser?.role==='management';document.querySelectorAll('[data-role="management"]').forEach(el=>{if(isMgmt){el.style.removeProperty('display');}else{el.style.setProperty('display','none','important');}});const role=document.getElementById('logged-role');if(role)role.textContent=isMgmt?'Management':'FSE';if(!isMgmt){activeWork='all';const mineBtn=document.querySelector('#work-toggle [data-work="mine"]');const allBtn=document.querySelector('#work-toggle [data-work="all"]');if(mineBtn&&allBtn){allBtn.classList.add('active');mineBtn.classList.remove('active');}const sel=document.getElementById('my-fse');if(sel){sel.style.display='none';if(currentUser?.fse)sel.value=currentUser.fse;}const tech=document.getElementById('f-tech');if(tech&&currentUser?.fse){tech.value=currentUser.fse;tech.disabled=true;}document.getElementById('add-fse-btn')?.style.setProperty('display','none');document.getElementById('remove-fse-btn')?.style.setProperty('display','none');}const mgmtInventoryIds=['inventory-add-btn','cabinet-add-btn','movement-add-btn','spare-add-btn'];
+function applyRoleUI(){const isMgmt=currentUser?.role==='management';document.querySelectorAll('[data-role="management"]').forEach(el=>{if(isMgmt){el.style.removeProperty('display');}else{el.style.setProperty('display','none','important');}});const role=document.getElementById('logged-role');if(role)role.textContent=isMgmt?'Management':'FSE';if(!isMgmt){activeWork='all';const mineBtn=document.querySelector('#work-toggle [data-work="mine"]');const allBtn=document.querySelector('#work-toggle [data-work="all"]');if(mineBtn&&allBtn){allBtn.classList.add('active');mineBtn.classList.remove('active');}const sel=document.getElementById('my-fse');if(sel){sel.style.display='none';if(currentUser?.fse)sel.value=currentUser.fse;}const tech=document.getElementById('f-tech');if(tech&&currentUser?.fse){tech.value=currentUser.fse;tech.disabled=true;}}const mgmtInventoryIds=['inventory-add-btn','cabinet-add-btn','movement-add-btn','spare-add-btn'];
 mgmtInventoryIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isMgmt?'':'none';});
 if(!isMgmt){
   document.getElementById('inventory-form')?.classList.remove('open');
@@ -5332,38 +5602,6 @@ function renderFseOptions(selectValue){
   renderSupportingFses();
 }
 document.getElementById('f-tech').addEventListener('change',()=>renderSupportingFses());
-document.getElementById('add-fse-btn').addEventListener('click', ()=>{
-  const row = document.getElementById('add-fse-row');
-  row.style.display = row.style.display === 'flex' ? 'none' : 'flex';
-  if(row.style.display==='flex') document.getElementById('new-fse-input').focus();
-});
-document.getElementById('save-fse-btn').addEventListener('click', async ()=>{
-  const input = document.getElementById('new-fse-input');
-  const name = input.value.trim();
-  if(!name) return;
-  if(!fses.some(n=>n.toLowerCase()===name.toLowerCase())){
-    fses.push(name);
-    storageSet(FSES_KEY, fses);
-    renderFseOptions(name);
-    try{ await apiPost('addFse', {name}); hideSyncError(); }
-    catch(e){ console.error(e); showSyncError("Saved locally, but couldn't reach the shared sheet to sync this FSE. It'll only show on this device until you're back online."); }
-  } else {
-    renderFseOptions(name);
-  }
-  input.value='';
-  document.getElementById('add-fse-row').style.display='none';
-});
-document.getElementById('remove-fse-btn').addEventListener('click', async ()=>{
-  const select = document.getElementById('f-tech');
-  const name = select.value;
-  if(!name) return;
-  if(!confirm(`Remove ${name} from the FSE list? This is for staff who left the team.`)) return;
-  fses = fses.filter(n=>n!==name);
-  storageSet(FSES_KEY, fses);
-  renderFseOptions();
-  try{ await apiPost('removeFse', {name}); hideSyncError(); }
-  catch(e){ console.error(e); showSyncError("Removed locally, but couldn't reach the shared sheet to sync this."); }
-});
 
 function todayStr(){
   const d = new Date();
@@ -5779,6 +6017,7 @@ async function uploadVisitAttachmentFiles(visitId,files){
     return {uploaded,failed};
   }finally{
     activeAttachmentUploadJobs=Math.max(0,activeAttachmentUploadJobs-1);
+    if(activeAttachmentUploadJobs===0)processVisitAttachmentThumbnailQueue();
   }
 }
 function queueVisitAttachmentUpload(visitId,files){
@@ -5817,6 +6056,10 @@ async function fetchVisitAttachmentContent(attachmentId){
 }
 const fastAttachmentPreviewCache=new Map();
 const fastAttachmentPreviewUrls=new Map();
+const attachmentThumbnailItems=new WeakMap();
+let visitAttachmentThumbnailObserver=null;
+let attachmentThumbnailQueue=[];
+let attachmentThumbnailQueueBusy=false;
 async function fetchVisitAttachmentPreview(attachmentId){
   const key=String(attachmentId||'');
   if(fastAttachmentPreviewCache.has(key))return fastAttachmentPreviewCache.get(key);
@@ -5951,54 +6194,95 @@ function renderVisitAttachmentsPanel(visitId,attachments){
   list.innerHTML=attachments.map(item=>`
     <div class="vd-attachment-row" data-attachment-id="${escapeHtml(item.id)}" data-provider="${escapeHtml(item.provider||'drive-backend')}" data-file-id="${escapeHtml(item.fileId||'')}" data-file-name="${escapeHtml(item.fileName||'attachment')}">
       <div class="vd-attachment-thumb" data-thumbnail-for="${escapeHtml(item.id)}" aria-label="Thumbnail for ${escapeHtml(item.fileName||'attachment')}">
-        <div class="vd-thumb-placeholder"><span class="vd-thumb-spinner"></span><span>Loading thumbnail…</span></div>
+        <div class="vd-thumb-placeholder"><strong>${String(item.mimeType||'').toLowerCase()==='application/pdf'?'PDF':'▧'}</strong><span>Thumbnail loads when visible</span></div>
       </div>
       <div class="vd-attachment-card-info">
         <div class="vd-attachment-name"><b title="${escapeHtml(item.fileName||'attachment')}">${escapeHtml(item.fileName||'attachment')}</b><small>${escapeHtml(attachmentSizeLabel(item.sizeBytes))} · ${escapeHtml(item.uploadedBy||'User')} · ${escapeHtml(item.uploadedAt?new Date(item.uploadedAt).toLocaleString():'')}</small></div>
         <div class="vd-attachment-buttons">
+          <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',false)">Preview</button>
           <button class="btn-secondary" type="button" onclick="openVisitAttachmentFile('${escapeJs(item.id)}',true)">Download</button>
           ${currentUser?.role==='management'?`<button class="btn-secondary" type="button" onclick="removeVisitAttachment('${escapeJs(visitId)}','${escapeJs(item.id)}')">Remove</button>`:''}
         </div>
       </div>
     </div>`).join('');
-  // Load all lightweight Drive thumbnails automatically when the Attachments section opens.
-  attachments.forEach(item=>loadVisitAttachmentThumbnail(item));
+  visitAttachmentThumbnailObserver?.disconnect();
+  attachmentThumbnailQueue=[];
+  if('IntersectionObserver' in window){
+    const observer=new IntersectionObserver(observed=>{
+      observed.forEach(item=>{
+        if(!item.isIntersecting)return;
+        observer.unobserve(item.target);
+        const attachment=attachmentThumbnailItems.get(item.target);
+        if(attachment)queueVisitAttachmentThumbnail(visitId,attachment);
+      });
+    },{rootMargin:'100px 0px'});
+    visitAttachmentThumbnailObserver=observer;
+    list.querySelectorAll('.vd-attachment-thumb[data-thumbnail-for]').forEach(thumb=>{
+      const item=attachments.find(file=>String(file.id)===String(thumb.dataset.thumbnailFor));
+      if(item){attachmentThumbnailItems.set(thumb,item);observer.observe(thumb);}
+    });
+  }
 }
-async function loadVisitAttachmentThumbnail(item){
+function queueVisitAttachmentThumbnail(visitId,item){
   const attachmentId=String(item?.id||'');
   if(!attachmentId)return;
   const panel=document.getElementById('visit-attachments-panel');
-  const row=panel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"]`);
-  const thumb=row?.querySelector('.vd-attachment-thumb');
-  if(!thumb)return;
+  const thumb=panel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
+  if(!thumb||thumb.dataset.thumbnailState)return;
+  thumb.dataset.thumbnailState='queued';
+  attachmentThumbnailQueue.push({visitId:String(visitId),item});
+  processVisitAttachmentThumbnailQueue();
+}
+async function processVisitAttachmentThumbnailQueue(){
+  if(attachmentThumbnailQueueBusy||activeAttachmentUploadJobs>0)return;
+  attachmentThumbnailQueueBusy=true;
   try{
-    const data=await fetchVisitAttachmentPreview(attachmentId);
-    const currentPanel=document.getElementById('visit-attachments-panel');
-    const currentThumb=currentPanel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
-    if(!currentThumb)return;
-    if(data?.base64){
-      const img=document.createElement('img');
-      img.src=attachmentPreviewUrl(attachmentId,data);
-      img.alt=data.fileName||item.fileName||'Attachment thumbnail';
-      img.title='Click to open a larger preview';
-      img.addEventListener('click',()=>openVisitAttachmentFile(attachmentId,false));
-      currentThumb.replaceChildren(img);
-    }else{
-      const isPdf=String(item.mimeType||'').toLowerCase()==='application/pdf';
-      currentThumb.innerHTML=`<div class="vd-thumb-placeholder"><strong>${isPdf?'PDF':'▧'}</strong><span>Thumbnail unavailable</span><small>Use Download to open this file</small></div>`;
+    while(attachmentThumbnailQueue.length&&activeAttachmentUploadJobs===0){
+      const job=attachmentThumbnailQueue.shift();
+      const panel=document.getElementById('visit-attachments-panel');
+      if(!panel||String(panel.dataset.visitId)!==job.visitId)continue;
+      const attachmentId=String(job.item?.id||'');
+      const thumb=panel.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
+      if(!thumb)continue;
+      thumb.dataset.thumbnailState='loading';
+      thumb.innerHTML='<div class="vd-thumb-placeholder"><span class="vd-thumb-spinner" aria-hidden="true"></span><span>Loading thumbnail…</span></div>';
+      try{
+        const data=await fetchVisitAttachmentPreview(attachmentId);
+        const currentPanel=document.getElementById('visit-attachments-panel');
+        const currentThumb=currentPanel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
+        if(!currentThumb||String(currentPanel.dataset.visitId)!==job.visitId)continue;
+        if(data?.base64){
+          const img=document.createElement('img');
+          img.src=attachmentPreviewUrl(attachmentId,data);
+          img.alt=data.fileName||job.item.fileName||'Attachment thumbnail';
+          img.title='Tap to open the larger preview';
+          img.addEventListener('click',()=>openVisitAttachmentFile(attachmentId,false));
+          currentThumb.replaceChildren(img);
+          currentThumb.dataset.thumbnailState='loaded';
+        }else{
+          currentThumb.innerHTML='<div class="vd-thumb-placeholder"><strong>'+(String(job.item.mimeType||'').toLowerCase()==='application/pdf'?'PDF':'▧')+'</strong><span>Thumbnail unavailable</span><small>Tap Preview to open the file</small></div>';
+          currentThumb.dataset.thumbnailState='unavailable';
+        }
+      }catch(error){
+        const currentPanel=document.getElementById('visit-attachments-panel');
+        const currentThumb=currentPanel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
+        if(currentThumb&&String(currentPanel.dataset.visitId)===job.visitId){
+          currentThumb.innerHTML='<div class="vd-thumb-placeholder"><strong>▧</strong><span>Thumbnail unavailable</span><small>Tap Preview to retry</small></div>';
+          currentThumb.dataset.thumbnailState='error';
+        }
+        console.warn('Attachment thumbnail could not be loaded:',attachmentId,error);
+      }
     }
-  }catch(error){
-    const currentPanel=document.getElementById('visit-attachments-panel');
-    const currentThumb=currentPanel?.querySelector(`[data-attachment-id="${CSS.escape(attachmentId)}"] .vd-attachment-thumb`);
-    if(currentThumb)currentThumb.innerHTML='<div class="vd-thumb-placeholder"><strong>▧</strong><span>Preview unavailable</span><small>Use Download to open this file</small></div>';
-    console.warn('Attachment thumbnail could not be loaded:',attachmentId,error);
+  }finally{
+    attachmentThumbnailQueueBusy=false;
+    if(attachmentThumbnailQueue.length&&activeAttachmentUploadJobs===0)processVisitAttachmentThumbnailQueue();
   }
 }
 async function loadVisitAttachmentsPanel(visitId){
   const panel=document.getElementById('visit-attachments-panel');
   if(!panel||String(panel.dataset.visitId)!==String(visitId))return;
   const list=panel.querySelector('.vd-attachment-list');
-  if(list)list.innerHTML='<div class="vd-attachment-loading">Loading attachments…</div>';
+  if(list)list.innerHTML='<div class="vd-attachment-loading" role="status" aria-live="polite"><span class="mini-spin" aria-hidden="true"></span><span>Loading attachments…</span></div>';
   try{
     const attachments=await listVisitAttachments(visitId);
     renderVisitAttachmentsPanel(visitId,attachments);
@@ -6043,21 +6327,21 @@ function visitDetailLayout(e,fields,tracking){
  const paragraph=(title,value,empty)=>'<div class="vd-copy"><h3>'+esc(title)+'</h3><p>'+esc(filled(value)?value:empty)+'</p></div>';
  const status=e.status||'Not recorded';const color=status==='Resolved'?'resolved':status==='Pending'?'pending':status==='Follow-up'?'followup':'neutral';
  const equipment=optional(['Machine / Equipment','Component','Serial / Asset #','Parts / Materials']);
- const more=optional(['Ticket / Incident #','Visit Type','General Activity','Visit / Support Mode','Time In','Time Out','Duration','Time Resolved','Resolution Type','Last Updated']);
+ const more=optional(['Ticket / Incident #','Visit Type','General Activity','Support type','Time In','Time Out','Duration','Time Resolved','Resolution Type','Last Updated']);
  return '<div class="vd-badges"><span class="readable-log-status '+color+'"><i aria-hidden="true"></i>'+esc(status)+'</span><span>'+esc(catLabel[e.category]||e.category||'Unspecified category')+'</span>'+(e.priority?'<span>'+esc(e.priority)+' priority</span>':'')+'</div>'+
  '<section class="vd-section"><h3 class="vd-title">Visit summary</h3>'+facts(['Date','Primary FSE'])+(filled(values['With / Supporting FSEs'])?facts(['With / Supporting FSEs']):'')+'<p class="vd-issue">'+esc(e.issueType||e.generalType||e.visitType||'Field visit')+'</p></section>'+
  '<section class="vd-section"><h3 class="vd-title">Work done</h3>'+paragraph('Concern / notes',e.notes,'No visit notes recorded.')+paragraph('Action taken',e.resolution,'No action recorded.')+'</section>'+
  (e.status==='Follow-up'||filled(e.followupDate)||filled(e.followupReason)?'<section class="vd-followup"><h3 class="vd-title">Next step</h3>'+facts(['Follow-up Date'])+paragraph('Follow-up reason',e.followupReason,'No follow-up reason recorded.')+'</section>':'')+
  '<details class="vd-details"><summary>Equipment & parts'+(equipment.length?' · '+equipment.length:'')+'</summary>'+(equipment.length?facts(equipment):'<p class="vd-empty">No equipment or parts recorded for this visit.</p>')+'</details>'+
  '<details class="vd-details"><summary>Timing & record details</summary>'+facts(more)+'</details>'+
- '<section class="vd-section vd-attachments" id="visit-attachments-panel" data-visit-id="'+esc(e.id)+'"><div class="section-title-row"><div><h3 class="vd-title">Attachments</h3><span class="muted" data-attachment-count>'+(Number(e.attachmentCount||0))+' file'+(Number(e.attachmentCount||0)===1?'':'s')+'</span></div><button class="btn-secondary" type="button" onclick="addAttachmentToExistingVisit('+esc(JSON.stringify(String(e.id)))+')">＋ Add attachment</button></div><div class="vd-attachment-list"><div class="vd-attachment-loading">Loading attachments…</div></div><div class="vd-attachment-upload-status"></div></section>'+
+ '<section class="vd-section vd-attachments" id="visit-attachments-panel" data-visit-id="'+esc(e.id)+'"><div class="section-title-row"><div><h3 class="vd-title">Attachments</h3><span class="muted" data-attachment-count>'+(Number(e.attachmentCount||0))+' file'+(Number(e.attachmentCount||0)===1?'':'s')+'</span></div><button class="btn-secondary" type="button" onclick="addAttachmentToExistingVisit('+esc(JSON.stringify(String(e.id)))+')">＋ Add attachment</button></div><div class="vd-attachment-list"><div class="vd-attachment-loading" role="status" aria-live="polite"><span class="mini-spin" aria-hidden="true"></span><span>Loading attachments…</span></div></div><div class="vd-attachment-upload-status"></div></section>'+ 
  '<div class="vd-footer"><span>Visit #'+esc(tracking)+'</span><div class="drawer-actions"><button class="btn-primary" type="button" onclick="editFieldLog('+esc(JSON.stringify(String(e.id)))+')">Edit visit</button><button class="btn-secondary" type="button" onclick="duplicateEntry('+esc(JSON.stringify(String(e.id)))+')">Duplicate</button></div></div>';
 }
 
 function openDetail(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e) return;
   const m=computeTrackingMap()[e.id]||'-';
-  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Site',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Visit / Support Mode',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
+  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
   document.getElementById('detail-overlay').querySelector('.detail-drawer').scrollTop=0;
@@ -6121,6 +6405,29 @@ function clearTechnicalVisitValues(){
   if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';
   if(document.getElementById('visit-replacement-box'))document.getElementById('visit-replacement-box').style.display='none';
 }
+function updateAutoVisitPriority(){
+  const priority=document.getElementById('f-priority');
+  const tag=document.getElementById('auto-priority-tag');
+  const reason=document.getElementById('auto-priority-reason');
+  if(!priority||!tag)return;
+  const simple=isSimpleActivityVisit();
+  const visitType=document.getElementById('f-visit-type')?.value||'';
+  const activity=document.getElementById('f-issue-type')?.value||'';
+  const priorities={
+    Hardware:{'Bill Validator':'Critical','TITO / Printer':'Medium','Buttons / Button Panel':'Medium','Display / Monitor':'High','MPU / System Unit':'High','Power Supply / PSU':'High','RAM / Memory':'High','Storage / SSD / SATA DOM':'High','Cables / Harness':'Low','Cabinet / Physical':'Low','Other Hardware':'Low'},
+    Software:{'Game Error / Game Issue':'Critical','Application / Launcher':'High','Login / Authentication':'High','Update / Patch':'Medium','Configuration / Settings':'Low','Crash / Freeze / Hang':'Medium','Windows / Operating System':'High','Driver / Device Software':'High','Performance / Slow Response':'High','Other Software':'Medium'},
+    Network:{'Internet Down':'Critical','Intermittent / Slow Connection':'Critical','LAN / Ethernet Cable':'High','Router / Switch':'Critical','IP / DHCP':'Medium','DNS':'Medium','VPN / Tunnel':'Medium','Wi-Fi':'Low','Port / VLAN / Configuration':'High','Other Network':'Medium'},
+    Backoffice:{'Stuck Round':'Critical','Missing Credit':'Critical','Missing Win / No Voucher':'Critical','Session Report':'Medium','Manual Credit / Refund':'Medium','Deposit / Transaction':'Medium','Bet Not Pushed / Bet Refund':'High','Account / Token':'Critical','Report / Data Discrepancy':'Critical','Other Backoffice':'Medium'},
+    General:{'Site Monitoring':'Low','Site Request':'High','Preventive Maintenance':'High','Training':'High','Ocular / Inspection':'Low','Deployment / Installation':'High','Pullout / Transfer':'Critical','Testing / Commissioning':'Critical','Other':'Low'}
+  };
+  const visitTypePriorities={'Pull-out':'Critical','Transfer':'Critical','Training':'High','Ocular / Inspection':'Low','Other':'Low','Preventive Maintenance':'High','Installation':'High'};
+  let level=(simple?visitTypePriorities[visitType]:null)||priorities[selectedCat]?.[activity]||visitTypePriorities[visitType]||'Medium';
+  let explanation=activity||visitType?`Assigned from ${activity||visitType}`:'Choose a concern to set its priority';
+  priority.value=level;
+  tag.textContent=level;
+  tag.className='priority-pill priority-'+level;
+  if(reason)reason.textContent=explanation;
+}
 function updateVisitTypeFlow(resetCategory=false){
   const select=document.getElementById('f-visit-type');
   const type=select?.value||'Routine Visit';
@@ -6129,22 +6436,22 @@ function updateVisitTypeFlow(resetCategory=false){
   const priorityRow=document.getElementById('visit-priority-status-row');
   const head=document.getElementById('concern-activity-section-head');
   const title=head?.querySelector('b');
-  const note=head?.querySelector('small');
   const notes=document.getElementById('f-notes');
   const err=document.getElementById('err-msg');
 
   if(categoryRow)categoryRow.style.display=simple?'none':'flex';
-  if(priorityRow)priorityRow.style.display=simple?'none':'flex';
+  if(priorityRow)priorityRow.style.display='flex';
+  const statusField=priorityRow?.querySelector('.field:nth-child(2)');
+  if(statusField)statusField.style.display=simple?'none':'';
 
   if(simple){
-    if(title)title.textContent='Issue / Notes';
-    if(note)note.textContent='Add the activity details below. No technical category is required.';
+    if(title)title.textContent='Activity Priority';
     if(notes)notes.placeholder='Add notes about this '+type.toLowerCase()+' activity';
     if(err)err.textContent='Select a site before logging.';
     if(resetCategory){
       selectedCat=null;
       document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');
-      const desc=document.getElementById('cat-desc');if(desc)desc.textContent='Select a category to see what it covers.';
+      const desc=document.getElementById('cat-desc');if(desc)desc.textContent='';
       const issueBox=document.getElementById('issue-type-options');if(issueBox)issueBox.style.display='none';
       const issue=document.getElementById('f-issue-type');if(issue)issue.innerHTML='';
     }
@@ -6153,13 +6460,12 @@ function updateVisitTypeFlow(resetCategory=false){
     clearTechnicalVisitValues();
   }else{
     if(title)title.textContent='Concern / Activity';
-    if(note)note.textContent='Choose the category and only the relevant fields will remain visible.';
     if(notes)notes.placeholder='What happened on this visit';
     if(err)err.textContent='Fill in the site and category before logging.';
     if(resetCategory){
       selectedCat=null;
       document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');
-      const desc=document.getElementById('cat-desc');if(desc)desc.textContent='Select a category to see what it covers.';
+      const desc=document.getElementById('cat-desc');if(desc)desc.textContent='';
       renderIssueTypeOptions();
     }
   }
@@ -6168,9 +6474,31 @@ function updateVisitTypeFlow(resetCategory=false){
 }
 
 
+function syncCategoryOptionState(){
+  document.querySelectorAll('#cat-picker .cat-opt').forEach(option=>{
+    option.setAttribute('aria-pressed',option.classList.contains('sel-'+option.dataset.cat)?'true':'false');
+  });
+}
+function clearVisitRequiredErrorIfComplete(){
+  const err=document.getElementById('err-msg');
+  const site=canonicalSiteName(document.getElementById('f-site')?.value||'');
+  if(err&&site&&(isSimpleActivityVisit()||selectedCat))err.style.display='none';
+}
+
 function updateCategoryFields(){
+  syncCategoryOptionState();
+  updateAutoVisitPriority();
   const simpleVisit=isSimpleActivityVisit();
   const general=selectedCat==='General';
+  const equipmentDetails=document.getElementById('visit-equipment-details');
+  const mobileVisitForm=window.matchMedia('(max-width: 900px)').matches;
+  const showEquipmentDetails=!simpleVisit&&!general&&(!mobileVisitForm||!!selectedCat);
+  if(equipmentDetails){
+    const wasHidden=equipmentDetails.hidden;
+    equipmentDetails.hidden=!showEquipmentDetails;
+    if(!showEquipmentDetails)equipmentDetails.open=false;
+    else if(wasHidden)equipmentDetails.open=true;
+  }
   const activity=document.getElementById('f-issue-type')?.value||'';
   const siteMonitoring=!simpleVisit&&general&&activity==='Site Monitoring';
   const softwareOrBackoffice=selectedCat==='Software'||selectedCat==='Backoffice';
@@ -6208,7 +6536,6 @@ function updateCategoryFields(){
     const title=actionHead.querySelector('b');
     const note=actionHead.querySelector('small');
     if(title)title.textContent=siteMonitoring?'Visit Details':'Action Taken';
-    if(note)note.textContent=siteMonitoring?'Record how the site monitoring was performed.':'Record what was done and any next step required.';
   }
 
   // Clear hidden fields so old/duplicated values cannot accidentally be saved.
@@ -6231,6 +6558,15 @@ function updateCategoryFields(){
   }
 }
 
+(function configureVisitFormDisclosure(){
+  const viewport=window.matchMedia('(max-width: 900px)');
+  const optional=document.getElementById('visit-additional-details');
+  if(optional)optional.open=true;
+  viewport.addEventListener?.('change',()=>{
+    updateCategoryFields();
+  });
+})();
+
 function updateResolutionExtra(){
   const box=document.getElementById('resolution-extra');
   const timeField=document.getElementById('field-time-resolved');
@@ -6243,7 +6579,9 @@ function updateResolutionExtra(){
     return;
   }
   // Technical visits record whether work was done onsite or remotely.
-  if(box)box.style.display=selectedCat?'flex':'none';
+  // Visit / Support Mode now lives beside Visit Type. This legacy row only
+  // contains the removed time-resolved field, so it stays collapsed.
+  if(box)box.style.display='none';
   if(timeField)timeField.style.display=(RESOLVABLE_CATS.includes(selectedCat)&&status==='Resolved')?'block':'none';
   if(follow)follow.style.display=status==='Follow-up'?'flex':'none';
 }
@@ -6259,6 +6597,8 @@ document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{
     document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');
     selectedCat = el.dataset.cat;
     el.classList.add('cat-opt','sel-'+selectedCat);
+    syncCategoryOptionState();
+    clearVisitRequiredErrorIfComplete();
     document.getElementById('cat-desc').textContent = catDesc[selectedCat] || '';
     renderIssueTypeOptions();
     updateCategoryFields();
@@ -6276,7 +6616,17 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const err=document.getElementById('err-msg');
   const visitType=document.getElementById('f-visit-type').value;
   const simpleVisit=isSimpleActivityVisit(visitType);
-  if(!site||(!simpleVisit&&!selectedCat)){err.style.display='block';return;}
+  if(!site||(!simpleVisit&&!selectedCat)){
+    err.style.display='block';
+    if(!site){
+      err.textContent='Choose a client to continue.';
+      const siteField=document.getElementById('f-site');siteField?.focus();siteField?.scrollIntoView({behavior:'smooth',block:'center'});
+    }else{
+      err.textContent='Choose a category to continue.';
+      const category=document.querySelector('#cat-picker .cat-opt');category?.focus();category?.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    return;
+  }
   err.style.display='none';
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
@@ -6292,7 +6642,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:simpleVisit?'':selectedCat,issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:simpleVisit?visitType:(selectedCat==='General'?(document.getElementById('f-issue-type')?.value||''):''),notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:simpleVisit?'':document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:simpleVisit?'':selectedCat,issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:simpleVisit?visitType:(selectedCat==='General'?(document.getElementById('f-issue-type')?.value||''):''),notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   // FAST SAVE: update the browser state immediately so Dashboard / Field Logs
   // reflect the visit without waiting for Google Apps Script. If the server
@@ -6334,7 +6684,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     cancelVisitEdit();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
     clearPendingVisitAttachments();
-    if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='Select a category to see what it covers.';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);
+    if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);window.resetVisitWizard?.();
     render();renderReport();renderDashboard();
   }catch(e){
     console.error(e);
@@ -6365,15 +6715,16 @@ document.getElementById('date-from').addEventListener('change', render);
 document.getElementById('date-to').addEventListener('change', render);
 document.getElementById('global-search').addEventListener('input', render);
 
-document.getElementById('f-site').addEventListener('change',e=>renderSiteHistory(e.target.value));
+document.getElementById('f-site').addEventListener('change',e=>{renderSiteHistory(e.target.value);clearVisitRequiredErrorIfComplete();});
 document.getElementById('f-issue-type').addEventListener('change',()=>{const monitoring=selectedCat==='General'&&document.getElementById('f-issue-type').value==='Site Monitoring';document.getElementById('f-notes').placeholder=monitoring?'Optional — add a note only if there is a concern.':'What happened on this visit';updateCategoryFields();updateResolutionExtra();});
 document.getElementById('f-tech').addEventListener('change',()=>{if(activeWork==='mine'){populateMyFse();render();}});
 document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListener('click',()=>{activeWork=btn.dataset.work;document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b===btn));const sel=document.getElementById('my-fse');sel.style.display=activeWork==='mine'?'block':'none';if(activeWork==='mine')populateMyFse();window.attentionFilter=null;render();}));
 document.getElementById('my-fse').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
+  window.setVisitWizardStep?.(1,false);
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
   clearPendingVisitAttachments();
   closeDetail(); document.querySelector('.tab[data-tab="log"]')?.click();
@@ -7011,7 +7362,7 @@ function renderActivePanel(){
   }else if(activeTab==='audit'){
     renderAuditTrail();
   }else if(activeTab==='inventory'){
-    setInventoryView(inventoryView||'sites');
+    openInventoryViewWithFeedback(inventoryView||'sites');
   }
 }
 
@@ -7867,6 +8218,8 @@ function renderCabinets(){
 
   if(!rows.length){
     body.innerHTML=`<tr><td colspan="${colCount}"><div class="cabinet-empty">No cabinet profiles match the current view.</div></td></tr>`;
+    const mobileList=document.getElementById('cabinet-mobile-list');
+    if(mobileList)mobileList.innerHTML='<div class="cabinet-mobile-empty">No cabinet profiles match the current view.</div>';
     return;
   }
 
@@ -7921,7 +8274,38 @@ function renderCabinets(){
       return groupHeader(group,grouped[group].length)+groupRows;
     }).join('');
   }
+  renderCabinetMobileCards(groupNames,grouped,siteMap,isMgmt);
 }
+
+function renderCabinetMobileCards(groupNames,grouped,siteMap,isMgmt){
+  const list=document.getElementById('cabinet-mobile-list');
+  if(!list)return;
+  if(!window.matchMedia('(max-width: 760px)').matches){list.replaceChildren();return;}
+  const value=v=>escapeHtml(String(v||'').trim()||'—');
+  const detail=(label,v)=>`<div class="cabinet-mobile-detail"><small>${label}</small><span>${value(v)}</span></div>`;
+  list.innerHTML=groupNames.map(group=>{
+    const items=grouped[group]||[];
+    const site=items.length?canonicalCabinetSite(items[0],siteMap):'';
+    const cards=items.map(r=>{
+      const id=escapeHtml(r.id||'');
+      const cabinetId=escapeHtml(r.cabinetId||'—');
+      const serial=r.cabinetSerial||r.mpuSerial||'';
+      const label=[r.permanentNumber?'Cabinet #'+String(r.permanentNumber).padStart(3,'0'):'',r.label||''].filter(Boolean).join(' · ');
+      const cabinetName=isMgmt?`<button type="button" class="cabinet-mobile-name cabinet-link" data-cab-profile="${id}">${cabinetId}</button>`:`<b class="cabinet-mobile-name">${cabinetId}</b>`;
+      const actions=isMgmt?`<div class="cabinet-mobile-actions"><button type="button" class="btn-secondary" data-cab-profile="${id}">History</button><button type="button" class="btn-secondary" data-cab-edit="${id}">Edit</button><button type="button" class="btn-secondary" data-cab-delete="${id}">Delete</button></div>`:'';
+      return `<article class="cabinet-mobile-card" role="listitem">
+        <div class="cabinet-mobile-card-head"><div class="cabinet-mobile-title">${cabinetName}<small>${value(site)}${label?' · '+escapeHtml(label):''}</small></div><span class="cabinet-mobile-status">${escapeHtml(cabinetDisplayStatus(r))}</span></div>
+        <div class="cabinet-mobile-primary">${detail('Serial',serial)}${detail('TeamViewer',r.teamviewerId)}</div>
+        <details class="cabinet-mobile-more"><summary>More details</summary><div class="cabinet-mobile-details">
+          ${detail('Token',compactToken(r.token))}${detail('Bill validator',r.bvModel)}${detail('BV serial',r.bvSerial)}${detail('Printer',r.printerModel)}${detail('Printer serial',r.printerSerial)}${detail('System / MPU',r.mpuSerial)}${detail('Network',r.networkNote)}${detail('Updated',r.updatedAt?new Date(r.updatedAt).toLocaleDateString():'')}
+        </div></details>${actions}
+      </article>`;
+    }).join('');
+    return `<details class="cabinet-mobile-group" open><summary><b>${escapeHtml(site||'Unassigned')}</b><span>${items.length} cabinet${items.length===1?'':'s'}</span></summary>${cards}</details>`;
+  }).join('');
+}
+
+window.matchMedia('(max-width: 760px)').addEventListener?.('change',()=>renderCabinets());
 
 
 document.addEventListener('click',e=>{
@@ -7975,6 +8359,7 @@ function openCabinetsForSite(site){
 }
 document.getElementById('cabinet-add-btn')?.addEventListener('click',()=>{clearCabinetForm();openCabinetForm();});
 document.getElementById('cabinet-cancel-btn')?.addEventListener('click',closeCabinetForm);document.getElementById('cabinet-save-btn')?.addEventListener('click',saveCabinet);document.getElementById('cabinet-search')?.addEventListener('input',()=>{renderCabinets();const s=assetViewRenderState.cabinets;if(s){s.painted=true;s.dirty=false;}});document.getElementById('cabinet-status-filter')?.addEventListener('change',()=>{renderCabinets();const s=assetViewRenderState.cabinets;if(s){s.painted=true;s.dirty=false;}});document.getElementById('cabinet-site-filter')?.addEventListener('change',()=>{renderCabinets();const s=assetViewRenderState.cabinets;if(s){s.painted=true;s.dirty=false;}});document.getElementById('cabinet-body')?.addEventListener('click',e=>{const pb=e.target.closest('[data-cab-profile]');if(pb)openCabinetProfile(pb.dataset.cabProfile);const eb=e.target.closest('[data-cab-edit]');if(eb)editCabinet(eb.dataset.cabEdit);const db=e.target.closest('[data-cab-delete]');if(db)deleteCabinet(db.dataset.cabDelete);});
+document.getElementById('cabinet-mobile-list')?.addEventListener('click',e=>{const pb=e.target.closest('[data-cab-profile]');if(pb)openCabinetProfile(pb.dataset.cabProfile);const eb=e.target.closest('[data-cab-edit]');if(eb)editCabinet(eb.dataset.cabEdit);const db=e.target.closest('[data-cab-delete]');if(db)deleteCabinet(db.dataset.cabDelete);});
 
 
 
@@ -8074,11 +8459,13 @@ function nextPaint(){
 }
 async function openInventoryViewWithFeedback(view){
   view=view||'overview';
+  const loaderStartedAt=Date.now();
+  let slowLoadTimer=null;
 
   const expensiveDirty=!!assetViewRenderState[view]&&assetViewNeedsRender(view);
   const movementNeedsData=view==='movements'&&!movementsLoadedOnce;
   const stockNeedsData=view==='spares'&&!(sparesLoadedOnce||cabinetPartsLoadedOnce);
-  const needsVisibleLoading=expensiveDirty||movementNeedsData||stockNeedsData;
+  const needsVisibleLoading=expensiveDirty||movementNeedsData||stockNeedsData||view==='cabinets';
 
   // Make the selected category respond immediately before heavy JS starts.
   inventoryView=view;
@@ -8087,17 +8474,31 @@ async function openInventoryViewWithFeedback(view){
 
   if(needsVisibleLoading){
     showAssetViewLoader(view);
+    if(view==='cabinets'){
+      const loader=document.querySelector('#inventory-view-cabinets > .asset-view-loader');
+      const detail=loader?.querySelector('small');
+      if(detail)detail.textContent='Loading cabinet records. This view will stay responsive while the latest data arrives.';
+      slowLoadTimer=setTimeout(()=>{
+        const currentDetail=document.querySelector('#inventory-view-cabinets > .asset-view-loader small');
+        if(currentDetail&&inventoryView==='cabinets')currentDetail.textContent='Still loading cabinet records… Your view will update as soon as they arrive.';
+      },8000);
+    }
     await nextPaint();
   }
 
   try{
+    if(view==='cabinets'&&typeof window.ensureAssetsReady==='function')await window.ensureAssetsReady('inventory');
+    if(inventoryView!==view)return;
     renderAssetViewIfNeeded(view);
     if(view==='movements'&&movementsLoadedOnce)renderMovements();
     if(view==='spares'&&(sparesLoadedOnce||cabinetPartsLoadedOnce))renderSpareParts();
   }finally{
+    clearTimeout(slowLoadTimer);
     if(needsVisibleLoading){
-      // Give the finished DOM one paint before removing the loading state.
-      requestAnimationFrame(()=>hideAssetViewLoader(view));
+      // Keep the loader visible long enough to register, then let the finished
+      // DOM paint before removing it.
+      const revealTime=view==='cabinets'?Math.max(0,180-(Date.now()-loaderStartedAt)):0;
+      setTimeout(()=>requestAnimationFrame(()=>hideAssetViewLoader(view)),revealTime);
     }
   }
 }
@@ -8961,6 +9362,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 */
 (function(){
   let assetsBootstrapInFlight=null;
+  let visitCabinetsInFlight=null;
   let assetsBootstrapLoaded=false;
   let lastAssetsPaint=0;
   let lastAssetsFetch=0;
@@ -9112,11 +9514,33 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     return assetsBootstrapInFlight;
   }
 
+  // Let a selected asset view paint its loader before cache rendering or
+  // network work begins. Cabinet Registry can contain a large grouped table.
+  window.ensureAssetsReady=function(target='inventory'){
+    return refreshAssets(target,false);
+  };
+
+  // Show cached cabinet choices immediately in New Visit, then refresh quietly.
+  window.prepareVisitCabinets=function(){
+    paintCachedAssets(null);
+    if(currentUser?.role==='management')return refreshAssets(null,false);
+    if(visitCabinetsInFlight)return visitCabinetsInFlight;
+    visitCabinetsInFlight=apiGet('visitCabinets').then(data=>{
+      if(!Array.isArray(data))throw new Error('Cabinet data was unavailable.');
+      cabinetRows=data;cabinetsLoadedOnce=true;
+      if(typeof populateVisitCabinets==='function')populateVisitCabinets();
+      return data;
+    }).finally(()=>{visitCabinetsInFlight=null;});
+    return visitCabinetsInFlight;
+  };
+
   function openFastAssets(target){
-    // Synchronous cache paint = immediate response to the click.
-    if(!assetsBootstrapLoaded)paintCachedAssets(target);
-    // Network refresh happens after the page has already painted.
-    requestAnimationFrame(()=>setTimeout(()=>refreshAssets(target,false),20));
+    // Paint the selected view's loading state first. Cache rendering and the
+    // request begin just after the browser has had a frame to show feedback.
+    requestAnimationFrame(()=>setTimeout(()=>{
+      if(!assetsBootstrapLoaded)paintCachedAssets(target);
+      refreshAssets(target,false);
+    },0));
   }
 
   window.refreshAssetsFast=function(target='inventory'){
@@ -9147,7 +9571,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
       if(view==='overview'||view==='sites'||view==='components')openFastAssets('inventory');
 
       if(view==='cabinets'){
-        if(!assetsBootstrapLoaded&&!cabinetsLoadedOnce)paintCachedAssets('inventory');
         if(!cabinetsLoadedOnce)refreshAssets('inventory',false);
       }
 
@@ -9163,16 +9586,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     });
   });
 
-  // New Visit still loads cabinets only when needed, but use cache first.
-  const cabinetSelect=document.getElementById('f-cabinet-quick');
-  if(cabinetSelect){
-    const prepCabinets=()=>{
-      paintCachedAssets(activeTab==='inventory'?'inventory':null);
-      if(!cabinetsLoadedOnce)refreshAssets(null,false);
-    };
-    cabinetSelect.addEventListener('focus',prepCabinets,{once:true});
-    cabinetSelect.addEventListener('pointerdown',prepCabinets,{once:true});
-  }
 })();
 </script>
 
@@ -9334,9 +9747,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   function setMobileActive(tab){
     document.querySelectorAll('[data-mobile-tab]').forEach(b=>{
       b.classList.toggle('active',b.dataset.mobileTab===tab);
+      if(b.dataset.mobileTab===tab)b.setAttribute('aria-current','page');
+      else b.removeAttribute('aria-current');
     });
     const title=document.getElementById('mobile-page-title');
     if(title)title.textContent=titles[tab]||'Field Operations';
+    document.querySelector('.mobile-page-head')?.classList.toggle('is-new-visit',tab==='log');
     // Sticky Save only belongs to New Visit.
     if(mobileSave)mobileSave.style.display=(window.innerWidth<=900 && tab==='log')?'flex':'none';
   }
@@ -9518,9 +9934,18 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 <script id="opexa-progressive-ui">
 (function(){
  function disclosure(id,title){const el=document.createElement('details');el.id=id;el.className='calm-disclosure';const summary=document.createElement('summary');summary.textContent=title;el.append(summary);return el;}
+ const legacyEquipment=document.getElementById('visit-equipment-details');
+ const resolutionType=document.getElementById('field-resolution-type');
+ // Preserve every existing field before removing the old disclosure wrapper.
+ // Removing it first deleted #f-machine, which stopped the Cabinet multi-select script.
+ if(legacyEquipment&&resolutionType)legacyEquipment.before(resolutionType);
  const technical=disclosure('calm-technical','Equipment & parts · optional');
  const ids=['field-machine-component','field-asset','field-parts','visit-spare-box'];
- const first=document.getElementById(ids[0]);first.before(technical);ids.forEach(id=>technical.append(document.getElementById(id)));
+ const first=document.getElementById(ids[0]);
+ if(legacyEquipment)legacyEquipment.before(technical);
+ else if(first)first.before(technical);
+ ids.forEach(id=>{const field=document.getElementById(id);if(field)technical.append(field);});
+ if(legacyEquipment)legacyEquipment.remove();
  const badge=document.createElement('span');badge.className='calm-count';technical.firstChild.append(badge);
  function technicalState(){const visible=ids.some(id=>document.getElementById(id).style.display!=='none');technical.hidden=selectedCat==='Backoffice'||!visible;const filled=['f-machine','f-component','f-asset','f-parts','f-spare-part'].filter(id=>document.getElementById(id).value.trim()).length;badge.textContent=filled?filled+' filled':'';if(filled)technical.open=true;}
  technical.addEventListener('input',technicalState);
@@ -9942,6 +10367,146 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  const originalShow=showApp;showApp=function(user){originalShow(user);try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);updateFseMaintenanceNotice();}catch(e){notifyError(e);}};
  if(currentUser)try{read();refresh();snapshotList();Object.keys(tabs).forEach(render);}catch(e){notifyError(e);}
 })();</script>
+<script id="multi-cabinet-visits">
+(function(){
+  const select=document.getElementById('f-cabinet-quick');
+  const machine=document.getElementById('f-machine');
+  const site=document.getElementById('f-site');
+  const box=document.getElementById('cabinet-multi-picker');
+  if(!select||!machine||!site||!box){
+    console.error('Cabinet multi-select could not initialize: a required form field is missing.');
+    return;
+  }
+  select.hidden=true;
+  select.setAttribute('aria-hidden','true');
+  select.tabIndex=-1;
+  const hint=box.nextElementSibling;
+  const tokens=()=>String(machine.value||'').split(';').map(v=>v.trim()).filter(Boolean);
+  const code=c=>String(c.cabinetId||c.label||'').trim();
+  const key=v=>typeof normUniqueValue==='function'?normUniqueValue(v):String(v||'').trim().toLowerCase();
+  let loadPromise=null;
+  let loading=false;
+  let loadFailed=false;
+
+  function rows(){
+    if(!site.value||!Array.isArray(cabinetRows)||!cabinetRows.length)return [];
+    const selectedKey=normalizeSiteKey(site.value);
+    const siteMap=cabinetCanonicalSiteMap();
+    return cabinetRows.filter(c=>{
+      const canonical=normalizeSiteKey(canonicalCabinetSite(c,siteMap));
+      const direct=normalizeSiteKey(canonicalSiteName(c.site||''));
+      return code(c)&&(canonical===selectedKey||direct===selectedKey);
+    }).sort(cabinetNaturalSort);
+  }
+  function selected(){const selectedKeys=tokens().map(key);return rows().filter(c=>selectedKeys.includes(key(code(c))));}
+  function saveSelection(values){
+    machine.value=values.join('; ');
+    const chosen=selected();
+    select.value=chosen.length===1?String(chosen[0].id):'';
+    const asset=document.getElementById('f-asset');if(asset)asset.value='';
+    const component=document.getElementById('f-component');if(component)component.value='';
+    if(chosen.length===1)syncTechnicalFromSelectedCabinet();
+    renderVisitCabinetCard(chosen.length===1?chosen[0]:null);
+    paint();
+    machine.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  function paint(){
+    box.replaceChildren();
+    const available=rows(),keys=tokens().map(key);
+    if(hint?.classList.contains('cat-desc'))hint.textContent='Choose any cabinets affected by this visit. Concern and remarks apply to all selected cabinets.';
+    const toolbar=document.createElement('div');
+    toolbar.className='cabinet-picker-toolbar';
+    toolbar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px';
+    const count=document.createElement('small');
+    count.textContent=selected().length?selected().length+' cabinets selected':'No specific cabinet';
+    count.style.color='var(--ink-soft)';
+    for(const [title,values] of [['Select all',available.map(code)],['Clear',[]]]){
+      const button=document.createElement('button');button.type='button';button.className='btn-secondary';
+      button.textContent=title;button.disabled=!available.length;
+      button.onclick=()=>saveSelection(values);
+      toolbar.append(button);
+    }
+    toolbar.append(count);box.append(toolbar);
+    const list=document.createElement('div');list.className='cabinet-picker-choices';
+    list.style.cssText='display:flex;flex-wrap:wrap;gap:6px;max-height:210px;overflow:auto';
+    box.append(list);
+    available.forEach(c=>{
+      const value=code(c),checked=keys.includes(key(value));
+      const label=document.createElement('label');
+      label.style.cssText='display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:12px';
+      const input=document.createElement('input');input.type='checkbox';input.checked=checked;
+      input.value=value;input.setAttribute('aria-label','Select cabinet '+value);
+      input.onchange=()=>{
+        const next=tokens().filter(v=>key(v)!==key(value));
+        if(input.checked)next.push(value);
+        saveSelection(next);
+      };
+      const caption=document.createElement('span');caption.textContent=value;
+      label.append(input,caption);label.classList.toggle('is-selected',checked);list.append(label);
+    });
+    if(!available.length){
+      const message=document.createElement('p');message.className='cabinet-picker-message';
+      message.setAttribute('role','status');
+      message.textContent=!site.value?'Select a client to see its cabinets.':loading?'Loading cabinet choices…':loadFailed?'Unable to load cabinets. Try Refresh cabinets.':'No cabinets assigned to this client.';
+      list.append(message);
+      if(site.value){
+        const retry=document.createElement('button');retry.type='button';retry.className='btn-secondary';
+        retry.textContent='Refresh cabinets';retry.disabled=loading;
+        retry.onclick=()=>ensureLoaded(true);list.append(retry);
+      }
+    }
+  }
+  const originalPopulate=populateVisitCabinets;
+  populateVisitCabinets=function(...args){const result=originalPopulate.apply(this,args);paint();return result;};
+  const originalLoad=loadCabinets;
+  loadCabinets=async function(...args){
+    loading=true;paint();
+    try{const result=await originalLoad.apply(this,args);loadFailed=false;return result;}
+    catch(e){loadFailed=true;throw e;}
+    finally{loading=false;paint();}
+  };
+  async function ensureLoaded(force=false){
+    if(!force&&Array.isArray(cabinetRows)&&cabinetRows.length){paint();return;}
+    if(loadPromise)return loadPromise;
+    loading=true;loadFailed=false;paint();
+    loadPromise=Promise.resolve().then(()=>loadCabinets()).catch(e=>{loadFailed=true;console.warn('Cabinet load failed',e);}).finally(()=>{
+      loading=false;loadPromise=null;paint();
+    });
+    return loadPromise;
+  }
+  const originalSync=syncTechnicalFromSelectedCabinet;
+  syncTechnicalFromSelectedCabinet=function(){if(tokens().length>1)return;return originalSync();};
+  site.addEventListener('change',()=>{saveSelection([]);ensureLoaded();});
+  site.addEventListener('focus',()=>{if(!Array.isArray(cabinetRows)||!cabinetRows.length)ensureLoaded();});
+  machine.addEventListener('input',paint);
+  window.addEventListener('visit-committed',()=>{machine.value='';select.value='';renderVisitCabinetCard(null);paint();});
+  for(const name of ['editFieldLog','duplicateEntry']){
+    const original=window[name];
+    if(typeof original==='function')window[name]=function(...args){
+      const result=original.apply(this,args);populateVisitCabinets();if(!cabinetRows?.length)ensureLoaded();return result;
+    };
+  }
+  document.getElementById('visit-draft-controls')?.addEventListener('click',()=>{populateVisitCabinets();if(!cabinetRows?.length)ensureLoaded();});
+  const originalApply=applyVisitCabinet;
+  applyVisitCabinet=function(){originalApply();paint();};
+  const originalMatch=entryMatchesCabinet;
+  entryMatchesCabinet=function(entry,cab){
+    if(String(entry.machineNo||'').includes(';')){
+      const sameSite=normalizeSiteKey(canonicalSiteName(entry.site))===normalizeSiteKey(canonicalCabinetSite(cab,cabinetCanonicalSiteMap()));
+      return sameSite&&String(entry.machineNo).split(';').some(id=>key(id)===key(code(cab)));
+    }
+    return originalMatch(entry,cab);
+  };
+  document.getElementById('submit-btn')?.addEventListener('click',e=>{
+    if(tokens().length>1&&document.getElementById('f-spare-part')?.value){
+      e.preventDefault();e.stopImmediatePropagation();
+      showToast('Choose one cabinet for tracked parts','Save this multi-cabinet visit without a tracked part, then record the part usage against its specific cabinet.','bad');
+    }
+  },true);
+  paint();
+  if(site.value&&(!Array.isArray(cabinetRows)||!cabinetRows.length))ensureLoaded();
+})();
+</script>
 <script id="fse-visit-visibility">
 (function(){
  const notices=[];
@@ -10297,6 +10862,9 @@ html{scrollbar-gutter:stable}
  },true);
 })();
 </script>
+<footer class="app-version-footer" aria-label="Application version" style="padding:18px 16px max(18px,env(safe-area-inset-bottom));text-align:center;color:var(--ink-soft);font-size:11px;letter-spacing:.08em;border-top:1px solid var(--line);">
+  FSM v.51
+</footer>
 </body>
 <script>
 if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
@@ -10465,7 +11033,7 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
 (function(){
  const select=document.getElementById('f-site');
  const wrap=document.createElement('div');wrap.style.cssText='flex:1;min-width:0;position:relative';select.before(wrap);wrap.append(select);select.hidden=true;select.style.display='none';
- const input=document.createElement('input');input.type='text';input.id='location-combobox';input.placeholder='Select or type a location';input.autocomplete='off';input.setAttribute('role','combobox');input.setAttribute('aria-label','Client / Site');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls','location-options');input.setAttribute('aria-expanded','false');input.style.paddingRight='38px';wrap.append(input);
+ const input=document.createElement('input');input.type='text';input.id='location-combobox';input.placeholder='Select or type a client';input.autocomplete='off';input.setAttribute('role','combobox');input.setAttribute('aria-label','Client');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls','location-options');input.setAttribute('aria-expanded','false');input.style.paddingRight='38px';wrap.append(input);
  const toggle=document.createElement('button');toggle.type='button';toggle.innerHTML='&#8964;';toggle.setAttribute('aria-label','Show locations');toggle.style.cssText='position:absolute;right:2px;top:2px;width:34px;height:calc(100% - 4px);border:0;background:transparent;color:var(--ink);cursor:pointer';wrap.append(toggle);
  const list=document.createElement('div');list.id='location-options';list.setAttribute('role','listbox');list.hidden=true;list.style.cssText='position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:100;max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card);box-shadow:0 8px 24px #0005';wrap.append(list);
  let matches=[],active=-1;
@@ -10482,44 +11050,6 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
  const previous=renderSiteOptions;renderSiteOptions=function(value){const selected=value===undefined?select.value:value;previous(value);const names=allKnownSites().filter(n=>!siteIsClosed(n)&&normalizeSiteKey(n)!=='car');select.replaceChildren(new Option('Select a location',''));names.forEach(n=>select.add(new Option(n,n)));select.add(new Option('Others — specify location in remarks','Others'));const match=Array.from(select.options).find(o=>normalizeSiteKey(o.value)===normalizeSiteKey(selected));if(match)select.value=match.value;else if(editingEntryId&&selected){const o=new Option(selected+' — recorded location',selected);o.disabled=true;select.add(o);select.value=selected;}close();};
  new MutationObserver(()=>{if(document.activeElement!==input)input.value=label();}).observe(select,{childList:true,subtree:true});
  renderSiteOptions();if(currentUser)renderSites();
-})();
-
-</script>
-
-<script id="multi-cabinet-visits">
-(function(){
- const select=document.getElementById('f-cabinet-quick'),machine=document.getElementById('f-machine');
- select.style.display='none';
- const box=document.createElement('div');box.className='cabinet-multi-picker';select.after(box);
- const hint=select.parentElement.querySelector('.cat-desc');if(hint)hint.textContent='Choose any cabinets affected by this visit. Concern and remarks apply to all selected cabinets.';
- const tokens=()=>machine.value.split(';').map(s=>s.trim()).filter(Boolean);
- const code=c=>String(c.cabinetId||c.label||'').trim();
- function rows(){const key=normalizeSiteKey(document.getElementById('f-site').value);if(!key)return [];const map=cabinetCanonicalSiteMap();return cabinetRows.filter(c=>normalizeSiteKey(canonicalCabinetSite(c,map))===key&&code(c)).sort(cabinetNaturalSort);}
- function selected(){const keys=tokens().map(normUniqueValue);return rows().filter(c=>keys.includes(normUniqueValue(code(c))));}
- function saveSelection(values){machine.value=values.join('; ');const chosen=selected();select.value=chosen.length===1?String(chosen[0].id):'';
- document.getElementById('f-asset').value='';document.getElementById('f-component').value='';
- if(chosen.length===1)syncTechnicalFromSelectedCabinet();
- renderVisitCabinetCard(chosen.length===1?chosen[0]:null);paint();machine.dispatchEvent(new Event('input',{bubbles:true}));}
- function paint(){box.replaceChildren();const available=rows(),keys=tokens().map(normUniqueValue);const toolbar=document.createElement('div');toolbar.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px';
- const count=document.createElement('small');count.textContent=selected().length?selected().length+' cabinets selected':'No specific cabinet';count.style.color='var(--ink-soft)';
- for(const [title,values] of [['Select all',available.map(code)],['Clear',[]]]){const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.textContent=title;b.disabled=!available.length;b.onclick=()=>saveSelection(values);toolbar.append(b);}toolbar.append(count);box.append(toolbar);
- const list=document.createElement('div');list.style.cssText='display:flex;flex-wrap:wrap;gap:6px;max-height:190px;overflow:auto';box.append(list);
- available.forEach(c=>{const checked=keys.includes(normUniqueValue(code(c)));const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;cursor:pointer;font-size:12px;background:'+(checked?'var(--panel-soft)':'transparent');const input=document.createElement('input');input.type='checkbox';input.checked=checked;input.style.cssText='width:15px;height:15px;margin:0';input.onchange=()=>{const next=tokens().filter(v=>normUniqueValue(v)!==normUniqueValue(code(c)));if(input.checked)next.push(code(c));saveSelection(next);};const caption=document.createElement('span');caption.textContent=code(c);label.append(input,caption);label.classList.toggle('is-selected',checked);list.append(label);});
- if(!available.length)list.textContent=document.getElementById('f-site').value?'No cabinets available for this location.':'Select a location first.';
- }
- const oldPopulate=populateVisitCabinets;populateVisitCabinets=function(...args){const result=oldPopulate.apply(this,args);paint();return result;};
- const oldSync=syncTechnicalFromSelectedCabinet;syncTechnicalFromSelectedCabinet=function(){if(tokens().length>1)return;return oldSync();};
- document.getElementById('f-site').addEventListener('change',()=>saveSelection([]));
- machine.addEventListener('input',paint);
- window.addEventListener('visit-committed',()=>{machine.value='';select.value='';renderVisitCabinetCard(null);paint();});
- for(const name of ['editFieldLog','duplicateEntry']){const original=window[name];window[name]=function(...args){const result=original.apply(this,args);populateVisitCabinets();return result;};}
- document.getElementById('visit-draft-controls')?.addEventListener('click',()=>{populateVisitCabinets();});
- const oldApply=applyVisitCabinet;applyVisitCabinet=function(){oldApply();paint();};
- // The existing shared-sheet Machine field preserves the full list, including after reload.
- const originalMatch=entryMatchesCabinet;entryMatchesCabinet=function(entry,cab){if(String(entry.machineNo||'').includes(';')){const sameSite=normalizeSiteKey(canonicalSiteName(entry.site))===normalizeSiteKey(canonicalCabinetSite(cab,cabinetCanonicalSiteMap()));return sameSite&&String(entry.machineNo).split(';').some(id=>normUniqueValue(id)===normUniqueValue(code(cab)));}return originalMatch(entry,cab);};
- document.getElementById('submit-btn').addEventListener('click',e=>{if(tokens().length>1&&document.getElementById('f-spare-part')?.value){e.preventDefault();e.stopImmediatePropagation();showToast('Choose one cabinet for tracked parts','Save this multi-cabinet visit without a tracked part, then record the part usage against its specific cabinet.','bad');}},true);
- box.addEventListener('pointerdown',()=>{select.dispatchEvent(new Event('pointerdown'));},{once:true});
- paint();
 })();
 
 </script>
@@ -10664,3 +11194,551 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('compact-loading-times')?.remove();
 })();
 </script>
+
+<script id="mobile-visit-wizard">
+(function(){
+  const form=document.querySelector('#panel-log .smart-visit-form');
+  if(!form)return;
+  const panels=[...form.querySelectorAll('.visit-step-panel')];
+  const controls=document.getElementById('visit-step-controls');
+  const next=document.getElementById('visit-step-next');
+  const back=document.getElementById('visit-step-back');
+  const count=document.getElementById('visit-step-count');
+  const fill=document.getElementById('visit-step-progress-fill');
+  const title=document.getElementById('visit-step-short-title');
+  const error=document.getElementById('visit-step-error');
+  let activeStep=1;
+  const names={1:'Visit details',2:'Concern',3:'Action & notes',4:'Attachments'};
+  function isSimple(){return ['Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'].includes(document.getElementById('f-visit-type')?.value||'')}
+  function stepIds(){return [1,2,3,4]}
+  function enabled(){return window.matchMedia('(max-width:900px)').matches}
+  function clearError(){if(error){error.textContent='';error.style.display='none'}}
+  function goToStep(id,scroll=true){
+    const ids=stepIds();
+    if(!ids.includes(id))id=ids.find(n=>n>activeStep)||ids[ids.length-1];
+    activeStep=id;
+    panels.forEach(panel=>panel.classList.toggle('active',Number(panel.dataset.visitStep)===id));
+    if(enabled()){
+      if(id===3){const equipment=document.getElementById('visit-equipment-details');if(equipment)equipment.open=false;}
+      const index=ids.indexOf(id);
+      if(count)count.textContent='Step '+(index+1)+' of '+ids.length;
+      if(fill)fill.style.width=((index+1)/ids.length*100)+'%';
+      if(title)title.textContent=id===2&&isSimple()?'Activity Priority':names[id];
+      if(back)back.disabled=index===0;
+      if(next)next.style.display=index===ids.length-1?'none':'';
+      controls?.setAttribute('aria-label','Visit form navigation, step '+(index+1)+' of '+ids.length);
+      clearError();
+      if(scroll){const top=form.getBoundingClientRect().top+window.scrollY-74;window.scrollTo({top:Math.max(0,top),behavior:'smooth'});}
+    }
+  }
+  function syncMode(){
+    form.classList.toggle('visit-wizard-active',enabled());
+    controls?.setAttribute('aria-hidden',enabled()?'false':'true');
+    if(enabled())goToStep(activeStep,false);
+    else panels.forEach(panel=>panel.classList.remove('active'));
+  }
+  next?.addEventListener('click',()=>{
+    const ids=stepIds();
+    if(activeStep===1&&!document.getElementById('f-site')?.value){
+      const siteError=document.getElementById('site-err');
+      if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
+      document.getElementById('f-site')?.focus();return;
+    }
+    if(activeStep===2&&!isSimple()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
+      if(error){error.textContent='Choose a concern to continue.';error.style.display='block';}
+      document.querySelector('#cat-picker .cat-opt')?.focus();return;
+    }
+    const index=ids.indexOf(activeStep);
+    if(index>=0&&index<ids.length-1)goToStep(ids[index+1]);
+  });
+  back?.addEventListener('click',()=>{
+    const ids=stepIds(),index=ids.indexOf(activeStep);
+    if(index>0)goToStep(ids[index-1]);
+  });
+  document.getElementById('f-site')?.addEventListener('change',()=>{
+    if(document.getElementById('f-site').value){const siteError=document.getElementById('site-err');if(siteError)siteError.style.display='none';}
+  });
+  document.getElementById('f-visit-type')?.addEventListener('change',()=>{
+    if(enabled()&&!stepIds().includes(activeStep))goToStep(3,false);
+    else if(enabled())goToStep(activeStep,false);
+  });
+  document.querySelectorAll('#cat-picker .cat-opt').forEach(button=>button.addEventListener('click',clearError));
+  window.setVisitWizardStep=goToStep;
+  window.resetVisitWizard=()=>goToStep(1,false);
+  const mq=window.matchMedia('(max-width:900px)');
+  mq.addEventListener?.('change',syncMode);
+  syncMode();
+})();
+</script>
+
+<style id="mobile-touch-layout-refinements">
+@media(max-width:760px){
+  /* Keep horizontal movement inside the navigation or table that needs it. */
+  #asset-groups{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 0 8px}
+  #asset-groups::-webkit-scrollbar{display:none}
+  #asset-groups button{flex:0 0 auto;min-height:44px;padding:0 13px;white-space:nowrap;font-size:12px}
+  #panel-inventory .inventory-subnav{gap:7px!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #panel-inventory .inventory-subnav::-webkit-scrollbar{display:none}
+  #panel-inventory .inventory-subtab{flex:0 0 auto!important;min-height:44px!important;padding:0 12px!important;font-size:12px!important;white-space:nowrap}
+  #panel-inventory .secondary-cabinet-nav{margin-left:0!important}
+  .cabinet-table-wrap,.inventory-table-wrap,.movement-table-wrap{max-width:100%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .cabinet-toolbar,.inventory-toolbar,.movement-toolbar{min-width:0}
+  .cabinet-toolbar input,.inventory-toolbar input,.movement-toolbar input{flex:1 1 100%;width:100%;min-width:0!important;min-height:44px;box-sizing:border-box}
+  .cabinet-toolbar button,.inventory-toolbar button,.movement-toolbar button{min-height:44px}
+  #panel-inventory .asset-load-status{justify-content:flex-start;max-width:none}
+  #panel-inventory .asset-load-status>span[role="status"]{max-width:none;line-height:1.45}
+  .asset-view-loader{position:fixed;inset:calc(64px + env(safe-area-inset-top)) 0 0;z-index:104}
+  .asset-view-loader-card{width:min(92vw,380px);padding:16px}
+}
+@media(max-width:700px){
+  .vd-attachment-list{grid-template-columns:minmax(0,1fr);gap:12px}
+  .vd-attachment-thumb{height:min(68vw,280px);min-height:180px}
+  .vd-attachment-card-info{gap:10px}
+  .vd-attachment-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .vd-attachment-buttons button{min-height:44px;white-space:nowrap}
+  .attachment-preview-card{height:100dvh;max-height:100dvh}
+  .attachment-preview-body{min-height:56dvh}
+}
+</style>
+
+<style id="mobile-minimal-ui">
+@media(max-width:900px){
+  :root{--mobile-surface:#15191f;--mobile-line:rgba(226,233,245,.09)}
+  body{background:#0d1014!important}
+  .mobile-app-header{
+    height:calc(58px + env(safe-area-inset-top))!important;
+    padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left))!important;
+    background:#0d1014!important;
+    border-bottom:1px solid var(--mobile-line)!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  .mobile-brand{gap:9px!important}
+  .mobile-brand img{width:64px!important;max-height:22px!important}
+  .mobile-brand div{padding-left:9px!important}
+  .mobile-brand b{font-size:12px!important;font-weight:600}
+  .mobile-brand small{display:none!important}
+  .mobile-menu-btn{width:42px!important;height:42px!important;border:0!important;border-radius:9px!important;background:transparent!important;font-size:20px!important}
+  .mobile-nav-backdrop{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(0,0,0,.42)!important}
+  .mobile-nav-drawer{width:min(82vw,320px)!important;background:#11151a!important;border-left:1px solid var(--mobile-line)!important;box-shadow:-12px 0 36px rgba(0,0,0,.24)!important}
+  .mobile-drawer-head,.mobile-drawer-footer{border-color:var(--mobile-line)!important}
+  .mobile-drawer-nav{gap:3px!important;padding:12px 0!important}
+  .mobile-drawer-nav button{min-height:46px!important;border-radius:8px!important;padding:0 11px!important}
+  .mobile-drawer-nav button.active{background:rgba(167,184,255,.09)!important;border-color:rgba(167,184,255,.15)!important;color:#e1e7f5!important}
+  .app-content{padding:12px 12px calc(82px + env(safe-area-inset-bottom))!important}
+  .mobile-page-head{align-items:center!important;margin:3px 0 9px!important}
+  .mobile-page-kicker{font-size:8px!important;letter-spacing:.1em!important;color:#8791a0!important}
+  .mobile-page-head h1{font-size:22px!important;letter-spacing:-.025em!important;font-weight:650!important}
+  .mobile-connection{min-height:28px!important;padding:0 8px!important;border-color:var(--mobile-line)!important;background:transparent!important;font-size:9px!important}
+  .mobile-system-strip{min-height:28px!important;margin-bottom:10px!important;padding:0 2px!important;border:0!important;background:transparent!important;color:#919baa!important;font-size:9px!important}
+  .ticket,.fieldlog-card,.chart-card,.site-profile,.cabinet-profile,.conditional-box,.visit-attachments-box{
+    background:var(--mobile-surface)!important;
+    border-color:var(--mobile-line)!important;
+    border-radius:11px!important;
+    box-shadow:none!important;
+  }
+  .section-head{gap:8px!important;margin-bottom:12px!important}
+  .section-head h2{font-size:19px!important;font-weight:650!important;letter-spacing:-.02em}
+  .section-head p{color:#929cab!important;line-height:1.45!important}
+  .mobile-save-fab{min-height:48px!important;left:12px!important;right:12px!important;bottom:max(9px,env(safe-area-inset-bottom))!important;border-radius:10px!important;background:#d6defb!important;color:#171b26!important;box-shadow:0 6px 22px rgba(0,0,0,.2)!important;font-size:12px!important}
+  .asset-view-loader{inset:calc(58px + env(safe-area-inset-top)) 0 0!important;background:rgba(13,16,20,.74)!important;backdrop-filter:none!important}
+}
+@media(max-width:760px){
+  #asset-groups{gap:3px!important;border-bottom:1px solid var(--mobile-line)!important;margin-bottom:9px!important}
+  #asset-groups button{min-height:42px!important;padding:0 11px!important;border-radius:0!important;color:#939dab!important}
+  #asset-groups button[aria-pressed="true"]{background:transparent!important;color:#e4e9f4!important;border-color:transparent!important;box-shadow:inset 0 -2px #a7b8ff}
+  #panel-inventory .inventory-subnav{border-bottom:1px solid var(--mobile-line)!important;margin-bottom:12px!important;padding-bottom:5px!important}
+  #panel-inventory .inventory-subtab{min-height:42px!important;padding:0 10px!important;border-radius:0!important;color:#929cab!important}
+  #panel-inventory .inventory-subtab.active{background:transparent!important;border-color:transparent!important;box-shadow:inset 0 -2px #a7b8ff;color:#e4e9f4!important}
+  .inventory-toolbar,.movement-toolbar,.cabinet-toolbar{padding:10px!important;background:transparent!important;border-color:var(--mobile-line)!important;border-radius:10px!important}
+  .inventory-toolbar input,.movement-toolbar input,.cabinet-toolbar input{background:#101419!important;border-color:var(--mobile-line)!important}
+  .cabinet-table-wrap,.inventory-table-wrap,.movement-table-wrap{border-color:var(--mobile-line)!important;border-radius:9px!important}
+  .vd-attachment-row{background:var(--mobile-surface)!important;border-color:var(--mobile-line)!important;border-radius:10px!important}
+  .vd-attachment-thumb{background:#0b0e12!important;border-bottom-color:var(--mobile-line)!important}
+  .vd-attachment-card-info{padding:11px!important}
+  .vd-attachment-name b{font-size:12px!important;font-weight:600!important}
+  .vd-attachment-name small{color:#929cab!important}
+  .vd-attachment-buttons button{border-radius:8px!important}
+  .attachment-preview-card{background:#11151a!important;border-color:var(--mobile-line)!important}
+  .attachment-preview-head,.attachment-preview-foot{border-color:var(--mobile-line)!important}
+}
+@media(max-width:420px){
+  .app-content{padding-left:10px!important;padding-right:10px!important}
+  .mobile-page-head h1{font-size:20px!important}
+  .mobile-save-fab{left:10px!important;right:10px!important}
+}
+</style>
+
+<style id="mobile-bottom-navigation-and-cabinet-cards">
+.mobile-bottom-nav,.cabinet-mobile-list{display:none}
+@media(max-width:760px){
+  .mobile-bottom-nav{position:fixed;z-index:106;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));height:calc(62px + env(safe-area-inset-bottom));padding:4px 5px env(safe-area-inset-bottom);box-sizing:border-box;border-top:1px solid var(--mobile-line);background:rgba(13,16,20,.97)}
+  .mobile-bottom-nav button{display:flex;min-width:0;min-height:48px;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;border-radius:8px;background:transparent;color:#8791a0;font:500 9px/1.1 'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}
+  .mobile-bottom-nav button svg{width:20px;height:20px;flex:0 0 20px}
+  .mobile-bottom-nav button.active{color:#e3e9f7;background:rgba(167,184,255,.08)}
+  .mobile-bottom-nav button.active svg{color:#b9c8fa}
+  .app-content{padding-bottom:calc(148px + env(safe-area-inset-bottom))!important}
+  .mobile-save-fab{bottom:calc(70px + env(safe-area-inset-bottom))!important;z-index:105}
+  .cabinet-table-wrap{display:none!important}
+  .cabinet-mobile-list{display:grid;gap:12px;margin:12px 0 4px}
+  .cabinet-mobile-group{display:grid;gap:8px;min-width:0}
+  .cabinet-mobile-group>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 2px;color:#e2e8f4;font-size:12px;cursor:pointer;list-style:none}
+  .cabinet-mobile-group>summary::-webkit-details-marker{display:none}
+  .cabinet-mobile-group>summary span{color:#8e99a9;font-size:10px;white-space:nowrap}
+  .cabinet-mobile-group>summary::after{content:'−';margin-left:0;color:#7f8998;font-size:14px}
+  .cabinet-mobile-group:not([open])>summary::after{content:'+'}
+  .cabinet-mobile-card{min-width:0;padding:12px;border:1px solid var(--mobile-line);border-radius:10px;background:var(--mobile-surface)}
+  .cabinet-mobile-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .cabinet-mobile-title{min-width:0;display:grid;gap:4px}
+  .cabinet-mobile-name{display:inline-flex;align-items:center;min-height:36px;max-width:100%;width:max-content;padding:0!important;color:#e6ebf5!important;font-size:14px!important;font-weight:650!important;overflow-wrap:anywhere;text-align:left}
+  .cabinet-mobile-title small{color:#929cab;font-size:10px;line-height:1.4}
+  .cabinet-mobile-status{flex:0 0 auto;max-width:46%;padding:4px 7px;border:1px solid var(--mobile-line);border-radius:999px;color:#bac6da;font-size:9px;line-height:1.25;text-align:center}
+  .cabinet-mobile-primary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--mobile-line)}
+  .cabinet-mobile-detail{min-width:0;display:grid;gap:3px}
+  .cabinet-mobile-detail small{color:#7f8998;font-size:8px;letter-spacing:.06em;text-transform:uppercase}
+  .cabinet-mobile-detail>span{min-width:0;color:#d0d7e3;font-size:10px;line-height:1.4;overflow-wrap:anywhere}
+  .cabinet-mobile-more{margin-top:10px;border-top:1px solid var(--mobile-line)}
+  .cabinet-mobile-more summary{min-height:40px;display:flex;align-items:center;cursor:pointer;color:#aeb9c9;font-size:10px;list-style:none}
+  .cabinet-mobile-more summary::-webkit-details-marker{display:none}
+  .cabinet-mobile-more summary::after{content:'+';margin-left:auto;color:#9aa6b8;font-size:16px}
+  .cabinet-mobile-more[open] summary::after{content:'−'}
+  .cabinet-mobile-details{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:2px 0 10px}
+  .cabinet-mobile-details .token-compact{flex-wrap:wrap;white-space:normal}
+  .cabinet-mobile-details .token-copy{min-height:30px;padding:0 8px}
+  .cabinet-mobile-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}
+  .cabinet-mobile-actions button{min-width:0;min-height:44px;padding:0 6px!important;font-size:10px!important}
+  .cabinet-mobile-empty{padding:18px 12px;border:1px dashed var(--mobile-line);border-radius:10px;color:#929cab;font-size:11px;text-align:center}
+}
+@media(max-width:360px){.mobile-bottom-nav button{font-size:8px}.cabinet-mobile-card{padding:10px}.cabinet-mobile-status{font-size:8px}}
+</style>
+
+<style id="mobile-single-save-action">
+@media(max-width:900px){
+  /* Keep one save action in the form flow so it cannot cover attachment controls. */
+  #panel-log #submit-btn{display:none!important}
+  #panel-log #mobile-save-fab{
+    position:static!important;
+    inset:auto!important;
+    display:flex;
+    width:100%;
+    min-height:48px!important;
+    margin:12px 0 0!important;
+    box-shadow:none!important;
+    transform:none!important;
+  }
+  #panel-log #err-msg{margin-top:10px}
+}
+@media(max-width:760px){
+  .app-content{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
+}
+</style>
+
+<style id="mobile-new-visit-usability">
+@media(max-width:900px){
+  #panel-log .ticket.smart-visit-form{padding:14px 12px 16px!important;border:1px solid rgba(226,233,245,.08)!important;border-radius:12px!important;background:#12161b!important}
+  #panel-log .smart-section-head{align-items:center!important;gap:10px!important;margin:22px 0 12px!important;padding:0 0 10px!important;border-bottom:1px solid rgba(226,233,245,.08)!important}
+  #panel-log .smart-section-head:first-child{margin-top:2px!important}
+  #panel-log .smart-section-head>span{display:grid;place-items:center;flex:0 0 28px;width:28px!important;height:28px!important;min-width:28px!important;border-radius:8px!important;background:rgba(167,184,255,.09)!important;color:#c5d0f3!important;font-size:10px!important}
+  #panel-log .smart-section-head b{font-size:14px!important;font-weight:650!important;letter-spacing:0!important}
+  #panel-log .smart-section-head small{display:block!important;margin-top:3px!important;color:#969fad!important;font-size:10px!important;line-height:1.4!important}
+  #panel-log .row{gap:14px!important}
+  #panel-log .field>label,#panel-log .field-label{display:block;margin-bottom:7px!important;color:#cbd3df!important;font-size:11px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important}
+  #panel-log .field-required{display:inline-flex;align-items:center;margin-left:5px;padding:3px 6px;border:1px solid rgba(167,184,255,.16);border-radius:999px;color:#aebce3;font-size:8px;font-weight:500;line-height:1;text-transform:none;letter-spacing:0}
+  #panel-log input,#panel-log select,#panel-log textarea{background:#0e1217!important;border:1px solid #303844!important;color:#e1e7f0!important;border-radius:9px!important}
+  #panel-log input::placeholder,#panel-log textarea::placeholder{color:#778291!important;opacity:1}
+  #panel-log input:focus,#panel-log select:focus,#panel-log textarea:focus{border-color:#8197d0!important;box-shadow:0 0 0 3px rgba(167,184,255,.1)!important}
+  #panel-log .cat-opt{display:flex;align-items:center;justify-content:center;min-height:48px!important;padding:9px 8px!important;border:1px solid #303844!important;border-radius:9px!important;background:#171c23!important;color:#c1cad7!important;font:600 12px/1.2 'Segoe UI',sans-serif!important;white-space:normal;box-shadow:none!important}
+  #panel-log .cat-opt[aria-pressed="true"]{border-color:#7288c5!important;background:rgba(167,184,255,.12)!important;color:#e0e7fb!important}
+  #panel-log .cat-opt:focus-visible{outline:2px solid #a7b8ff!important;outline-offset:2px}
+  #panel-log .cat-desc,#panel-log .week-hint{margin-top:6px;color:#939eae!important;font-size:10px!important;line-height:1.45!important}
+  #panel-log .team-support-box,#panel-log #visit-spare-box{padding:11px!important;border:1px solid rgba(226,233,245,.09)!important;border-radius:10px!important;background:#151a20!important}
+  #panel-log .team-chip{min-height:42px!important;font-size:11px!important}
+  #panel-log .visit-attachments-box{background:#151a20!important;border-color:rgba(226,233,245,.1)!important}
+  #panel-log .visit-attachment-pick{min-height:46px!important;border-radius:9px!important;font-size:11px!important}
+  #panel-log #err-msg{padding:10px 11px;border:1px solid rgba(230,145,128,.25);border-radius:9px;background:rgba(230,145,128,.08);color:#f0b1a3;font-size:11px;line-height:1.45}
+}
+</style>
+
+<style id="mobile-progressive-visit-details">
+@media(min-width:901px){.visit-details-mark{display:none}}
+@media(max-width:900px){
+  .visit-more-details{margin:12px 0;border-top:1px solid rgba(226,233,245,.09);border-bottom:1px solid rgba(226,233,245,.09)}
+  .visit-more-details[hidden]{display:none!important}
+  .visit-more-details>summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+  .visit-more-details>summary::-webkit-details-marker{display:none}
+  .visit-more-details>summary>span:first-child{display:grid;gap:3px;min-width:0}
+  .visit-more-details>summary b{color:#d5dce7;font-size:11px;font-weight:600}
+  .visit-more-details>summary small{color:#929cab;font-size:9px;line-height:1.35}
+  .visit-details-mark{display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;border:1px solid rgba(226,233,245,.11);border-radius:8px;color:#b8c3d3;font-size:14px}
+  .visit-more-details[open] .visit-details-mark{transform:rotate(45deg)}
+  .visit-additional-fields{padding:2px 0 12px!important}
+  .visit-additional-fields .field{min-width:0}
+  .visit-equipment-details{margin-top:10px}
+}
+</style>
+
+<style id="visit-time-and-followup-ui-removal">
+/* Keep historical values and bindings, but remove these fields from new/edit visit forms on every screen size. */
+#panel-log #visit-time-in-field,
+#panel-log #visit-time-details,
+#panel-log #field-time-resolved,
+#panel-log #followup-extra{display:none!important}
+</style>
+
+<style id="mobile-visit-wizard-ui">
+.visit-step-progress,.visit-step-controls,.visit-step-error{display:none}
+.visit-step-panel{display:contents}
+@media(max-width:900px){
+  #panel-log #visit-time-details{display:none!important}
+  #panel-log .visit-step-progress{display:grid;gap:8px;margin:-2px 0 16px;padding:0 2px;color:#aab4c3;font-size:10px}
+  .visit-step-progress-track{height:3px;overflow:hidden;border-radius:99px;background:rgba(226,233,245,.1)}
+  .visit-step-progress-track i{display:block;width:25%;height:100%;border-radius:inherit;background:#a7b8ff;transition:width .2s ease}
+  .visit-wizard-active .visit-step-panel{display:none!important}
+  .visit-wizard-active .visit-step-panel.active{display:block!important;animation:visit-step-enter .16s ease-out}
+  @keyframes visit-step-enter{from{opacity:.65;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  #panel-log .visit-wizard-active .visit-step-controls{position:static;transform:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%;margin:14px 0 0;padding:9px 10px;border:1px solid rgba(226,233,245,.12);border-radius:12px;background:rgba(18,22,28,.97)}
+  .visit-step-controls button{min-height:42px;padding:0 13px;border:1px solid rgba(226,233,245,.13);border-radius:9px;background:#202630;color:#dce3ef;font:600 12px/1 'Segoe UI',sans-serif;cursor:pointer}
+  .visit-step-controls button:last-child{justify-self:end;background:#d6defb;border-color:#d6defb;color:#171b26}
+  .visit-step-controls button:disabled{opacity:.42;cursor:default}
+  .visit-step-controls span{color:#929cab;font-size:10px;text-align:center;white-space:nowrap}
+  .visit-step-error{display:none;position:static;transform:none;width:auto;margin:10px 0 0;padding:9px 11px;border:1px solid rgba(230,145,128,.25);border-radius:9px;background:#211918;color:#f0b1a3;font-size:11px}
+  .visit-wizard-active #mobile-save-fab{display:none!important}
+  #panel-log .visit-wizard-active .visit-step-panel[data-visit-step="4"].active #mobile-save-fab{display:flex!important}
+  .visit-wizard-active .visit-step-panel[data-visit-step="3"].active #visit-equipment-details{margin-top:12px}
+  .visit-wizard-active .visit-step-panel[data-visit-step="3"].active #visit-equipment-details[open]{scroll-margin-top:85px}
+  #panel-log .visit-wizard-active #visit-category-row .cats{gap:6px!important}
+  #panel-log .visit-wizard-active #visit-category-row .cat-opt{min-height:44px!important;padding:7px 6px!important;font-size:11px!important}
+  #panel-log .visit-wizard-active #visit-category-row .cat-desc{margin-top:4px!important;line-height:1.35!important}
+  #panel-log .visit-wizard-active #visit-priority-status-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:start;gap:10px!important;margin-top:9px!important}
+  #panel-log .visit-wizard-active #visit-priority-status-row>.field{min-width:0!important;max-width:none!important}
+  #panel-log .visit-wizard-active #auto-priority-reason{margin-top:3px!important}
+  #panel-log .ticket.smart-visit-form{padding-bottom:16px!important}
+}
+@media(min-width:901px){.visit-step-progress,.visit-step-controls,.visit-step-error{display:none!important}}
+</style>
+
+<style id="mobile-compact-operations-bar">
+#system-bar .mobile-system-toggle{display:none}
+@media(max-width:900px){
+  .mobile-page-head.is-new-visit{display:none!important}
+  #system-bar{display:block!important;width:100%;margin:0 0 10px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+  #system-bar .mobile-system-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:38px;padding:0 2px;border:0;border-bottom:1px solid var(--mobile-line);border-radius:0;background:transparent;color:#aab4c3;text-align:left;font:500 10px/1.3 'Segoe UI',sans-serif;cursor:pointer}
+  #system-bar .mobile-system-toggle-label{color:#d2d9e5;font-size:10px;font-weight:600;letter-spacing:.02em}
+  #system-bar .mobile-system-toggle-state{min-width:0;overflow:hidden;color:#929cab;text-overflow:ellipsis;white-space:nowrap}
+  #system-bar .mobile-system-toggle-icon{flex:0 0 auto;color:#aab4c3;font-size:14px;transition:transform .16s ease}
+  #system-bar.mobile-system-open .mobile-system-toggle-icon{transform:rotate(180deg)}
+  #system-bar .system-title{display:none!important}
+  #system-bar:not(.mobile-system-open) .system-meta{display:none!important}
+  #system-bar.mobile-system-open .system-meta{display:flex!important;justify-content:flex-start!important;align-items:center!important;gap:9px!important;width:100%!important;margin:8px 0 0!important;text-align:left!important}
+  #system-bar.mobile-system-open .system-chip{font-size:10px!important}
+  #system-bar.mobile-system-open #visit-refresh-bar{display:flex!important;align-items:center;gap:8px;flex:1 1 100%;max-width:100%;margin:0!important}
+  #system-bar.mobile-system-open #visit-refresh-bar>span{flex:1;max-width:none!important;font-size:10px}
+  #system-bar.mobile-system-open #visit-refresh-bar button{flex:0 0 36px}
+}
+</style>
+<script id="mobile-compact-operations-controller">
+(function(){
+  const bar=document.getElementById('system-bar');
+  const status=document.getElementById('system-status');
+  const synced=document.getElementById('system-sync');
+  if(!bar||!status||!synced)return;
+  const toggle=document.createElement('button');
+  toggle.type='button';
+  toggle.className='mobile-system-toggle';
+  toggle.setAttribute('aria-expanded','false');
+  toggle.setAttribute('aria-controls','system-meta');
+  toggle.innerHTML='<span class="mobile-system-toggle-label">Operations status</span><span class="mobile-system-toggle-state"></span><span class="mobile-system-toggle-icon" aria-hidden="true">⌄</span>';
+  bar.insertBefore(toggle,bar.firstChild);
+  const state=toggle.querySelector('.mobile-system-toggle-state');
+  const update=()=>{
+    const connection=(status.textContent||'').trim().replace(/^SYSTEM\s+/i,'');
+    const sync=(synced.textContent||'').trim();
+    state.textContent=[connection,sync].filter(Boolean).join(' · ');
+  };
+  const setOpen=open=>{
+    bar.classList.toggle('mobile-system-open',open);
+    toggle.setAttribute('aria-expanded',String(open));
+  };
+  toggle.addEventListener('click',()=>setOpen(!bar.classList.contains('mobile-system-open')));
+  new MutationObserver(update).observe(status,{childList:true,subtree:true,characterData:true});
+  new MutationObserver(update).observe(synced,{childList:true,subtree:true,characterData:true});
+  const media=window.matchMedia('(max-width:900px)');
+  const syncMode=()=>setOpen(media.matches?false:true);
+  media.addEventListener?.('change',syncMode);
+  syncMode();update();
+})();
+</script>
+<style id="desktop-visit-form-spacing">
+@media (min-width: 901px) {
+  #panel-log .ticket.smart-visit-form {
+    max-width: 1120px !important;
+    padding: 24px 30px !important;
+  }
+  #panel-log .smart-section-head {
+    margin: 16px 0 11px !important;
+    padding: 0 0 10px !important;
+    gap: 10px !important;
+  }
+  #panel-log .smart-section-head:first-child { margin-top: 0 !important; }
+  #panel-log .row {
+    align-items: flex-start;
+    gap: 14px !important;
+    margin-bottom: 11px !important;
+  }
+  #panel-log .row > .field { min-width: 0; }
+  #panel-log #visit-type-row > .field { flex: 0 1 420px; max-width: 420px; }
+  #panel-log #visit-priority-status-row { gap: 14px !important; margin-top: 8px !important; }
+  #panel-log #visit-priority-status-row > .field { flex: 0 1 230px; max-width: 230px !important; }
+  #panel-log #resolution-extra > .field:first-child { flex: 0 1 320px; max-width: 320px; }
+  #panel-log #field-resolution-type > .field { flex: 0 1 380px; max-width: 380px; }
+  #panel-log #field-asset > .field { flex: 0 1 420px; max-width: 420px; }
+  #panel-log .visit-more-details { margin: 10px 0; }
+  #panel-log .visit-additional-fields { margin: 4px 0 8px !important; }
+  #panel-log #field-resolution-action textarea { min-height: 96px; }
+  #panel-log .visit-attachments-box { margin-top: 10px; padding: 14px !important; }
+  #panel-log #submit-btn {
+    display: flex;
+    width: auto !important;
+    min-width: 240px;
+    max-width: 320px;
+    margin: 12px 0 0 auto;
+    padding: 0 18px !important;
+  }
+}
+</style>
+<style id="visit-helper-copy-cleanup">
+#panel-log #cat-desc:empty,
+#panel-log #f-cabinet-quick~.cat-desc:empty{display:none!important}
+#panel-log #visit-additional-details>summary small{display:none!important}
+</style>
+<style id="visit-type-mode-and-cabinet-v81">
+@media(min-width:901px){
+  #panel-log #visit-type-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:start;gap:14px!important}
+  #panel-log #visit-type-row>.field{width:auto!important;max-width:none!important;min-width:0!important;flex:none!important}
+}
+@media(max-width:900px){
+  #panel-log #visit-type-row{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+}
+#panel-log #field-visit-support-mode{display:block!important}
+#panel-log .cabinet-multi-picker{min-height:30px}
+#panel-log #f-cabinet-quick:not([style*="display: none"]){margin-bottom:8px}
+</style>
+
+<style id="new-visit-v47-visual-reference">
+@media (max-width: 900px) {
+/* Restore the v47 New Visit look while retaining current fields and wizard behavior. */
+#panel-log .ticket.smart-visit-form{max-width:1100px!important;padding:20px!important;border:1px solid var(--line)!important;border-radius:10px!important;background:var(--card)!important;box-shadow:none!important}
+#panel-log .smart-section-head{display:flex;align-items:center;gap:10px!important;margin:20px 0 14px!important;padding:0 0 12px!important;border-bottom:1px solid var(--line)!important;background:none!important}
+#panel-log .smart-section-head:first-child{margin-top:0!important}
+#panel-log .smart-section-head>span{display:grid!important;place-items:center;flex:0 0 26px!important;width:26px!important;min-width:26px!important;height:26px!important;padding:0!important;border:0!important;border-radius:6px!important;background:#262d42!important;color:#c3ceff!important;font-size:11px!important;font-weight:650!important;letter-spacing:0!important}
+#panel-log .smart-section-head b{color:var(--ink)!important;font-size:14px!important;font-weight:650!important;letter-spacing:-.01em!important}
+#panel-log .smart-section-head small{display:block!important;color:var(--ink-soft)!important;font-size:11px!important;line-height:1.5!important}
+#panel-log .row{gap:14px!important;margin-bottom:14px!important}
+#panel-log input:not([type="checkbox"]),#panel-log select,#panel-log textarea{border-radius:7px!important;background:var(--input-bg)!important;border-color:var(--line)!important;box-shadow:none!important}
+#panel-log input:focus,#panel-log select:focus,#panel-log textarea:focus{border-color:var(--accent)!important;box-shadow:0 0 0 3px #a7b8ff18!important}
+#panel-log .field-required{padding:3px 7px!important;border:1px solid #424d68!important;border-radius:999px!important;background:#20263a!important;color:#c3ceff!important;font-size:10px!important;font-weight:600!important}
+#panel-log .cat-opt{min-height:42px!important;padding:10px 10px!important;border-radius:7px!important;background:#181e26!important;color:#aeb9ca!important;font-size:12px!important;font-weight:550!important;transform:none!important;box-shadow:none!important}
+#panel-log .cat-opt:hover{transform:translateY(-1px)!important;border-color:var(--accent)!important}
+#panel-log .cat-opt[class*="sel-"]{border-color:#4e65a7!important;background:#252d42!important;color:#dbe2ff!important;font-weight:600!important}
+#panel-log .visit-attachments-box,#panel-log .team-support-box,#panel-log #visit-spare-box{border-radius:10px!important;background:var(--card)!important;border-color:var(--line)!important;box-shadow:none!important}
+#panel-log .visit-attachment-pick{border-radius:7px!important;background:#20242b!important;color:#d1d7e0!important}
+#panel-log .visit-step-progress-track{background:#30353e!important}
+#panel-log .visit-step-progress-track i{background:var(--accent)!important}
+#panel-log .visit-wizard-active .visit-step-controls{border:1px solid var(--line)!important;border-radius:10px!important;background:var(--card)!important;padding:8px!important}
+#panel-log .visit-step-controls button{border:1px solid var(--line)!important;border-radius:8px!important;background:#20242b!important;color:#d1d7e0!important;font-weight:600!important}
+#panel-log .visit-step-controls button:last-child{background:#b8c5ff!important;border-color:#b8c5ff!important;color:#151b30!important}
+#panel-log #submit-btn{border-radius:8px!important;background:#b8c5ff!important;color:#151b30!important;font-weight:650!important;box-shadow:none!important}
+@media(max-width:900px){
+ #panel-log .ticket.smart-visit-form{padding:16px!important;border-radius:10px!important}
+ #panel-log .smart-section-head{margin:18px 0 12px!important}
+ #panel-log .smart-section-head>span{flex-basis:26px!important;width:26px!important;min-width:26px!important}
+ #panel-log .smart-section-head b{font-size:14px!important}
+ #panel-log .cat-opt{min-height:44px!important;border-radius:8px!important}
+ #panel-log .visit-step-controls button{min-height:44px;border-radius:8px!important}
+ #panel-log .visit-attachment-pick{min-height:44px!important}
+}
+}
+</style>
+
+<style id="new-visit-desktop-reference-polish">
+@media (min-width: 901px) {
+  #panel-log .ticket.smart-visit-form {
+    box-sizing: border-box !important;
+    width: min(100%, 1280px) !important;
+    max-width: 1280px !important;
+    margin: 18px auto 30px !important;
+    padding: 26px 24px 24px !important;
+  }
+  #panel-log .smart-section-head {
+    min-height: 40px;
+    margin: 4px 0 18px !important;
+    padding: 0 0 12px !important;
+  }
+  #panel-log .visit-step-panel[data-visit-step="1"] > .row {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+    align-items: start !important;
+    gap: 16px !important;
+    margin: 0 0 17px !important;
+  }
+  #panel-log .visit-step-panel[data-visit-step="1"] > #visit-type-row {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    max-width: 100% !important;
+  }
+  #panel-log .visit-step-panel[data-visit-step="1"] > #visit-type-row + .row {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+    gap: 16px !important;
+    margin-top: 2px !important;
+  }
+  #panel-log .visit-step-panel[data-visit-step="1"] > .row > .field {
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  #panel-log .smart-visit-form .field > label,
+  #panel-log .smart-visit-form .field-label { margin: 0 0 8px !important; }
+  #panel-log input:not([type="checkbox"]),
+  #panel-log select,
+  #panel-log textarea {
+    min-height: 48px;
+    padding: 0 13px !important;
+  }
+  #panel-log textarea { min-height: 96px; padding: 12px 13px !important; }
+  #panel-log .visit-step-panel[data-visit-step="1"] #f-site { min-width: 0 !important; }
+  #panel-log #cabinet-multi-picker { min-height: 0 !important; padding: 0 !important; }
+  #panel-log .cabinet-multi-picker > div:first-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 0 10px !important;
+  }
+  #panel-log .cabinet-multi-picker > div:first-child button {
+    min-height: 30px !important;
+    padding: 4px 8px !important;
+  }
+  #panel-log .cabinet-multi-picker > div:first-child small { margin-left: auto !important; }
+  #panel-log .cabinet-multi-picker > div:nth-child(2) {
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    gap: 8px !important;
+    max-height: 216px !important;
+    overflow: auto !important;
+  }
+  #panel-log .cabinet-multi-picker label {
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 7px 9px !important;
+  }
+  #panel-log .cabinet-multi-picker label span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #panel-log .visit-step-panel[data-visit-step="1"] > #visit-type-row + .row .cat-desc {
+    margin-top: 10px !important;
+    line-height: 1.45 !important;
+  }
+  #panel-log .site-profile { margin: 14px 0 8px !important; }
+  #panel-log .visit-more-details { margin: 12px 0 8px !important; }
+  #panel-log .visit-more-details > summary { min-height: 48px !important; }
+}
+</style>
