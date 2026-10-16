@@ -4317,7 +4317,7 @@ body:has(#spare-modal[style*="display:flex"]){
   </div>
 
   <div class="panel" id="panel-fieldlogs">
-    <div class="section-head compact-head"><div><h2>Field Logs</h2><p>Search and review field activity without clutter.</p></div><button class="btn-secondary" id="fieldlogs-new-btn">＋ New Visit</button></div>
+    <div class="section-head compact-head"><button class="btn-secondary" id="fieldlogs-new-btn">＋ New Visit</button></div>
     <div class="global-search"><span>⌕</span><input id="global-search" type="search" placeholder="Search tracking #, ticket #, site, FSE, notes, resolution…"></div>
     <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="my-fse" style="display:none;max-width:180px;"></select></div>
     <div class="filters" id="filters">
@@ -10148,7 +10148,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  update();
 })();</script>
 <script id="readable-log-layout">
-(function(){const panel=document.getElementById('panel-fieldlogs');const box=document.createElement('div');box.className='log-search-area';const search=panel.querySelector('.global-search');search.before(box);['.global-search','.log-toolbar','#filters'].forEach(s=>box.append(panel.querySelector(s)));document.getElementById('global-search').placeholder='Search site, technician, issue or visit number…';const count=document.createElement('p');count.id='readable-log-count';count.setAttribute('role','status');document.getElementById('log').before(count);panel.querySelector('.section-head p').textContent='See what happened, who handled it and what needs a follow-up.';if(currentUser)render();document.addEventListener('click',e=>document.querySelectorAll('.readable-log-menu[open]').forEach(m=>{if(!m.contains(e.target))m.open=false;}));panel.addEventListener('keydown',e=>{if(e.key==='Escape')panel.querySelectorAll('.readable-log-menu[open]').forEach(m=>m.open=false);});})();
+(function(){const panel=document.getElementById('panel-fieldlogs');const box=document.createElement('div');box.className='log-search-area';const search=panel.querySelector('.global-search');search.before(box);['.global-search','.log-toolbar','#filters'].forEach(s=>box.append(panel.querySelector(s)));document.getElementById('global-search').placeholder='Search site, technician, issue or visit number…';const count=document.createElement('p');count.id='readable-log-count';count.setAttribute('role','status');document.getElementById('log').before(count);if(currentUser)render();document.addEventListener('click',e=>document.querySelectorAll('.readable-log-menu[open]').forEach(m=>{if(!m.contains(e.target))m.open=false;}));panel.addEventListener('keydown',e=>{if(e.key==='Escape')panel.querySelectorAll('.readable-log-menu[open]').forEach(m=>m.open=false);});})();
 </script>
 <script id="presentation-report-script">
 function reportVenueNotes(rows){
