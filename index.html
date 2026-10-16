@@ -4072,7 +4072,7 @@ body:has(#spare-modal[style*="display:flex"]){
     <div class="ticket smart-visit-form">
       <div class="visit-step-progress" id="visit-step-progress" role="status" aria-live="polite"><span id="visit-step-count">Step 1 of 4</span><div class="visit-step-progress-track"><i id="visit-step-progress-fill"></i></div></div>
       <div class="visit-step-panel" data-visit-step="1">
-      <div class="smart-section-head"><span>01</span><div><b>Visit Information</b><small>Who, where and what visit is being logged.</small></div></div>
+      <div class="smart-section-head"><span>01</span><div><b>Visit Information</b></div></div>
       <div class="row">
         <div class="field">
           <label>Date</label>
@@ -5560,6 +5560,7 @@ async function loadFses(){
   if(!fses || fses.length===0) fses = [...DEFAULT_FSES];
   storageSet(FSES_KEY, fses);
   renderFseOptions();
+  renderVisitFseStatus();
   updateSystemBar();
 }
 function parseSupportingFses(value){
@@ -5583,12 +5584,51 @@ function getSupportingFses(){
     .map(el=>el.value)
     .filter(n=>String(n).trim().toLowerCase()!==primary);
 }
+// Retired FSEs remain in the directory and historical records, but cannot be assigned new visits.
+const RETIRED_VISIT_FSES = new Set(['kenneth']);
+const VISIT_FSE_STATUS_KEY='opexa-visit-fse-status-v1';
+function isActiveVisitFse(name){
+ const normalized=String(name||'').trim().toLowerCase();
+ try{const saved=JSON.parse(localStorage.getItem(VISIT_FSE_STATUS_KEY)||'{}');if(saved&&Object.prototype.hasOwnProperty.call(saved,normalized)&&typeof saved[normalized]==='boolean')return saved[normalized];}catch(e){}
+ return !RETIRED_VISIT_FSES.has(normalized);
+}
+function renderVisitFseStatus(){
+ const panel=document.getElementById('panel-users');if(!panel)return;
+ let card=document.getElementById('visit-fse-status-card');
+ if(currentUser?.role!=='management'){if(card)card.remove();return;}
+ if(!card){card=document.createElement('section');card.id='visit-fse-status-card';card.className='chart-card';panel.append(card);}
+ card.replaceChildren();
+ const heading=document.createElement('h2');heading.textContent='FSE visit availability';
+ const note=document.createElement('p');note.className='muted';note.textContent='Applies only in this browser on this device. Inactive FSEs cannot be selected for new visits here. Past records and login access are unchanged.';
+ const status=document.createElement('p');status.className='muted';status.setAttribute('role','status');
+ card.append(heading,note);
+ fses.forEach(name=>{
+  const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)';
+  const text=document.createElement('span');const active=isActiveVisitFse(name);text.textContent=name+' · '+(active?'Active':'Inactive');
+  const button=document.createElement('button');button.type='button';button.className='btn-secondary';button.textContent=active?'Set inactive':'Set active';button.setAttribute('aria-label',(active?'Set inactive: ':'Set active: ')+name);
+  button.addEventListener('click',()=>{
+   if(currentUser?.role!=='management')return;
+   try{
+    let saved;try{saved=JSON.parse(localStorage.getItem(VISIT_FSE_STATUS_KEY)||'{}');}catch(e){saved={};}
+    if(!saved||typeof saved!=='object'||Array.isArray(saved))saved={};
+    saved[String(name).trim().toLowerCase()]=!active;
+    localStorage.setItem(VISIT_FSE_STATUS_KEY,JSON.stringify(saved));
+    renderFseOptions();renderVisitFseStatus();
+   }catch(e){status.textContent='Could not save this preference. Check browser storage and try again.';}
+  });
+  row.append(text,button);card.append(row);
+ });
+ card.append(status);
+}
 function renderSupportingFses(selected){
   const box=document.getElementById('f-supporting-options');
   if(!box)return;
   const primary=(document.getElementById('f-tech')?.value||'').trim();
   const selectedSet=new Set(parseSupportingFses(selected===undefined?getSupportingFses():selected).map(n=>n.toLowerCase()));
-  const choices=fses.filter(n=>String(n).trim().toLowerCase()!==primary.toLowerCase());
+  const historical=editingEntryId?entries.find(e=>String(e.id)===String(editingEntryId)):null;
+  const historicalSupporting=new Set(parseSupportingFses(historical?.supportingFses).map(n=>String(n).trim().toLowerCase()));
+  const directory=[...new Set([...fses,...parseSupportingFses(historical?.supportingFses)])];
+  const choices=directory.filter(n=>String(n).trim().toLowerCase()!==primary.toLowerCase()&&(isActiveVisitFse(n)||historicalSupporting.has(String(n).trim().toLowerCase())));
   box.innerHTML=choices.length?choices.map(n=>{
     const checked=selectedSet.has(String(n).toLowerCase())?' checked':'';
     return `<label class="team-chip"><input type="checkbox" value="${escapeHtml(n)}"${checked}><span>${escapeHtml(n)}</span></label>`;
@@ -5597,8 +5637,8 @@ function renderSupportingFses(selected){
 function renderFseOptions(selectValue){
   const select = document.getElementById('f-tech');
   const previous=selectValue||select?.value||'';
-  select.innerHTML = fses.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
-  if(previous && fses.includes(previous)) select.value = previous;
+  select.innerHTML = fses.map(n=>`<option value="${escapeHtml(n)}"${isActiveVisitFse(n)?'': ' disabled'}>${escapeHtml(n)}${isActiveVisitFse(n)?'':' (inactive)'}</option>`).join('');
+  if(previous && fses.includes(previous) && (isActiveVisitFse(previous)||editingEntryId)) select.value = previous; else select.value = fses.find(isActiveVisitFse)||'';
   renderSupportingFses();
 }
 document.getElementById('f-tech').addEventListener('change',()=>renderSupportingFses());
@@ -7311,6 +7351,7 @@ document.getElementById('audit-entity-filter')?.addEventListener('change',paintA
 document.getElementById('audit-refresh-btn')?.addEventListener('click',()=>renderAuditTrail(true));
 
 async function renderUsers(){
+  renderVisitFseStatus();
   const body=document.getElementById('users-body'); if(!body)return;
   if(currentUser?.role!=='management'){body.innerHTML='';return;}
   body.innerHTML='<tr><td colspan="6" class="muted">Loading users…</td></tr>';
@@ -9999,20 +10040,31 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  const discard=document.createElement('button');discard.type='button';discard.className='btn-secondary';discard.textContent='Discard draft';bar.append(label,restore,discard);form.before(bar);
  let pending=null,dirty=false,restoring=false;
  const key=()=>currentUser?'opexa-visit-draft-v1:'+encodeURIComponent(currentUser.username||currentUser.fse||currentUser.name)+':'+currentUser.role:null;
- const controls=()=>Array.from(form.querySelectorAll('input[id],select[id],textarea[id]')).filter(el=>el.id.startsWith('f-')&&!el.disabled);
- function display(){restore.hidden=!pending;discard.hidden=!pending&&!dirty;label.textContent=pending?'Unfinished visit · '+new Date(pending.savedAt).toLocaleString():'Drafts save on this device as you type.';}
- function load(){pending=null;dirty=false;try{const raw=localStorage.getItem(key());if(raw){const d=JSON.parse(raw);if(d.version===1&&d.fields&&typeof d.fields==='object')pending=d;}}catch(e){label.textContent='Draft storage unavailable.';return;}display();}
- function save(){if(!key()||editingEntryId||restoring||!dirty)return;if(pending){label.textContent='Previous draft available. Restore or discard it before saving this draft.';return;}try{const fields={};controls().forEach(el=>fields[el.id]=el.type==='checkbox'?el.checked:el.value);localStorage.setItem(key(),JSON.stringify({version:1,savedAt:new Date().toISOString(),category:selectedCat,fields,supporting:getSupportingFses()}));label.textContent='Draft saved on this device · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});discard.hidden=false;}catch(e){label.textContent='Draft could not be saved on this device.';}}
- form.addEventListener('input',()=>{dirty=true;save();});form.addEventListener('change',()=>{dirty=true;save();});document.getElementById('cat-picker').addEventListener('click',()=>{dirty=true;save();});
+ const controls=()=>Array.from(form.querySelectorAll('input[id],select[id],textarea[id]')).filter(el=>el.id.startsWith('f-')&&!el.disabled&&!['file','password','button','submit'].includes(el.type));
+ const attachmentNote=' Attachments must be selected again after reopening.';
+ function display(){restore.hidden=!pending;discard.hidden=!pending&&!dirty;label.textContent=pending?'Unfinished visit · '+new Date(pending.savedAt).toLocaleString()+(pending.hasAttachments?attachmentNote:''):'Drafts save on this device as you type.';}
+ function load(){pending=null;dirty=false;const storageKey=key();if(!storageKey){display();return;}try{const raw=localStorage.getItem(storageKey);if(raw){const d=JSON.parse(raw);if(d.version===1&&d.fields&&typeof d.fields==='object'&&!Array.isArray(d.fields))pending=d;}}catch(e){label.textContent='Draft storage unavailable.';return;}display();}
+ function save(){const storageKey=key();if(!storageKey||editingEntryId||restoring||!dirty)return;if(pending){label.textContent='Previous draft available. Resume or discard it before saving this draft.';return;}try{const fields={};controls().forEach(el=>fields[el.id]=el.type==='checkbox'?el.checked:el.value);const hasAttachments=typeof pendingVisitAttachmentFiles!=='undefined'&&pendingVisitAttachmentFiles.length>0;localStorage.setItem(storageKey,JSON.stringify({version:1,savedAt:new Date().toISOString(),category:selectedCat,fields,supporting:getSupportingFses(),hasAttachments}));label.textContent='Draft saved on this device · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+(hasAttachments?attachmentNote:'');discard.hidden=false;}catch(e){label.textContent='Draft could not be saved on this device. Keep this page open until your visit is saved.';}}
+ const changed=()=>{if(restoring||editingEntryId)return;dirty=true;save();};
+ form.addEventListener('input',changed);form.addEventListener('change',changed);document.getElementById('cat-picker').addEventListener('click',changed);
+ window.addEventListener('pagehide',save);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save();});
  restore.addEventListener('click',()=>{if(!pending||editingEntryId)return;const d=pending;restoring=true;
  try{
-  if(d.category)document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{if(el.dataset.cat===d.category)el.click();});
-  renderSiteOptions(d.fields['f-site']);renderIssueTypeOptions(d.fields['f-issue-type']||'');
-  controls().forEach(el=>{if(!(el.id in d.fields))return;const value=d.fields[el.id];if(el.tagName==='SELECT'&&value&&!Array.from(el.options).some(o=>o.value===value)){const opt=document.createElement('option');opt.value=value;opt.textContent=value;el.append(opt);}if(el.type==='checkbox')el.checked=!!value;else el.value=value;});
-  renderSupportingFses(d.supporting||[]);updateCategoryFields();updateResolutionExtra();updateDurationField();updateWeekHint();renderSiteHistory(document.getElementById('f-site').value);
+  clearPendingVisitAttachments();
+  const applyFields=()=>controls().forEach(el=>{if(!Object.prototype.hasOwnProperty.call(d.fields,el.id))return;const value=d.fields[el.id];if(el.tagName==='SELECT'&&value&&!Array.from(el.options).some(o=>o.value===value)){const opt=document.createElement('option');opt.value=value;opt.textContent=value;el.append(opt);}if(el.type==='checkbox')el.checked=!!value;else el.value=value==null?'':String(value);});
+  renderSiteOptions(d.fields['f-site']);
+  applyFields();updateVisitTypeFlow(false);
+  selectedCat=d.category||null;
+  document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{el.className='cat-opt';if(el.dataset.cat===selectedCat)el.classList.add('sel-'+selectedCat);});
+  document.getElementById('cat-desc').textContent=catDesc[selectedCat]||'';
+  updateCategoryFields();renderIssueTypeOptions(d.fields['f-issue-type']||'');applyFields();
+  renderSupportingFses(d.supporting||[]);updateResolutionExtra();updateDurationField();updateWeekHint();renderSiteHistory(document.getElementById('f-site').value);
+  document.getElementById('f-machine')?.dispatchEvent(new Event('input',{bubbles:true}));
   const technical=document.getElementById('calm-technical');if(technical)technical.open=true;
-  pending=null;dirty=true;restore.hidden=true;label.textContent='Draft restored. Review the visit before saving.';
- }finally{restoring=false;}save();});
+  pending=null;dirty=true;restore.hidden=true;
+ }catch(e){label.textContent='Draft could not be restored. Your saved draft is still available.';return;}finally{restoring=false;}
+ save();label.textContent='Draft restored. Review the visit before saving.'+(d.hasAttachments?attachmentNote:'');});
  discard.addEventListener('click',()=>{try{if(key())localStorage.removeItem(key());pending=null;dirty=false;display();label.textContent='Saved draft discarded. Current form is unchanged.';}catch(e){label.textContent='Unable to discard the saved draft. Please try again.';}});
  window.addEventListener('visit-saved',()=>{pending=null;dirty=false;try{if(key())localStorage.removeItem(key());display();label.textContent='Visit saved · draft cleared.';}catch(e){display();label.textContent='Visit saved, but the local draft could not be cleared.';}});
  const originalShowApp=showApp;showApp=function(user){originalShowApp(user);load();};
@@ -11014,10 +11066,10 @@ if('serviceWorker' in navigator && location.protocol!=='file:') navigator.servic
  document.getElementById('cat-picker').addEventListener('click',mark);
  window.addEventListener('visit-committed',()=>{dirty=false;});
  function draftIsSafe(){
-  if(editingEntryId||!currentUser)return false;
+  if(editingEntryId||!currentUser||pendingVisitAttachmentFiles.length)return false;
   try{const key='opexa-visit-draft-v1:'+encodeURIComponent(currentUser.username||currentUser.fse||currentUser.name)+':'+currentUser.role;const d=JSON.parse(localStorage.getItem(key)||'null');
    if(!d||d.category!==selectedCat||JSON.stringify(d.supporting)!==JSON.stringify(getSupportingFses()))return false;
-   return Array.from(form.querySelectorAll('input[id],select[id],textarea[id]')).filter(n=>n.id.startsWith('f-')&&!n.disabled).every(n=>d.fields[n.id]===(n.type==='checkbox'?n.checked:n.value));
+   return Array.from(form.querySelectorAll('input[id],select[id],textarea[id]')).filter(n=>n.id.startsWith('f-')&&!n.disabled&&!['file','password','button','submit'].includes(n.type)).every(n=>d.fields[n.id]===(n.type==='checkbox'?n.checked:n.value));
   }catch(e){return false;}
  }
  let logoutApproved=false;
