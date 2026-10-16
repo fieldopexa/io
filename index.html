@@ -11959,3 +11959,26 @@ window.addEventListener('DOMContentLoaded',()=>{
 (function(){const panel=document.getElementById('panel-inventory');if(!panel)return;function enhance(){panel.querySelectorAll('.inventory-table-wrap table,.cabinet-table-wrap table,.movement-table-wrap table').forEach(table=>{table.classList.add('asset-phone-cards');const labels=Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent.trim());table.querySelectorAll('tbody tr').forEach(row=>Array.from(row.cells).forEach((cell,index)=>{if(cell.colSpan!==1)return;if(labels[index])cell.dataset.assetLabel=labels[index];const visibleControl=Array.from(cell.querySelectorAll('button,a')).some(control=>getComputedStyle(control).display!=='none');const empty=!cell.textContent.trim()&&!visibleControl;cell.classList.toggle('asset-empty-action',!labels[index]&&empty);}));});}new MutationObserver(enhance).observe(panel,{childList:true,subtree:true});enhance();})();
 </script>
 <style id="io-asset-card-match">@media screen and (max-width:760px){body #panel-inventory .cabinet-mobile-card{background:#181f29!important;border:1px solid #344258!important;border-radius:13px!important;padding:16px!important;margin-bottom:14px}body #panel-inventory .cabinet-mobile-card button{min-height:44px}body #panel-inventory .cabinet-mobile-card small{color:#a7b4c7!important}body #panel-inventory .cabinet-mobile-card b{color:#edf3ff!important}}</style>
+<style id="opexa-login-layout-refinement">
+#login-screen{background:radial-gradient(ellipse at 50% 12%,#202b3e 0,transparent 58%),#101419!important;padding:32px 18px!important;}
+#login-screen .login-card{width:min(410px,100%)!important;padding:30px 28px 24px!important;border-radius:16px!important;background:#1a2029!important;border:1px solid #344052!important;box-shadow:0 16px 48px #0004!important;}
+#login-screen .login-logo{display:block!important;height:auto!important;width:150px!important;max-width:65%!important;margin:2px auto 18px!important;}
+#login-screen .login-kicker{text-align:center;font-size:10px!important;letter-spacing:1.8px!important;margin:0 0 28px!important;color:#aebbd1!important;}
+#login-screen .login-card label:not(.login-remember){font-size:12px!important;font-weight:500!important;color:#c7d2e3!important;margin:16px 0 8px!important;text-transform:none!important;letter-spacing:0!important;}
+#login-screen #login-user,#login-screen #login-pass{height:54px!important;min-height:54px!important;font-size:16px!important;border-radius:8px!important;background:#121820!important;border:1px solid #3b4658!important;padding-left:15px!important;}
+#login-screen #login-pass{padding-right:70px!important;}
+#login-screen #login-user::placeholder,#login-screen #login-pass::placeholder{font-size:14px;color:#8f9cb0!important;opacity:1;}
+#login-screen #login-password-toggle{top:7px!important;right:7px!important;height:40px!important;min-height:40px!important;font-size:12px!important;padding:0 10px!important;}
+#login-screen .login-remember{margin:18px 0 0!important;min-height:24px;gap:9px!important;font-size:12px!important;color:#aebbd0!important;}
+#login-screen .login-remember input{width:17px!important;height:17px!important;min-height:17px!important;flex:0 0 17px;}
+#login-screen .login-btn{height:50px!important;min-height:50px!important;margin-top:20px!important;border-radius:8px!important;font-size:16px!important;font-weight:650!important;letter-spacing:0!important;background:#b8c5ff!important;color:#151b30!important;}
+#login-screen .login-btn:hover{background:#d0d8ff!important;}
+#login-screen .login-btn:focus-visible{outline:2px solid #e1e7ff;outline-offset:3px;}
+#login-screen .login-connection{margin-top:14px!important;line-height:1.5;}
+#login-screen .login-error{font-size:13px!important;line-height:1.6;padding:12px!important;}
+#login-screen .login-note{border-top:1px solid #344052!important;margin-top:24px!important;padding-top:20px!important;text-align:center!important;font-size:12px!important;line-height:1.6!important;}
+#login-screen .login-note a{text-decoration:none!important;}
+#login-screen .login-note a:hover{text-decoration:underline!important;}
+@media(max-width:480px){#login-screen{padding:24px 16px!important;}#login-screen .login-card{padding:28px 22px 22px!important;border-radius:14px!important;}#login-screen .login-kicker{margin-bottom:24px!important;}}
+@media(max-height:600px){#login-screen{align-items:flex-start!important;}#login-screen .login-card{margin:auto!important;}}
+</style>
