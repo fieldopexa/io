@@ -1,0 +1,17 @@
+'use strict';
+const CACHE_PREFIX='opexa-io-shell-';
+const CACHE=CACHE_PREFIX+'20261016-v1';
+const ROOT=new URL('./',self.location.href);
+const SHELL=['./','./index.html','./manifest.webmanifest','./install.js','./install.css','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL.map(file=>new Request(new URL(file,ROOT),{cache:'reload'})))));});
+self.addEventListener('activate',event=>{event.waitUntil((async()=>{for(const name of await caches.keys())if(name.startsWith(CACHE_PREFIX)&&name!==CACHE)await caches.delete(name);await self.clients.claim();})());});
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
+self.addEventListener('fetch',event=>{
+ const request=event.request,url=new URL(request.url);
+ // Never cache API calls, external attachments or requests outside this app.
+ if(request.method!=='GET'||url.origin!==ROOT.origin||!url.pathname.startsWith(ROOT.pathname))return;
+ const shellUrls=new Set(SHELL.map(file=>new URL(file,ROOT).href));
+ const home=url.pathname===ROOT.pathname||url.pathname===new URL('index.html',ROOT).pathname;
+ if(request.mode==='navigate'&&home){event.respondWith((async()=>{const cache=await caches.open(CACHE);try{const response=await fetch(request);if(response.ok)await cache.put(new URL('./index.html',ROOT),response.clone());if(response.ok)return response;const cached=await cache.match(new URL('./index.html',ROOT));return cached||response;}catch(error){return (await cache.match(new URL('./index.html',ROOT)))||Response.error();}})());return;}
+ if(shellUrls.has(url.href)){event.respondWith((async()=>{const cache=await caches.open(CACHE),cached=await cache.match(request);return cached||fetch(request);})());}
+});

@@ -3967,6 +3967,13 @@ body:has(#spare-modal[style*="display:flex"]){
 #panel-log #cabinet-multi-picker .cabinet-picker-choices{width:100%}
 @media(max-width:900px){#panel-log #cabinet-multi-picker .cabinet-picker-choices{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 </style>
+
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Opexa FSM">
+<link rel="icon" type="image/png" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./install.css">
+<script defer src="./install.js"></script>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -10950,9 +10957,7 @@ html{scrollbar-gutter:stable}
 (function(){const button=document.getElementById('login-password-toggle'),input=document.getElementById('login-pass');if(button&&input)button.addEventListener('click',function(){const show=input.type==='password';input.type=show?'text':'password';button.textContent=show?'Hide':'Show';button.setAttribute('aria-label',show?'Hide password':'Show password');button.setAttribute('aria-pressed',String(show));});})();
 </script>
 </body>
-<script>
-if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
-</script>
+
 <style id="visit-site-options-cleanup">
 #add-site-btn,#add-site-row{display:none!important}
 .warehouse-directory-badge{display:inline-block;width:fit-content;padding:2px 7px;margin:4px 0;border:1px solid var(--line);border-radius:5px;font-size:10px;color:var(--ink-soft);background:var(--accent-soft)}
