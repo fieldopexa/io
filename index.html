@@ -3972,17 +3972,17 @@ body:has(#spare-modal[style*="display:flex"]){
 <div class="login-screen" id="login-screen">
   <div class="login-card">
     <img src="https://www.opexa.io/_next/static/media/logo.0ji5glv1jnv4q.png" alt="Opexa" class="login-logo">
-    <h1 class="login-title">Field Operations</h1>
-    <p class="login-sub">Manage visits, assets, maintenance, and team activity.</p>
+    <span class="login-kicker">OPEXA / FIELD OPERATIONS</span>
+    
     <label for="login-user">Username</label>
     <input id="login-user" autocomplete="username" placeholder="Username">
     <label for="login-pass">Password</label>
-    <input id="login-pass" type="password" autocomplete="current-password" placeholder="Password">
+    <div class="login-password-wrap"><input id="login-pass" type="password" autocomplete="current-password" placeholder="Enter your password"><button type="button" id="login-password-toggle" aria-controls="login-pass" aria-label="Show password" aria-pressed="false">Show</button></div>
     <label class="login-remember"><input id="login-remember" type="checkbox"> Remember this device</label>
     <button class="login-btn" id="login-btn">Sign in</button>
-    <div id="login-connection" class="login-connection" role="status">● Ready to connect</div>
+    <div id="login-connection" class="login-connection" role="status" style="display:none"></div>
     <div class="login-error" id="login-error">Unable to sign in.</div>
-    <div class="login-note"><strong>Need help?</strong><br><span style="color:var(--ink-soft)">For login, sync, or system issues, contact:</span><br><strong>Opexa Field Operations Support</strong><br><a href="mailto:ian@endlessmotion.ph" style="color:inherit;text-decoration:none">ian@endlessmotion.ph</a><br><small style="color:var(--ink-soft)">Include the affected section and your username when reporting an issue.</small></div>
+    <div class="login-note" style="text-align:center">Need help? <a href="mailto:ian@endlessmotion.ph" style="color:#c2cefa;text-decoration:underline;text-underline-offset:3px">Contact support</a></div>
   </div>
 </div>
 <div class="wrap" id="app-shell" style="display:none">
@@ -4094,7 +4094,7 @@ body:has(#spare-modal[style*="display:flex"]){
         <div class="field">
           <label>Visit Type</label>
           <select id="f-visit-type">
-            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option>
+            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option><option>Post-Op</option><option>Pre-Ops</option>
             <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
             <option hidden>Follow-up</option><option>Other</option>
           </select>
@@ -4946,7 +4946,7 @@ const SITES_KEY = 'field-service-sites';
 const FSES_KEY = 'field-service-fses';
 const RESOLVABLE_CATS = ['Hardware','Software','Network','Backoffice'];
 const SLA_TARGETS = {Critical:120, High:240, Medium:480, Low:1440}; // minutes; adjust to company SLA
-const VISIT_TYPES = ['Routine Visit','Breakdown / Incident','Preventive Maintenance','Installation','Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'];
+const VISIT_TYPES = ['Routine Visit','Breakdown / Incident','Preventive Maintenance','Installation','Post-Op','Pre-Ops','Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'];
 const catLabel = {Hardware:'Hardware', Software:'Software', Network:'Network', Backoffice:'Back Office', General:'General'};
 const catDesc = {
   Hardware: 'Physical cabinet, machine, peripheral, or component concerns.',
@@ -5075,7 +5075,7 @@ async function login(){
   err.style.display='none';
   if(btn){btn.disabled=true;btn.textContent='AUTHENTICATING…';}
   try{
-    if(connection){connection.textContent='● Connecting…';connection.className='login-connection';}
+    if(connection){connection.style.display='block';connection.textContent='● Connecting…';connection.className='login-connection';}
     const result=await apiPost('login',{username,password},{skipToken:true,authRequest:true});
     if(!result.token||!result.user)throw new Error('Login failed.');
     authToken=result.token;
@@ -10865,6 +10865,38 @@ html{scrollbar-gutter:stable}
 <footer class="app-version-footer" aria-label="Application version" style="padding:18px 16px max(18px,env(safe-area-inset-bottom));text-align:center;color:var(--ink-soft);font-size:11px;letter-spacing:.08em;border-top:1px solid var(--line);">
   FSM v.51
 </footer>
+<style id="login-ui-preview">
+#login-screen .login-logo{display:block!important;margin-left:auto!important;margin-right:auto!important;}
+#login-screen .login-kicker{text-align:center;}
+
+#login-screen{box-sizing:border-box;background:radial-gradient(ellipse at 15% 15%,#28364f 0,transparent 50%),#101419!important;padding:32px!important;overflow-y:auto;}
+#login-screen *{box-sizing:border-box;}
+#login-screen .login-card{width:min(450px,100%)!important;padding:40px!important;background:#1a2029!important;border:1px solid #384459!important;border-radius:24px!important;box-shadow:0 30px 100px #0005!important;margin:auto;}
+#login-screen .login-logo{height:30px;margin-bottom:32px!important;}
+#login-screen .login-kicker{display:block;font:600 10px 'Segoe UI',sans-serif;letter-spacing:2px;color:#b8c5ff;margin-bottom:14px;}
+#login-screen .login-title{font-size:34px!important;letter-spacing:-1px;margin-bottom:10px!important;}
+#login-screen .login-sub{font-size:13px!important;line-height:1.7!important;color:#aab7ca!important;margin-bottom:28px!important;}
+#login-screen .login-card label:not(.login-remember){display:block;font-size:12px;color:#dbe3f0;margin:18px 0 8px;}
+#login-screen #login-user,#login-screen #login-pass{width:100%;height:50px!important;min-height:50px!important;border:1px solid #3b495e!important;border-radius:10px!important;background:#121820!important;color:#f2f5fc;padding:0 14px;font-size:14px;outline:none;}
+#login-screen #login-user:focus,#login-screen #login-pass:focus{border-color:#b8c5ff!important;box-shadow:0 0 0 3px #b8c5ff20!important;}
+#login-screen input::placeholder{color:#8190a5;}
+#login-screen .login-password-wrap{position:relative;}
+#login-screen #login-pass{padding-right:68px;}
+#login-password-toggle{position:absolute;right:8px;top:8px;height:34px;padding:0 10px;background:transparent;border:0;border-radius:6px;color:#c2cefa;font-size:12px;cursor:pointer;}
+#login-password-toggle:focus-visible{outline:2px solid #b8c5ff;}
+#login-screen .login-remember{font-size:12px!important;gap:9px;margin-top:18px!important;}
+#login-screen .login-remember input{width:16px!important;height:16px!important;min-height:16px!important;margin:0;}
+#login-screen .login-btn{height:50px!important;min-height:50px!important;border-radius:10px!important;margin-top:24px!important;background:#b8c5ff!important;color:#151b30!important;font-size:14px!important;}
+#login-screen .login-btn:hover{background:#d0d8ff!important;}
+#login-screen .login-btn:disabled{opacity:.65;cursor:wait;}
+#login-screen .login-connection{font-size:11px;text-align:center;margin-top:16px;color:#a4b2c7;}
+#login-screen .login-error{padding:12px;border-radius:8px;background:#602c303d;color:#ffc2c2;font-size:12px;margin-top:12px;}
+#login-screen .login-note{border-color:#344052!important;margin-top:25px!important;padding-top:20px!important;font-size:11px!important;line-height:1.8;color:#a3afc1!important;}
+@media(max-width:560px){#login-screen{padding:20px 16px!important;}#login-screen .login-card{padding:28px!important;border-radius:20px!important;}#login-screen .login-title{font-size:30px!important;}}
+</style>
+<script>
+(function(){const button=document.getElementById('login-password-toggle'),input=document.getElementById('login-pass');if(button&&input)button.addEventListener('click',function(){const show=input.type==='password';input.type=show?'text':'password';button.textContent=show?'Hide':'Show';button.setAttribute('aria-label',show?'Hide password':'Show password');button.setAttribute('aria-pressed',String(show));});})();
+</script>
 </body>
 <script>
 if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
