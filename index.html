@@ -4098,19 +4098,19 @@ body:has(#spare-modal[style*="display:flex"]){
         </div>
       </div>
       <div class="row" id="visit-type-row">
-        <div class="field">
-          <label>Visit Type</label>
-          <select id="f-visit-type">
-            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option><option>Post-Op</option><option>Pre-Ops</option>
-            <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
-            <option hidden>Follow-up</option><option>Other</option>
-          </select>
-        </div>
         <div class="field" id="field-visit-support-mode">
           <label for="f-resolved-via">Support type</label>
           <select id="f-resolved-via">
             <option>Site visit</option>
             <option>Remote</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-visit-type">Activity Type</label>
+          <select id="f-visit-type">
+            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option><option>Post-Op</option><option>Pre-Ops</option>
+            <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
+            <option hidden>Follow-up</option><option>Other</option>
           </select>
         </div>
       </div>
@@ -11987,3 +11987,27 @@ window.addEventListener('DOMContentLoaded',()=>{
 @media(max-width:480px){#login-screen{padding:24px 16px!important;}#login-screen .login-card{padding:28px 22px 22px!important;border-radius:14px!important;}#login-screen .login-kicker{margin-bottom:24px!important;}}
 @media(max-height:600px){#login-screen{align-items:flex-start!important;}#login-screen .login-card{margin:auto!important;}}
 </style>
+<style id="support-type-tap-options">
+#support-type-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#support-type-options label{display:flex!important;align-items:center;justify-content:center;gap:8px;min-height:46px;margin:0!important;padding:10px 12px;border:1px solid #3b4658;border-radius:9px;background:#121820;color:#aebbd0;font-size:13px!important;cursor:pointer;text-transform:none!important;letter-spacing:0!important}
+#support-type-options label:has(input:checked){border-color:#aebfff;background:#b8c5ff1a;color:#e1e9ff}
+#support-type-options label:has(input:focus-visible){outline:2px solid #c7d3ff;outline-offset:2px}
+#support-type-options input{width:16px!important;height:16px!important;min-height:16px!important;margin:0!important;padding:0!important;accent-color:#b8c5ff;flex:0 0 16px}
+#f-resolved-via.support-select-hidden{display:none!important}
+</style>
+<script id="support-type-tap-controller">
+(function(){
+ const select=document.getElementById('f-resolved-via');if(!select)return;
+ select.classList.add('support-select-hidden');select.tabIndex=-1;select.setAttribute('aria-hidden','true');
+ const label=select.parentElement.querySelector('label');if(label){label.id='support-type-label';label.removeAttribute('for');}
+ const group=document.createElement('div');group.id='support-type-options';group.setAttribute('role','radiogroup');group.setAttribute('aria-labelledby','support-type-label');
+ Array.from(select.options).forEach(option=>{const item=document.createElement('label');const radio=document.createElement('input');radio.type='radio';radio.name='visit-support-type';radio.value=option.value;radio.checked=select.value===option.value;const text=document.createElement('span');text.textContent=option.textContent;item.append(radio,text);group.append(item);radio.addEventListener('change',()=>{if(!radio.checked)return;select.value=radio.value;select.dispatchEvent(new Event('change',{bubbles:true}));});});
+ select.after(group);
+ function sync(){group.querySelectorAll('input').forEach(radio=>{radio.checked=radio.value===select.value;radio.disabled=select.disabled;});}
+ select.addEventListener('change',sync);
+ // Existing edit, draft, and reset flows assign select.value directly.
+ const descriptor=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+ if(descriptor?.get&&descriptor?.set)Object.defineProperty(select,'value',{configurable:true,get(){return descriptor.get.call(this);},set(value){descriptor.set.call(this,value);sync();}});
+ new MutationObserver(sync).observe(select,{attributes:true,attributeFilter:['disabled']});sync();
+})();
+</script>
