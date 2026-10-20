@@ -4355,8 +4355,7 @@ body:has(#spare-modal[style*="display:flex"]){
   <div class="panel" id="panel-dashboard">
     <div class="dashboard-head dashboard-head-premium">
       <div class="dashboard-title-block">
-        <span class="dashboard-eyebrow">FIELD OPERATIONS</span>
-        <h2>Today at a glance</h2>
+        <h2 class="operations-summary-title">Operations Summary</h2>
         <p>Visits, open concerns, and equipment status across your sites.</p>
       </div>
       <div class="dashboard-date" id="dashboard-date"></div>
@@ -12117,3 +12116,15 @@ body #panel-report .period-select .report-actions{display:none!important}
  body #panel-inventory #asset-groups button{width:100%!important;max-width:100%!important;min-width:0!important;min-height:44px!important;margin:0!important;padding:10px 6px!important;white-space:normal!important;overflow-wrap:anywhere;line-height:1.25!important;font-size:12px!important;box-sizing:border-box}
 }
 </style>
+
+<style id="operations-summary-title-outline">
+body #panel-dashboard .dashboard-head-premium h2.operations-summary-title{color:#c5d2ee!important;font-weight:600!important;-webkit-text-stroke:.45px #91a8d2;text-shadow:0 1px 2px rgba(0,0,0,.35);}
+</style>
+
+<style id="report-heading-outline">
+body #panel-report .brief-header h1{color:#c5d2ee!important;font-weight:600!important;-webkit-text-stroke:.45px #91a8d2;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+body #panel-report .brief-header .brief-eyebrow{color:#b5c5e5!important;font-weight:600!important;-webkit-text-stroke:.2px #91a8d2}
+@media print{body #panel-report .brief-header h1,body #panel-report .brief-header .brief-eyebrow{-webkit-text-stroke:0;text-shadow:none;color:#111!important}}
+</style>
+
+<script src="log-filters.js"></script>
