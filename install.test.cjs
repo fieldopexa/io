@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('install.js','utf8');
+let blocked=false,editing=false,activations=0,reloads=0;
+const context={document:{querySelector:()=>blocked?{}:null,activeElement:{matches:()=>editing}},location:{reload:()=>reloads++}};
+vm.createContext(context);
+const helpers=source.slice(source.indexOf('function safeToUpdate()'),source.indexOf("document.addEventListener('input'"));
+vm.runInContext('let dirty=false,pendingReload=false,reloading=false;const registration={waiting:{postMessage:()=>activate()}};'+helpers,vm.createContext({...context,activate:()=>activations++}));
+const testContext=vm.createContext({...context,activate:()=>activations++});
+vm.runInContext('let dirty=false,pendingReload=false,reloading=false;const registration={waiting:{postMessage:()=>activate()}};'+helpers,testContext);
+vm.runInContext('applyUpdate()',testContext);assert.equal(activations,1,'idle app asks worker to activate safely');
+blocked=true;vm.runInContext('applyUpdate()',testContext);assert.equal(activations,1,'open form, dialog or upload delays update');
+blocked=false;editing=true;vm.runInContext('applyUpdate()',testContext);assert.equal(activations,1,'focused input delays update');
+editing=false;vm.runInContext('dirty=true;applyUpdate()',testContext);assert.equal(activations,1,'unsaved work delays update');
+vm.runInContext('pendingReload=true;applyUpdate()',testContext);assert.equal(reloads,0,'controller changes cannot reload dirty form');
+vm.runInContext('dirty=false;applyUpdate();applyUpdate()',testContext);assert.equal(reloads,1,'idle app reloads once');
+assert.ok(!source.includes('New version available'),'manual update prompt is removed');
+console.log('PASS: automatic idle activation, unfinished-work protection and single reload');

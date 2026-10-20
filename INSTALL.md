@@ -7,7 +7,7 @@ Open https://fieldopexa.github.io/io/ on your phone.
 
 The app shell is available after the first successful online load. Shared records and saving require internet. Existing record caches may be stale offline. Attachments must be selected again after closing an unfinished visit.
 
-Updates: when New version available appears, save your work before choosing Reload app. Closing all app windows also allows a waiting update to activate.
+Updates apply automatically online when all open app windows are idle. An open visit form, signature dialog, pending upload, or unsaved form delays the update. Save your work and leave New Visit, or close all app windows and reopen. Users on the older version may need its Reload app button once to receive this automatic update behavior.
 
 This is an installable web app, not an App Store or Play Store package. Browser/device storage is separate: sign in again on first install if asked, and check device-specific FSE availability settings.
 
