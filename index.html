@@ -4126,6 +4126,11 @@ body:has(#spare-modal[style*="display:flex"]){
             <button type="button" id="save-site-btn" class="btn-secondary">Save</button>
           </div>
           <div class="err" id="site-err" style="display:none;">Enter a site name first.</div>
+          <div id="other-client-field" hidden style="margin-top:12px">
+            <label for="f-other-client">Client / site name <span class="field-required">Required</span></label>
+            <input id="f-other-client" type="text" maxlength="200" placeholder="Enter the client or site visited" aria-describedby="other-client-help">
+            <small id="other-client-help" class="muted">Used for this log, service form and reports. This will not add a client to the directory.</small>
+          </div>
         </div>
         <div class="field">
           <label>Cabinet <span class="muted">(optional)</span></label>
@@ -4303,10 +4308,30 @@ body:has(#spare-modal[style*="display:flex"]){
         <div class="visit-attachment-help">JPG, PNG, WEBP, or PDF · up to 6 files per visit · no Google sign-in required for FSE users.</div>
       </div>
 
+      <section class="visit-attachments-box" aria-labelledby="service-form-heading">
+        <h2 id="service-form-heading" style="font-size:14px">Service form</h2>
+        <div class="field"><label for="f-service-needed">Need a service form?</label><select id="f-service-needed"><option value="no">No — save field log only</option><option value="yes">Yes — include a service form</option></select></div>
+      </section>
+      </div>
+      <div class="visit-step-panel" data-visit-step="5">
+      <section class="visit-attachments-box" id="service-form-signing-section" aria-label="Service form names and signatures" hidden>
+        <h2 style="font-size:14px">Service form — names &amp; signatures</h2>
+        <div id="service-form-fields" hidden>
+          <p id="service-form-context" class="muted"></p>
+          <p class="muted">Technician and checked by use your account. Date, site, problem, action taken and remarks come from this field log.</p>
+          <div class="row"><div class="field"><label for="f-service-in">Site In</label><input type="time" id="f-service-in"></div><div class="field"><label for="f-service-out">Site Out</label><input type="time" id="f-service-out"></div></div>
+          <div class="field"><label for="f-service-manager">Venue Manager — printed name</label><input id="f-service-manager" type="text" maxlength="150" autocomplete="off"></div>
+          <div class="field"><label for="f-service-cashier">Cashier — printed name</label><input id="f-service-cashier" type="text" maxlength="150" autocomplete="off"></div>
+          <div class="field"><label for="f-service-pagcor">PAGCOR Representative — printed name</label><input id="f-service-pagcor" type="text" maxlength="150" autocomplete="off"></div>
+          <p class="muted">Each person enters their name and taps to sign. After saving, open the field log to print the signed service form or save it as PDF.</p>
+        </div>
+      </section>
+      <div id="visit-save-actions">
       <div class="visit-edit-banner" id="visit-edit-banner"><span><b>Editing Field Log</b> — changes will update the existing record.</span><button type="button" id="cancel-visit-edit">Cancel edit</button></div>
       <button class="submit" id="submit-btn"><span>Log field visit</span><span class="submit-arrow">→</span></button>
 <button type="button" class="mobile-save-fab" id="mobile-save-fab"><span>Save Field Visit</span><b>→</b></button>
       <div class="err" id="err-msg" role="alert" aria-live="polite">Fill in the site and category before logging.</div>
+      </div>
       </div>
       <div class="visit-step-error" id="visit-step-error" role="alert" aria-live="polite"></div>
       <div class="visit-step-controls" id="visit-step-controls"><button type="button" id="visit-step-back" aria-label="Previous step">← Back</button><span id="visit-step-short-title">Visit details</span><button type="button" id="visit-step-next">Next →</button></div>
@@ -5494,6 +5519,10 @@ function normalizeTimeOrDate(val, isTime){
   const m=raw.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
   return m?(isTime?m[2]:m[1]):raw;
 }
+function parseVisitAudit(value){
+  if(typeof value==='string'){try{value=JSON.parse(value);}catch{return [];}}
+  return Array.isArray(value)?value:[];
+}
 function normalizeEntry(e){
   return {
     ...e,
@@ -5503,7 +5532,7 @@ function normalizeEntry(e){
     timeOut: normalizeTimeOrDate(e.timeOut, true),
     ticketNo: e.ticketNo || e.ticket || '', visitType: e.visitType || 'Breakdown / Incident',
     site: canonicalSiteName(e.site || ''),
-    resolution: e.resolution || '', resolutionType: e.resolutionType || '', machineNo: e.machineNo || '', component: e.component || '', assetNo: e.assetNo || '', createdAt: e.createdAt || '', updatedAt: e.updatedAt || e.createdAt || '', audit: Array.isArray(e.audit)?e.audit:[], followupDate: normalizeTimeOrDate(e.followupDate, false) || '',
+    resolution: e.resolution || '', resolutionType: e.resolutionType || '', machineNo: e.machineNo || '', component: e.component || '', assetNo: e.assetNo || '', createdAt: e.createdAt || '', updatedAt: e.updatedAt || e.createdAt || '', audit: parseVisitAudit(e.audit), followupDate: normalizeTimeOrDate(e.followupDate, false) || '',
     followupReason: e.followupReason || '', parts: e.parts || '',
     supportingFses: e.supportingFses || e.supportingFSEs || e.withFses || '',
     voided: e.voided === true || e.status === 'Voided'
@@ -6396,6 +6425,11 @@ function openDetail(id){
   const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
+  if(serviceFormForEntry(e)){
+    const serviceFormButton=document.createElement('button');serviceFormButton.type='button';serviceFormButton.className='btn-secondary';
+    serviceFormButton.textContent='Print / Save service form';serviceFormButton.addEventListener('click',()=>printEntryServiceForm(e.id));
+    document.getElementById('drawer-content').prepend(serviceFormButton);
+  }
   document.getElementById('detail-overlay').querySelector('.detail-drawer').scrollTop=0;
   requestAnimationFrame(()=>document.getElementById('drawer-close').focus());
   const ov=document.getElementById('detail-overlay'); ov.classList.add('open'); ov.setAttribute('aria-hidden','false');
@@ -6675,11 +6709,8 @@ document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{
 });
 
 document.getElementById('submit-btn').addEventListener('click', async ()=>{
-  const site=canonicalSiteName(document.getElementById('f-site').value);
-  if(site==='Others'&&!document.getElementById('f-notes').value.trim()){
-    showToast('Location required','Enter where you went in Remarks / visit notes.','bad');
-    document.getElementById('f-notes').focus();return;
-  }
+  if(!validateOtherClient())return;
+  const site=visitClientName();
   const err=document.getElementById('err-msg');
   const visitType=document.getElementById('f-visit-type').value;
   const simpleVisit=isSimpleActivityVisit(visitType);
@@ -6697,6 +6728,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   }
   err.style.display='none';
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
+  if(!validateServiceForm())return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
   const duplicates=entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site));
   if(duplicates.length&&!confirm('Same-day visit warning: '+duplicates.length+' visit log'+(duplicates.length===1?' has':'s have')+' already been created for '+site+' on '+duplicateDate+'.\n\nDo you want to create another visit log for the same site and date?'))return;
@@ -6712,6 +6744,11 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
     date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:document.getElementById('f-tech').value,action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
+  entry.serviceForm=readServiceForm();
+  entry.siteSelection=document.getElementById('f-site').value==='Others'?'Others':'';
+  entry.audit[entry.audit.length-1].siteSelection=entry.siteSelection;
+  // Keep a snapshot in the existing audit field for backends with fixed visit columns.
+  entry.audit[entry.audit.length-1].serviceForm=entry.serviceForm;
   // FAST SAVE: update the browser state immediately so Dashboard / Field Logs
   // reflect the visit without waiting for Google Apps Script. If the server
   // rejects the save, the optimistic change is rolled back automatically.
@@ -6725,7 +6762,9 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
 
   try{
     submitBtn.textContent=isEdit?'Saving changes…':'Saving visit…';
-    await apiPost(isEdit?'updateEntry':'addEntry',{id:entry.id,entry});
+    const visitSaveResult=await apiPost(isEdit?'updateEntry':'addEntry',{id:entry.id,entry});
+    const serviceFormWarning=entry.serviceForm&&visitSaveResult?.serviceFormSaved!==true
+      ? 'The visit was saved, but shared service-form storage was not confirmed. Keep this page open and update the Apps Script API before saving this form again.' : '';
     const filesToUpload=[...pendingVisitAttachmentFiles];
     if(filesToUpload.length){
       clearPendingVisitAttachments();
@@ -6743,13 +6782,13 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     }
     // Keep the already-rendered optimistic record. The server has now confirmed it.
     storageSet(STORAGE_KEY,entries);
-    const saveWarning=[spareWarning].filter(Boolean).join(' ');
+    const saveWarning=[spareWarning,serviceFormWarning].filter(Boolean).join(' ');
     showToast(
       'Visit saved',
       saveWarning||(filesToUpload.length?`${filesToUpload.length} attachment${filesToUpload.length===1?' is':'s are'} uploading in the background.`:`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`),
       saveWarning?'bad':'ok'
     );
-    cancelVisitEdit();
+    cancelVisitEdit();restoreServiceForm(null);restoreOtherClient();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
     clearPendingVisitAttachments();
     if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);window.resetVisitWizard?.();
@@ -6794,6 +6833,7 @@ function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;clea
 function editFieldLog(id){
   window.setVisitWizardStep?.(1,false);
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
+  restoreServiceForm(serviceFormForEntry(e));
   clearPendingVisitAttachments();
   closeDetail(); document.querySelector('.tab[data-tab="log"]')?.click();
   setVisitEditMode(e.id);
@@ -11000,7 +11040,7 @@ html{scrollbar-gutter:stable}
   select.replaceChildren(new Option('Select a site',''));
   const warehouse=(window.__lifecycleSites||[]).map(r=>r.name).concat(sites||[]).find(name=>siteIsWarehouse(name))||'Carmona Cavite Warehouse';
   options.push({value:warehouse,text:'Carmona, Cavite Warehouse'});
-  if(!options.some(o=>key(o.value)==='others'))options.push({value:'Others',text:'Others — specify location in remarks'});
+  if(!options.some(o=>key(o.value)==='others'))options.push({value:'Others',text:'Others — enter client / site name'});
   options.forEach(o=>select.add(new Option(o.text,o.value)));
   const match=options.find(o=>key(o.value)===key(selected));
   if(match)select.value=match.value;
@@ -11019,9 +11059,8 @@ html{scrollbar-gutter:stable}
 </script>
 <script id="other-visit-location-hint">
 (function(){
- const site=document.getElementById('f-site'),notes=document.getElementById('f-notes');
- const hint=document.createElement('small');hint.textContent='Others selected: include the venue or address you visited in your remarks.';hint.style.display='none';hint.style.color='var(--ink-soft)';notes.before(hint);
- function update(){const other=site.value==='Others';hint.style.display=other?'block':'none';notes.required=other;if(other)notes.placeholder='Where did you go? Enter the venue or address and visit remarks.';else notes.placeholder='What happened on this visit';}
+ const site=document.getElementById('f-site');
+ function update(){const other=site.value==='Others';document.getElementById('other-client-field').hidden=!other;document.getElementById('f-other-client').required=other;}
  site.addEventListener('change',update);new MutationObserver(update).observe(site,{childList:true});update();
 })();
 </script>
@@ -11125,7 +11164,10 @@ html{scrollbar-gutter:stable}
   try{const result=oldShow(user);ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value=defaults[id];apply(id);});
    periodType=['week','month','quarter'].includes(memory.periodType)?memory.periodType:'week';
    document.querySelectorAll('[data-period]').forEach(b=>b.classList.toggle('active',b.dataset.period===periodType));
-   activeCat=memory.activeCat||'All';activeWork=user.role==='management'&&memory.activeWork==='mine'?'mine':'all';
+   activeCat=memory.activeCat||'All';activeWork='all';
+   // Start every login with all records allowed by the authenticated account.
+   // A previous management "My Work" selection must not hide other FSEs.
+   memory.activeWork='all';
    document.querySelectorAll('#filters .chip').forEach(b=>b.classList.toggle('active',b.dataset.cat===activeCat));
    document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b.dataset.work===activeWork));
    document.getElementById('my-fse').style.display=activeWork==='mine'?'block':'none';
@@ -11157,7 +11199,7 @@ html{scrollbar-gutter:stable}
  toggle.addEventListener('mousedown',e=>e.preventDefault());toggle.onclick=()=>{if(!list.hidden)close();else{input.focus();open();}};
  document.addEventListener('click',e=>{if(!wrap.contains(e.target))close();});
  select.addEventListener('change',()=>{if(document.activeElement!==input)input.value=label();});
- const previous=renderSiteOptions;renderSiteOptions=function(value){const selected=value===undefined?select.value:value;previous(value);const names=allKnownSites().filter(n=>!siteIsClosed(n)&&normalizeSiteKey(n)!=='car');select.replaceChildren(new Option('Select a location',''));names.forEach(n=>select.add(new Option(n,n)));select.add(new Option('Others — specify location in remarks','Others'));const match=Array.from(select.options).find(o=>normalizeSiteKey(o.value)===normalizeSiteKey(selected));if(match)select.value=match.value;else if(editingEntryId&&selected){const o=new Option(selected+' — recorded location',selected);o.disabled=true;select.add(o);select.value=selected;}close();};
+ const previous=renderSiteOptions;renderSiteOptions=function(value){const selected=value===undefined?select.value:value;previous(value);const names=allKnownSites().filter(n=>!siteIsClosed(n)&&normalizeSiteKey(n)!=='car');select.replaceChildren(new Option('Select a location',''));names.forEach(n=>select.add(new Option(n,n)));select.add(new Option('Others — enter client / site name','Others'));const match=Array.from(select.options).find(o=>normalizeSiteKey(o.value)===normalizeSiteKey(selected));if(match)select.value=match.value;else if(editingEntryId&&selected){const o=new Option(selected+' — recorded location',selected);o.disabled=true;select.add(o);select.value=selected;}close();};
  new MutationObserver(()=>{if(document.activeElement!==input)input.value=label();}).observe(select,{childList:true,subtree:true});
  renderSiteOptions();if(currentUser)renderSites();
 })();
@@ -11318,13 +11360,15 @@ window.addEventListener('DOMContentLoaded',()=>{
   const title=document.getElementById('visit-step-short-title');
   const error=document.getElementById('visit-step-error');
   let activeStep=1;
-  const names={1:'Visit details',2:'Concern',3:'Action & notes',4:'Attachments'};
+  const names={1:'Visit details',2:'Concern',3:'Action & notes',4:'Attachments',5:'Names & signatures'};
   function isSimple(){return ['Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'].includes(document.getElementById('f-visit-type')?.value||'')}
-  function stepIds(){return [1,2,3,4]}
+  function stepIds(){return document.getElementById('f-service-needed').value==='yes'?[1,2,3,4,5]:[1,2,3,4]}
   function enabled(){return window.matchMedia('(max-width:900px)').matches}
   function clearError(){if(error){error.textContent='';error.style.display='none'}}
   function goToStep(id,scroll=true){
     const ids=stepIds();
+    const finalPanel=panels.find(panel=>Number(panel.dataset.visitStep)===ids[ids.length-1]);
+    finalPanel?.append(document.getElementById('visit-save-actions'));
     if(!ids.includes(id))id=ids.find(n=>n>activeStep)||ids[ids.length-1];
     activeStep=id;
     panels.forEach(panel=>panel.classList.toggle('active',Number(panel.dataset.visitStep)===id));
@@ -11344,8 +11388,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   function syncMode(){
     form.classList.toggle('visit-wizard-active',enabled());
     controls?.setAttribute('aria-hidden',enabled()?'false':'true');
-    if(enabled())goToStep(activeStep,false);
-    else panels.forEach(panel=>panel.classList.remove('active'));
+    goToStep(activeStep,false);
+    if(!enabled())panels.forEach(panel=>panel.classList.remove('active'));
   }
   next?.addEventListener('click',()=>{
     const ids=stepIds();
@@ -11354,6 +11398,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
       document.getElementById('f-site')?.focus();return;
     }
+    if(activeStep===1&&!validateOtherClient())return;
     if(activeStep===2&&!isSimple()&&!isAutoGeneralActivity()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
       if(error){error.textContent='Choose a concern to continue.';error.style.display='block';}
       document.querySelector('#cat-picker .cat-opt')?.focus();return;
@@ -11374,6 +11419,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   });
   document.querySelectorAll('#cat-picker .cat-opt').forEach(button=>button.addEventListener('click',clearError));
   window.setVisitWizardStep=goToStep;
+  window.refreshVisitWizard=syncMode;
+  document.getElementById('f-service-needed').addEventListener('change',syncMode);
   window.resetVisitWizard=()=>goToStep(1,false);
   const mq=window.matchMedia('(max-width:900px)');
   mq.addEventListener?.('change',syncMode);
@@ -11613,7 +11660,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   .visit-step-controls span{color:#929cab;font-size:10px;text-align:center;white-space:nowrap}
   .visit-step-error{display:none;position:static;transform:none;width:auto;margin:10px 0 0;padding:9px 11px;border:1px solid rgba(230,145,128,.25);border-radius:9px;background:#211918;color:#f0b1a3;font-size:11px}
   .visit-wizard-active #mobile-save-fab{display:none!important}
-  #panel-log .visit-wizard-active .visit-step-panel[data-visit-step="4"].active #mobile-save-fab{display:flex!important}
+  #panel-log .visit-wizard-active .visit-step-panel.active #mobile-save-fab{display:flex!important}
   .visit-wizard-active .visit-step-panel[data-visit-step="3"].active #visit-equipment-details{margin-top:12px}
   .visit-wizard-active .visit-step-panel[data-visit-step="3"].active #visit-equipment-details[open]{scroll-margin-top:85px}
   #panel-log .visit-wizard-active #visit-category-row .cats{gap:6px!important}
@@ -12033,3 +12080,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 #panel-log #visit-additional-details{border:0!important;background:transparent!important;padding:0!important;margin-top:14px!important;box-shadow:none!important}
 #panel-log #visit-additional-details .visit-additional-fields{padding:0!important}
 </style>
+<script src="service-form.js"></script>
