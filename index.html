@@ -6412,6 +6412,7 @@ function visitDetailLayout(e,fields,tracking){
  return '<div class="vd-badges"><span class="readable-log-status '+color+'"><i aria-hidden="true"></i>'+esc(status)+'</span><span>'+esc(catLabel[e.category]||e.category||'Unspecified category')+'</span>'+(e.priority?'<span>'+esc(e.priority)+' priority</span>':'')+'</div>'+
  '<section class="vd-section"><h3 class="vd-title">Visit summary</h3>'+facts(['Date','Primary FSE'])+(filled(values['With / Supporting FSEs'])?facts(['With / Supporting FSEs']):'')+'<p class="vd-issue">'+esc(e.issueType||e.generalType||e.visitType||'Field visit')+'</p></section>'+
  '<section class="vd-section"><h3 class="vd-title">Work done</h3>'+paragraph('Concern / notes',e.notes,'No visit notes recorded.')+paragraph('Action taken',e.resolution,'No action recorded.')+'</section>'+
+ (serviceFormForEntry(e)?'<section class="vd-service-document" aria-labelledby="vd-service-document-title"><div class="vd-service-document-info"><span class="vd-service-document-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><div><h3 id="vd-service-document-title">Service form</h3><p>Print a copy or save as PDF.</p></div></div><button type="button" id="visit-service-form-print" class="vd-service-document-print"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg><span>Print / Save PDF</span></button></section>':'')+
  (e.status==='Follow-up'||filled(e.followupDate)||filled(e.followupReason)?'<section class="vd-followup"><h3 class="vd-title">Next step</h3>'+facts(['Follow-up Date'])+paragraph('Follow-up reason',e.followupReason,'No follow-up reason recorded.')+'</section>':'')+
  '<details class="vd-details"><summary>Equipment & parts'+(equipment.length?' · '+equipment.length:'')+'</summary>'+(equipment.length?facts(equipment):'<p class="vd-empty">No equipment or parts recorded for this visit.</p>')+'</details>'+
  '<details class="vd-details"><summary>Timing & record details</summary>'+facts(more)+'</details>'+
@@ -6425,11 +6426,7 @@ function openDetail(id){
   const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
-  if(serviceFormForEntry(e)){
-    const serviceFormButton=document.createElement('button');serviceFormButton.type='button';serviceFormButton.className='btn-secondary';
-    serviceFormButton.textContent='Print / Save service form';serviceFormButton.addEventListener('click',()=>printEntryServiceForm(e.id));
-    document.getElementById('drawer-content').prepend(serviceFormButton);
-  }
+  document.getElementById('visit-service-form-print')?.addEventListener('click',()=>printEntryServiceForm(e.id));
   document.getElementById('detail-overlay').querySelector('.detail-drawer').scrollTop=0;
   requestAnimationFrame(()=>document.getElementById('drawer-close').focus());
   const ov=document.getElementById('detail-overlay'); ov.classList.add('open'); ov.setAttribute('aria-hidden','false');
@@ -12078,6 +12075,15 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <style id="visit-details-heading-cleanup">
+.vd-service-document{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:20px 0;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.vd-service-document-info{display:flex;align-items:center;gap:12px;min-width:0}
+.vd-service-document-icon{display:grid;place-items:center;width:44px;height:48px;flex:0 0 44px;border:1px solid var(--line);border-radius:9px;background:var(--input-bg);color:var(--accent,#a7b8ff)}
+.vd-service-document h3{margin:0 0 5px;font-size:13px;font-weight:600;color:var(--ink)}
+.vd-service-document p{margin:0;font-size:11px;line-height:1.5;color:var(--ink-soft)}
+.vd-service-document-print{display:inline-flex;justify-content:center;align-items:center;gap:8px;flex-shrink:0;min-height:44px;padding:10px 14px;border:1px solid #b8c6f6;border-radius:8px;background:#d6defb;color:#171b26;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.vd-service-document-print:hover{background:#e4eaff}
+.vd-service-document-print:focus-visible{outline:2px solid var(--accent,#a7b8ff);outline-offset:4px}
+@media(max-width:600px){.vd-service-document{align-items:stretch;flex-direction:column;gap:14px;padding:16px}.vd-service-document-print{width:100%;min-height:46px}}
 #panel-log #visit-additional-details>summary{display:none!important}
 #panel-log #visit-additional-details{border:0!important;background:transparent!important;padding:0!important;margin-top:14px!important;box-shadow:none!important}
 #panel-log #visit-additional-details .visit-additional-fields{padding:0!important}
