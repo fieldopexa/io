@@ -12092,3 +12092,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 <style id="desktop-dashboard-banner">
 @media(max-width:900px){body #panel-dashboard .dashboard-head-premium{display:none!important}}
 </style>
+
+<style id="mobile-report-action-alignment">
+@media(max-width:760px){
+ #panel-report .report-actions{display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);align-items:stretch!important;gap:6px!important;padding:10px 0 0!important}
+ #panel-report .report-actions button,#panel-report .report-actions button:first-child{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0!important;box-sizing:border-box;line-height:1!important}
+ #panel-report .report-actions button::before{display:block;line-height:1!important;margin:0!important;padding:0!important}
+}
+</style>
