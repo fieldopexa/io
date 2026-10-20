@@ -1,6 +1,6 @@
 'use strict';
 const CACHE_PREFIX='opexa-io-shell-';
-const CACHE=CACHE_PREFIX+'20261020-asset-tabs-two-rows-v1';
+const CACHE=CACHE_PREFIX+'20261020-ian-primary-fse-v1';
 const ROOT=new URL('./',self.location.href);
 const SHELL=['./','./index.html','./service-form.js','./service-form-reference.png','./manifest.webmanifest','./install.js','./install.css','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL.map(file=>new Request(new URL(file,ROOT),{cache:'reload'})))));});

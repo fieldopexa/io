@@ -5669,11 +5669,17 @@ function renderSupportingFses(selected){
     return `<label class="team-chip"><input type="checkbox" value="${escapeHtml(n)}"${checked}><span>${escapeHtml(n)}</span></label>`;
   }).join(''):'<div class="team-chip-empty">No other FSE available.</div>';
 }
+let primaryFseAccount='';
 function renderFseOptions(selectValue){
   const select = document.getElementById('f-tech');
-  const previous=selectValue||select?.value||'';
-  select.innerHTML = fses.map(n=>`<option value="${escapeHtml(n)}"${isActiveVisitFse(n)?'': ' disabled'}>${escapeHtml(n)}${isActiveVisitFse(n)?'':' (inactive)'}</option>`).join('');
-  if(previous && fses.includes(previous) && (isActiveVisitFse(previous)||editingEntryId)) select.value = previous; else select.value = fses.find(isActiveVisitFse)||'';
+  const account=String(currentUser?.username||'').trim().toLowerCase();
+  const ianAccount=[currentUser?.username,currentUser?.name,currentUser?.fse].some(value=>/^ian(?:\s+ronquillo)?$/i.test(String(value||'').trim()));
+  const ian=ianAccount?fses.find(name=>/^ian(?:\s+ronquillo)?$/i.test(name.trim())&&isActiveVisitFse(name)):'';
+  const previous=selectValue||(!editingEntryId&&account!==primaryFseAccount&&ian?ian:select?.value)||'';
+  primaryFseAccount=account;
+  const options=ian?[ian,...fses.filter(name=>name!==ian)]:fses;
+  select.innerHTML = options.map(n=>`<option value="${escapeHtml(n)}"${isActiveVisitFse(n)?'': ' disabled'}>${escapeHtml(n)}${isActiveVisitFse(n)?'':' (inactive)'}</option>`).join('');
+  if(previous && fses.includes(previous) && (isActiveVisitFse(previous)||editingEntryId)) select.value = previous; else select.value = options.find(isActiveVisitFse)||'';
   if(currentUser?.role==='fse'){
     const assigned=String(currentUser.fse||'').trim();
     if(assigned&&!Array.from(select.options).some(option=>option.value===assigned))select.add(new Option(assigned,assigned));
