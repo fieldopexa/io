@@ -34,7 +34,8 @@ assert.equal(loaded[0].serviceForm.technician,'Kenneth','management receives Ken
 role='fse';loaded=context.doGet({parameter:{type:'entries',token:'test'}});
 assert.equal(loaded.length,1);assert.equal(loaded[0].tech,'Ian','FSE scope remains unchanged');
 loaded=context.doGet({parameter:{type:'entries',viewer:'1'}});
-assert.equal(loaded[0].serviceForm,undefined,'public viewer does not receive signatures');
+assert.equal(loaded[0].serviceForm.technician,'Kenneth','public viewer receives signed form as authorized by owner');
+assert.equal(loaded[0].serviceFormFileId,undefined,'public viewer does not receive internal Drive file ID');
 const properties=new Map();
 context.PropertiesService={getScriptProperties:()=>({getProperty:key=>properties.get(key)||null,setProperty:(key,value)=>properties.set(key,value)})};
 const signatureFolder=context.getVisitAttachmentFolder_();

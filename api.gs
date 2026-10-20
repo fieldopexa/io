@@ -47,9 +47,10 @@ function doGet(e) {
       }
 
       rows.forEach(function(row) {
-        // Public viewers do not receive handwritten signatures.
-        if (!publicViewer) hydrateVisitServiceForm_(row);
-        else { delete row.serviceForm; delete row.serviceFormFileId; }
+        row.hasServiceForm = !!row.serviceFormFileId;
+        // The owner permits signed service forms in the public fseview reader.
+        hydrateVisitServiceForm_(row);
+        if (publicViewer) delete row.serviceFormFileId;
       });
       return json_(rows);
     }
