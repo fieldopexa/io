@@ -4353,6 +4353,14 @@ body:has(#spare-modal[style*="display:flex"]){
   </div>
 
   <div class="panel" id="panel-dashboard">
+    <div class="dashboard-head dashboard-head-premium">
+      <div class="dashboard-title-block">
+        <span class="dashboard-eyebrow">OPERATIONS DASHBOARD</span>
+        <h2>Operations Overview</h2>
+        <p>Field operations, site activity, cabinet health and current operational risks.</p>
+      </div>
+      <div class="dashboard-date" id="dashboard-date"></div>
+    </div>
     <div class="mgmt-period-bar">
       <div><span>Current snapshot</span><b id="mgmt-period-label">This month</b></div>
       <div class="mgmt-period-actions">
@@ -7817,6 +7825,7 @@ document.querySelectorAll('[data-mgmt-period]').forEach(btn=>btn.addEventListene
 }));
 
 function renderDashboard(){
+  document.getElementById('dashboard-date').textContent=new Date().toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
   renderManagementOverview();
   const valid=entries.filter(e=>e.status!=='Voided');
   const resolved=valid.filter(e=>e.status==='Resolved').length, pending=valid.filter(e=>e.status==='Pending').length, follow=valid.filter(e=>e.status==='Follow-up').length, critical=valid.filter(e=>e.priority==='Critical').length;
@@ -12079,3 +12088,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 #panel-log #visit-additional-details .visit-additional-fields{padding:0!important}
 </style>
 <script src="service-form.js"></script>
+
+<style id="desktop-dashboard-banner">
+@media(max-width:900px){body #panel-dashboard .dashboard-head-premium{display:none!important}}
+</style>
