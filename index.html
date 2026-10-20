@@ -4353,15 +4353,6 @@ body:has(#spare-modal[style*="display:flex"]){
   </div>
 
   <div class="panel" id="panel-dashboard">
-    <div class="dashboard-head dashboard-head-premium">
-      <div class="dashboard-title-block">
-        <span class="dashboard-eyebrow">OPERATIONS DASHBOARD</span>
-        <h2>Operations Overview</h2>
-        <p>Field operations, site activity, cabinet health and current operational risks.</p>
-      </div>
-      <div class="dashboard-date" id="dashboard-date"></div>
-    </div>
-
     <div class="mgmt-period-bar">
       <div><span>Current snapshot</span><b id="mgmt-period-label">This month</b></div>
       <div class="mgmt-period-actions">
@@ -7833,7 +7824,6 @@ function renderDashboard(){
   const avg=durations.length?durations.reduce((a,b)=>a+b,0)/durations.length:null;
   const sla=valid.map(e=>({e,mins:minutesBetween(e.timeIn,e.timeResolved||e.timeOut)})).filter(x=>x.mins!==null&&x.e.priority);
   const met=sla.filter(x=>x.mins<=SLA_TARGETS[x.e.priority]).length, pct=sla.length?met/sla.length*100:null;
-  document.getElementById('dashboard-date').textContent=new Date().toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
   document.getElementById('dashboard-stats').innerHTML=`<div class="stat"><div class="n">${valid.length}</div><div class="l">Total visits</div></div><div class="stat"><div class="n">${resolved}</div><div class="l">Resolved</div></div><div class="stat"><div class="n">${pending}</div><div class="l">Pending</div></div><div class="stat"><div class="n">${follow}</div><div class="l">Follow-up</div></div><div class="stat"><div class="n">${critical}</div><div class="l">Critical</div></div><div class="stat"><div class="n">${formatMinutes(avg)}</div><div class="l">Avg. visit</div></div>`;
   const today=todayStr();
   const open=valid.filter(e=>e.status==='Pending'||e.status==='Follow-up');
