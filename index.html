@@ -8016,7 +8016,8 @@ async function loadCabinets(){
     if(activeTab==='dashboard')renderDashboard();
   }catch(e){
     console.error('Cabinet load failed',e);
-    cabinetRows=[];
+    // Preserve last loaded cabinets when a reload fails.
+    window.setInventoryLoadState?.('Unable to refresh cabinets. Showing the last loaded records. Please retry.',true);
     renderCabinets();
     if(inventoryView==='components' && typeof renderInstalledComponents==='function')renderInstalledComponents();
     populateVisitCabinets();
@@ -12528,3 +12529,4 @@ body #panel-inventory .asset-mobile-overflow{align-self:center!important;height:
 body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;line-height:1!important}
 }
 </style>
+<link rel="stylesheet" href="quality-polish.css"><script src="quality-polish.js"></script>

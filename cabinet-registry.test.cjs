@@ -13,7 +13,7 @@ let browser;
   await page.waitForTimeout(350);
   await page.evaluate(()=>document.querySelector('.tab[data-tab="inventory"]').click());
   await page.waitForTimeout(200);
-  await page.locator('#asset-groups button').filter({hasText:'Cabinet Registry'}).first().click();
+  if(width<=700)await page.locator('.asset-mobile-category select').selectOption('1');else await page.locator('#asset-groups button').filter({hasText:'Cabinet Registry'}).first().click();
   await page.waitForTimeout(300);
   await page.evaluate(()=>{cabinetRows[0].token='SAMPLE-TOKEN';cabinetRows[0].teamviewerId='SAMPLE-REMOTE';cabinetRows[0].cabinetSerial='SAMPLE-SERIAL';renderCabinets();});
   assert.equal(await page.locator('.cabinet-table thead th').count(),4);
