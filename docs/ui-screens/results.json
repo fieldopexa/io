@@ -1,0 +1,32 @@
+[
+  {
+    "version": "before",
+    "width": 390,
+    "errors": []
+  },
+  {
+    "version": "before",
+    "width": 820,
+    "errors": []
+  },
+  {
+    "version": "before",
+    "width": 1440,
+    "errors": []
+  },
+  {
+    "version": "after",
+    "width": 390,
+    "errors": []
+  },
+  {
+    "version": "after",
+    "width": 820,
+    "errors": []
+  },
+  {
+    "version": "after",
+    "width": 1440,
+    "errors": []
+  }
+]

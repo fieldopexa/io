@@ -1,0 +1,80 @@
+/* Shared OPEXA interface tokens. Loaded after legacy presentation rules.
+   Keep workflow visibility, role rules and print layouts in index.html. */
+@media screen {
+  :root {
+    color-scheme: dark;
+    --paper: #101113; --card: #191b1e; --input-bg: #222428;
+    --ink: #f3f1eb; --ink-soft: #b5b3ac; --line: #383a3d;
+    --accent: #dfbd72; --accent-soft: #dfbd7217;
+  }
+  body {font-family: 'Segoe UI', sans-serif; line-height: 1.5; background: var(--paper)!important}
+  body::before {display:none}
+  button,input,select,textarea {font-family:inherit}
+  input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea {font-size:16px;line-height:1.5;min-height:44px;border-radius:8px}
+  input[type=checkbox],input[type=radio] {accent-color:var(--accent)}
+  :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible {outline:2px solid var(--accent)!important;outline-offset:3px!important}
+  :is(input,select,textarea)[aria-invalid=true] {border-color:#ed9a89!important}
+  :is(button,input,select,textarea):disabled {opacity:.55;cursor:not-allowed}
+  button:not(:disabled),summary,[role=button] {touch-action:manipulation}
+  .app-content {max-width:1380px!important}
+  .app-top,.mobile-app-header,.mobile-nav-drawer {background:#161719!important;border-color:var(--line)!important}
+  .app-nav .tab {font-size:13px!important;min-height:44px}
+  .app-nav .tab.active,.mobile-drawer-nav button.active {background:var(--accent-soft)!important;color:var(--accent)!important;border-color:#dfbd7240!important}
+  .app-nav .tab.nav-primary {background:var(--accent)!important;color:#211c12!important;border-color:var(--accent)!important}
+  #panel-log #support-type-options label:has(input:checked) {border-color:var(--accent)!important;background:var(--accent-soft)!important;color:var(--ink)!important}
+  #panel-log #support-type-options input {accent-color:var(--accent)!important}
+  .pwa-install-button {background:var(--input-bg)!important;border-color:var(--line)!important;color:var(--ink)!important}
+  .mobile-bottom-nav {background:#161719!important;border-color:var(--line)!important}
+  .mobile-bottom-nav button.active,.mobile-bottom-nav button.active svg {color:var(--accent)!important;background:var(--accent-soft)!important}
+  body #panel-dashboard {--director-card:var(--card);--director-border:var(--line);--director-muted:var(--ink-soft)}
+  body #panel-dashboard .dashboard-head-premium {background:var(--card)!important;border-color:var(--line)!important;border-radius:12px!important;padding:24px!important}
+  body #panel-dashboard .dashboard-head-premium h2.operations-summary-title {color:var(--ink)!important;-webkit-text-stroke:0;text-shadow:none;font-size:28px!important}
+  body #panel-dashboard .dashboard-date {background:var(--input-bg)!important;border-color:var(--line)!important;color:var(--ink-soft)!important}
+  body #panel-dashboard .mgmt-snapshot {grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important}
+  body #panel-dashboard .mgmt-snapshot>.mgmt-kpi:nth-child(n) {display:block!important;padding:18px!important;border-radius:12px!important;border:1px solid var(--line)!important;background:var(--card)!important}
+  body #panel-dashboard .mgmt-kpi b {color:var(--ink)!important;font-variant-numeric:tabular-nums}
+  body #panel-dashboard .mgmt-kpi>span {color:var(--ink-soft)!important}
+  body #panel-dashboard .mgmt-kpi:nth-child(2),body #panel-dashboard .mgmt-kpi:nth-child(5) {border-top:3px solid var(--accent)!important}
+  body #panel-dashboard .mgmt-period-actions button.active {background:var(--accent)!important;border-color:var(--accent)!important;color:#211c12!important}
+  .opexa-attention-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 20px}
+  body #panel-dashboard .opexa-attention-grid .chart-card {margin:0!important;min-width:0}
+  .opexa-attention-grid .section-title-row {flex-wrap:wrap;gap:6px}
+  .opexa-attention-grid .mgmt-risk-item,.opexa-attention-grid .mgmt-critical-item {min-height:60px;padding:12px;font-size:13px}
+  .opexa-attention-grid :is(.mgmt-risk-item,.mgmt-critical-item) b {font-size:13px}
+  .opexa-attention-grid :is(.mgmt-risk-item,.mgmt-critical-item) span {font-size:12px}
+  body #panel-dashboard .calm-recent-row>span {background:var(--input-bg)!important;border-color:var(--line)!important;color:var(--ink-soft)}
+  #panel-fieldlogs .log-search-area {border-color:var(--line)!important}
+  #panel-fieldlogs .log-filter-categories .chip {min-height:44px;font-size:12px!important}
+  #panel-fieldlogs .chip.active {background:var(--accent)!important;color:#211c12!important;border-color:var(--accent)!important}
+  #panel-fieldlogs .log-filter-reset {color:var(--accent);min-height:44px}
+  #panel-fieldlogs .readable-log {background:var(--card)!important;border-color:var(--line)!important;margin-bottom:12px}
+  .readable-log-context small,.readable-log-reference {color:var(--ink-soft)}
+  .readable-log-site {min-height:36px}
+  .readable-log-view {background:var(--accent-soft);color:var(--accent);border:1px solid #dfbd7240;min-height:44px;padding:9px 14px}
+  .readable-log-menu summary,.readable-log-menu button {min-height:44px;min-width:44px}
+  #panel-log .ticket.smart-visit-form {background:var(--card)!important;border-color:var(--line)!important}
+  #panel-log .field>label,#panel-log .field-label {font-size:12px!important;line-height:1.5!important;color:var(--ink-soft)!important;letter-spacing:.025em!important}
+  #panel-log :is(input,select,textarea) {border-color:var(--line)!important;background:var(--input-bg)!important;color:var(--ink)!important}
+  #panel-log :is(.cat-desc,.week-hint) {font-size:12px!important;line-height:1.6!important;color:var(--ink-soft)!important}
+  #panel-log .visit-step-controls button:last-child,#panel-log #submit-btn,#panel-log #mobile-save-fab,.login-btn {background:var(--accent)!important;border-color:var(--accent)!important;color:#211c12!important}
+  #panel-log .visit-step-progress-track i {background:var(--accent)!important}
+  #panel-log .visit-step-controls {background:var(--card)!important;border-color:var(--line)!important}
+  #panel-log .cat-opt {min-height:44px}
+  .err,.login-error,.visit-step-error {line-height:1.6}
+  .global-progress,.app-toast {max-width:calc(100vw - 32px);font-size:13px;line-height:1.6}
+  .app-toast.bad {border-color:#ed9a89!important}
+  .opexa-skip-link {position:fixed;top:8px;left:8px;z-index:2000;padding:12px 18px;background:var(--accent);color:#211c12;transform:translateY(-160%);border-radius:8px}
+  .opexa-skip-link:focus {transform:translateY(0)}
+  @media(max-width:1100px) {body #panel-dashboard .mgmt-snapshot {grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+  @media(max-width:900px) {
+    .opexa-attention-grid {grid-template-columns:minmax(0,1fr);gap:12px}
+    .mobile-bottom-nav {display:grid!important}
+    .wrap {padding-bottom:calc(90px + env(safe-area-inset-bottom))!important}
+    #panel-log .ticket.smart-visit-form {padding:16px!important}
+    #panel-log .visit-step-controls button {min-height:44px}
+    .global-progress,.app-toast {bottom:calc(78px + env(safe-area-inset-bottom))!important}
+    body #panel-dashboard .mgmt-snapshot {grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    body #panel-dashboard .mgmt-snapshot>.mgmt-kpi:last-child {grid-column:1 / -1}
+  }
+  @media(prefers-reduced-motion:reduce) {html {scroll-behavior:auto!important}*,*::before,*::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+}

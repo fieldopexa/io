@@ -5781,9 +5781,11 @@ let editingEntryId='';
 let toastTimer=null;
 function showToast(title,message,type='ok'){
   const el=document.getElementById('app-toast'); if(!el)return;
+  el.setAttribute('role',type==='bad'?'alert':'status');
+  el.setAttribute('aria-live',type==='bad'?'assertive':'polite');
   el.className=`app-toast show ${type}`;
   el.innerHTML=`<b>${escapeHtml(title)}</b>${escapeHtml(message||'')}`;
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{el.classList.remove('show');},3200);
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>{el.classList.remove('show');},type==='bad'?10000:5000);
 }
 function setVisitEditMode(id){
   editingEntryId=String(id||'');
@@ -11375,6 +11377,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   const error=document.getElementById('visit-step-error');
   let activeStep=1;
   const names={1:'Visit details',2:'Concern',3:'Action & notes',4:'Attachments',5:'Names & signatures'};
+  panels.forEach(panel=>{panel.tabIndex=-1;panel.setAttribute('role','group');panel.setAttribute('aria-label',names[Number(panel.dataset.visitStep)]);});
   function isSimple(){return ['Pull-out','Transfer','Training','Ocular / Inspection','Follow-up','Other'].includes(document.getElementById('f-visit-type')?.value||'')}
   function stepIds(){return document.getElementById('f-service-needed').value==='yes'?[1,2,3,4,5]:[1,2,3,4]}
   function enabled(){return window.matchMedia('(max-width:900px)').matches}
@@ -11396,7 +11399,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(next)next.style.display=index===ids.length-1?'none':'';
       controls?.setAttribute('aria-label','Visit form navigation, step '+(index+1)+' of '+ids.length);
       clearError();
-      if(scroll){const top=form.getBoundingClientRect().top+window.scrollY-74;window.scrollTo({top:Math.max(0,top),behavior:'smooth'});}
+      if(scroll){panels.find(panel=>Number(panel.dataset.visitStep)===id)?.focus({preventScroll:true});const top=form.getBoundingClientRect().top+window.scrollY-74;window.scrollTo({top:Math.max(0,top),behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});}
     }
   }
   function syncMode(){
@@ -11410,7 +11413,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(activeStep===1&&!document.getElementById('f-site')?.value){
       const siteError=document.getElementById('site-err');
       if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
-      document.getElementById('f-site')?.focus();return;
+      (document.getElementById('location-combobox')||document.getElementById('f-site'))?.focus();return;
     }
     if(activeStep===1&&!validateOtherClient())return;
     if(activeStep===2&&!isSimple()&&!isAutoGeneralActivity()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
@@ -12143,3 +12146,5 @@ body #panel-report .brief-header .brief-eyebrow{color:#b5c5e5!important;font-wei
 <script src="log-filters.js"></script>
 
 <style id="personal-fse-report-scope">body.personal-fse-reports #panel-report .report-subnav,body.personal-fse-reports #panel-report .report-weekly-task-view,body.personal-fse-reports #panel-report .report-agenda-section,body.personal-fse-reports #panel-report .brief-agenda{display:none!important}</style>
+<link rel="stylesheet" href="ui-modernization.css">
+<script src="ui-modernization.js"></script>
