@@ -1,0 +1,48 @@
+const fs=require('node:fs'),http=require('node:http'),path=require('node:path'),assert=require('node:assert/strict');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const server=http.createServer((req,res)=>{const name=new URL(req.url,'http://localhost').pathname;const file=path.join(__dirname,name==='/'?'index.html':name.slice(1));if(!file.startsWith(__dirname+path.sep)||!fs.existsSync(file)){res.writeHead(404);return res.end();}res.setHeader('Content-Type',file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(file));});
+let browser;
+(async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin='http://127.0.0.1:'+server.address().port;
+ browser=await chromium.launch({channel:'msedge',headless:true});
+ for(const width of [390,820,1440]){
+  const context=await browser.newContext({viewport:{width,height:960},serviceWorkers:'block'});
+  await context.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());
+  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(origin);await page.addScriptTag({content:fs.readFileSync('preview-fixtures.js','utf8')});
+  await page.evaluate(()=>{document.querySelector('.tab[data-tab="report"]').click();document.querySelector('[data-report-view-button="tasks"]').click();apiPost=(action,payload)=>new Promise((resolve,reject)=>{window.qaAction=action;window.qaPayload=payload;window.qaResolve=resolve;window.qaReject=reject;});window.confirm=()=>true;});
+  const form=page.locator('#weekly-task-form'),input=page.locator('#weekly-task-text'),add=page.locator('#agenda-add-more');
+  assert.equal(await page.locator('[data-report-view-button="report"]').textContent(),'Overview');
+  assert.equal(await page.locator('[data-report-view-button="tasks"]').textContent(),'Weekly Activities');
+  assert.equal(await form.isVisible(),false);assert.equal(await add.isVisible(),true);
+  await add.click();await input.fill('Cancelled draft');await page.locator('#weekly-activity-cancel').click();
+  assert.equal(await form.isVisible(),false);assert.equal(await input.inputValue(),'');
+  await add.click();await input.fill('Coordinated replacement parts');await form.locator('[type=submit]').click();
+  await page.waitForFunction(()=>window.qaAction==='saveAgendaItem');assert.equal(await add.isDisabled(),true);
+  await page.evaluate(()=>window.qaReject(new Error('Simulated connection failure')));
+  await page.waitForFunction(()=>!document.querySelector('#weekly-task-form [type=submit]').disabled);
+  assert.equal(await input.inputValue(),'Coordinated replacement parts');assert.equal(await form.isVisible(),true);
+  assert.equal(await page.locator('.weekly-task-row').count(),0);
+  await form.locator('[type=submit]').click();
+  await page.evaluate(()=>window.qaResolve({record:{id:'activity-1',week:window.qaPayload.record.week,text:window.qaPayload.record.text,owner:'Preview Manager',createdAt:new Date().toISOString()}}));
+  await page.waitForFunction(()=>!document.getElementById('agenda-add-more').disabled);
+  assert.equal(await form.isVisible(),false);assert.equal(await page.locator('.weekly-task-row').count(),1);
+  assert.match(await page.locator('#weekly-task-count').textContent(),/1 completed activity/);
+  assert.equal(await page.locator('#weekly-task-status').isVisible(),true);
+  await page.locator('.weekly-task-row-actions button').first().click();await input.fill('Edited activity');
+  await form.locator('[type=submit]').click();await page.evaluate(()=>window.qaReject(new Error('Edit failed')));
+  await page.waitForFunction(()=>!document.querySelector('#weekly-task-form [type=submit]').disabled);
+  assert.equal(await input.inputValue(),'Edited activity');assert.match(await page.locator('.weekly-task-row p').textContent(),/Coordinated replacement parts/);
+  await form.locator('[type=submit]').click();await page.evaluate(()=>window.qaResolve({record:{id:'activity-1',week:window.qaPayload.record.week,text:window.qaPayload.record.text,owner:'Preview Manager',createdAt:new Date().toISOString()}}));
+  await page.waitForFunction(()=>!document.getElementById('agenda-add-more').disabled);
+  assert.equal(await page.locator('.weekly-task-row p').textContent(),'Edited activity');
+  await page.locator('.weekly-task-delete').click();await page.evaluate(()=>window.qaReject(new Error('Delete failed')));
+  await page.waitForFunction(()=>document.querySelectorAll('.weekly-task-row').length===1);
+  await page.locator('.weekly-task-delete').click();await page.evaluate(()=>window.qaResolve({success:true}));
+  await page.waitForFunction(()=>document.querySelectorAll('.weekly-task-row').length===0);
+  assert.equal(await form.isVisible(),false);assert.equal(await add.isVisible(),true);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(errors,[]);console.log('PASS '+width+'px: tabs, empty state, Add/Cancel, create/edit/delete, failure rollback and retained text');
+  await context.close();
+ }
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server.close();});
