@@ -3,6 +3,7 @@
 Built from the original `main` at `cda82ef`. Keeps the original colors, typography, navigation and page layout; none of the discarded redesign styles are included.
 
 - Field Logs adds a status selector that combines with the existing search, date, category and technician filters. Both clear actions reset the status. The main Clear filters action also clears technician/attention scope. The filter summary includes the selected status, and the empty state distinguishes no loaded records from no matching results.
+- The filter panel places search and technician scope together on desktop, labels Category and Visit status side by side, and keeps date range below them. On phones these controls stack with larger touch targets. The heading shows the number of active filters; original colors and handlers are retained.
 - New Visit focuses the visible client picker when client validation fails, including from the final mobile step. Client validation is associated with the visible combobox for assistive technology.
 - Mobile Save mirrors the actual submit button's disabled/busy state. A persistent message distinguishes saving, confirmed save, attachments uploading separately, and unconfirmed save. On an unconfirmed save it advises reviewing Field Logs before retrying, since a dropped response does not prove that a remote write failed.
 - The existing submit handler, optimistic rollback, validation, role scope, storage, backend and attachments remain in place. The service worker caches the new feedback module using its existing safe-update mechanism.
