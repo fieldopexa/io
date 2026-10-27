@@ -4331,6 +4331,7 @@ body:has(#spare-modal[style*="display:flex"]){
       <button class="submit" id="submit-btn"><span>Log field visit</span><span class="submit-arrow">→</span></button>
 <button type="button" class="mobile-save-fab" id="mobile-save-fab"><span>Save Field Visit</span><b>→</b></button>
       <div class="err" id="err-msg" role="alert" aria-live="polite">Fill in the site and category before logging.</div>
+      <div id="visit-save-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.6;margin-top:10px"></div>
       </div>
       </div>
       <div class="visit-step-error" id="visit-step-error" role="alert" aria-live="polite"></div>
@@ -6728,7 +6729,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     err.style.display='block';
     if(!site){
       err.textContent='Choose a client to continue.';
-      const siteField=document.getElementById('f-site');siteField?.focus();siteField?.scrollIntoView({behavior:'smooth',block:'center'});
+      window.setVisitWizardStep?.(1,false);
+      const siteField=document.getElementById('location-combobox')||document.getElementById('f-site');siteField?.focus();siteField?.scrollIntoView({behavior:'smooth',block:'center'});
     }else{
       err.textContent='Choose a category to continue.';
       const category=document.querySelector('#cat-picker .cat-opt');category?.focus();category?.scrollIntoView({behavior:'smooth',block:'center'});
@@ -6742,6 +6744,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const duplicates=entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site));
   if(duplicates.length&&!confirm('Same-day visit warning: '+duplicates.length+' visit log'+(duplicates.length===1?' has':'s have')+' already been created for '+site+' on '+duplicateDate+'.\n\nDo you want to create another visit log for the same site and date?'))return;
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
+  const saveStatus=document.getElementById('visit-save-status');
+  if(saveStatus)saveStatus.textContent='Saving visit. Keep this page open until the save is confirmed.';
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
   const date=document.getElementById('f-date').value||todayStr();
@@ -6792,6 +6796,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     // Keep the already-rendered optimistic record. The server has now confirmed it.
     storageSet(STORAGE_KEY,entries);
     const saveWarning=[spareWarning,serviceFormWarning].filter(Boolean).join(' ');
+    if(saveStatus)saveStatus.textContent=saveWarning||('Saved to the shared sheet · '+entry.site+(filesToUpload.length?' · attachments are uploading separately.':'.'));
     showToast(
       'Visit saved',
       saveWarning||(filesToUpload.length?`${filesToUpload.length} attachment${filesToUpload.length===1?' is':'s are'} uploading in the background.`:`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`),
@@ -6814,6 +6819,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     }
     storageSet(STORAGE_KEY,entries);
     render();renderReport();renderDashboard();
+    if(saveStatus)saveStatus.textContent='Save not confirmed. Your entries are still in the form. '+(e.message||'Check your connection.')+' Review Field Logs before retrying if the connection dropped during saving.';
     showToast(isEdit?'Update failed':'Visit not saved',e.message||'Unable to sync with the shared sheet.','bad');
   }
   finally{submitBtn.disabled=false;submitBtn.classList.remove('syncing-btn');if(!editingEntryId)submitBtn.innerHTML='<span>Log field visit</span><span class="submit-arrow">→</span>';}
@@ -7489,6 +7495,8 @@ function render(){
   const to = document.getElementById('date-to').value;
   const q = (document.getElementById('global-search')?.value || '').trim().toLowerCase();
   let filtered = entries.filter(e=>{
+    const status=document.getElementById('log-status-filter')?.value||'';
+    if(status&&e.status!==status)return false;
     if(activeCat!=='All' && e.category!==activeCat) return false;
     if(from && e.date < from) return false;
     if(to && e.date > to) return false;
@@ -7502,7 +7510,7 @@ function render(){
   const trackingMap = computeTrackingMap();
   const logEl = document.getElementById('log');
   const countLabel=document.getElementById('readable-log-count');if(countLabel)countLabel.textContent=filtered.length+' visit'+(filtered.length===1?'':'s')+' shown · newest first';
-  if(filtered.length===0){ logEl.innerHTML = '<div class="empty">No visits logged yet for this filter.</div>'; return; }
+  if(filtered.length===0){ logEl.innerHTML = '<div class="empty">'+(entries.length?'No visits match these filters. Try another search or clear the filters.':'No visits loaded yet. New visits will appear here after saving.')+'</div>'; return; }
   logEl.innerHTML = filtered.map(e=>renderReadableLog(e,trackingMap[e.id])).join('');
 }
 
@@ -10153,8 +10161,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  if(currentUser)load();else display();
  const oldEdit=setVisitEditMode;setVisitEditMode=function(id){oldEdit(id);bar.hidden=!!id;};
  const summary=document.createElement('div');summary.className='utility-strip';const text=document.createElement('span');const clear=document.createElement('button');clear.type='button';clear.className='btn-secondary';clear.textContent='Clear all';summary.append(text,clear);document.getElementById('filters').after(summary);
- function update(){const parts=[];if(activeCat!=='All')parts.push(activeCat);const q=document.getElementById('global-search').value.trim();if(q)parts.push('Search: '+q);['date-from','date-to'].forEach((id,i)=>{const v=document.getElementById(id).value;if(v)parts.push((i?'To ':'From ')+v);});if(activeWork==='mine')parts.push('My work');if(window.attentionFilter)parts.push('Attention filter');text.textContent=parts.length?parts.join(' · '):'All visits';clear.hidden=!parts.length;}
- clear.addEventListener('click',()=>{activeCat='All';activeWork='all';window.attentionFilter=null;document.querySelectorAll('#filters .chip').forEach(el=>el.classList.toggle('active',el.dataset.cat==='All'));document.querySelectorAll('#work-toggle button').forEach(el=>el.classList.toggle('active',el.dataset.work==='all'));['global-search','date-from','date-to'].forEach(id=>{const el=document.getElementById(id);el.value='';el.dispatchEvent(new Event(id==='global-search'?'input':'change',{bubbles:true}));});render();update();});
+ function update(){const parts=[];if(activeCat!=='All')parts.push(activeCat);const status=document.getElementById('log-status-filter')?.value;if(status)parts.push('Status: '+status);const q=document.getElementById('global-search').value.trim();if(q)parts.push('Search: '+q);['date-from','date-to'].forEach((id,i)=>{const v=document.getElementById(id).value;if(v)parts.push((i?'To ':'From ')+v);});if(activeWork==='mine')parts.push('My work');if(window.attentionFilter)parts.push('Attention filter');text.textContent=parts.length?parts.join(' · '):'All visits';clear.hidden=!parts.length;}
+ clear.addEventListener('click',()=>{const status=document.getElementById('log-status-filter');if(status)status.value='';activeCat='All';activeWork='all';window.attentionFilter=null;document.querySelectorAll('#filters .chip').forEach(el=>el.classList.toggle('active',el.dataset.cat==='All'));document.querySelectorAll('#work-toggle button').forEach(el=>el.classList.toggle('active',el.dataset.work==='all'));['global-search','date-from','date-to'].forEach(id=>{const el=document.getElementById(id);el.value='';el.dispatchEvent(new Event(id==='global-search'?'input':'change',{bubbles:true}));});render();update();});
  document.getElementById('panel-fieldlogs').addEventListener('input',update);document.getElementById('panel-fieldlogs').addEventListener('change',update);document.getElementById('panel-fieldlogs').addEventListener('click',update);new MutationObserver(update).observe(document.getElementById('log'),{childList:true});update();
 })();</script>
 <script id="global-progress-script">
@@ -11410,7 +11418,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(activeStep===1&&!document.getElementById('f-site')?.value){
       const siteError=document.getElementById('site-err');
       if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
-      document.getElementById('f-site')?.focus();return;
+      (document.getElementById('location-combobox')||document.getElementById('f-site'))?.focus();return;
     }
     if(activeStep===1&&!validateOtherClient())return;
     if(activeStep===2&&!isSimple()&&!isAutoGeneralActivity()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
@@ -12141,5 +12149,6 @@ body #panel-report .brief-header .brief-eyebrow{color:#b5c5e5!important;font-wei
 </style>
 
 <script src="log-filters.js"></script>
+<script src="visit-feedback.js"></script>
 
 <style id="personal-fse-report-scope">body.personal-fse-reports #panel-report .report-subnav,body.personal-fse-reports #panel-report .report-weekly-task-view,body.personal-fse-reports #panel-report .report-agenda-section,body.personal-fse-reports #panel-report .brief-agenda{display:none!important}</style>
