@@ -10085,10 +10085,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
  bar.append(button,status);document.querySelector('#panel-inventory .inventory-subnav').after(bar);
  const indicator=document.createElement('span');
  indicator.className='asset-loading-logo';indicator.hidden=true;indicator.setAttribute('aria-hidden','true');
- const logo=document.createElement('img');logo.src=document.querySelector('.login-logo').src;logo.alt='';
- const fallback=document.createElement('span');fallback.textContent='opexa';fallback.hidden=true;
- logo.addEventListener('error',()=>{logo.hidden=true;fallback.hidden=false;});
- indicator.append(logo,fallback);status.before(indicator);
+ indicator.innerHTML='<svg class="asset-refresh-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.5-1L20 9M4 15l2.4 3A7 7 0 0 0 17.9 17"/></svg>';
+ status.before(indicator);
  bar.classList.add('asset-load-status');
  window.setInventoryLoadState=(message,error,loading=false)=>{
    status.textContent=message;status.style.color=error?'#efb3a8':'var(--ink-soft)';
@@ -10146,8 +10144,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 (function(){
  const toast=document.createElement('div');toast.className='global-progress';toast.hidden=true;
  const mark=document.createElement('span');mark.className='asset-loading-logo';mark.setAttribute('aria-hidden','true');
- const img=document.createElement('img');img.src=document.querySelector('.login-logo').src;img.alt='';mark.append(img);
- img.addEventListener('error',()=>{img.remove();const fallback=document.createElement('span');fallback.textContent='opexa';mark.prepend(fallback);});
+ mark.innerHTML='<svg class="asset-refresh-spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.5-1L20 9M4 15l2.4 3A7 7 0 0 0 17.9 17"/></svg>';
  const copy=document.createElement('div');const title=document.createElement('b');title.setAttribute('role','status');title.setAttribute('aria-live','polite');const detail=document.createElement('small');copy.append(title,detail);
  const dismiss=document.createElement('button');dismiss.type='button';dismiss.textContent='×';dismiss.setAttribute('aria-label','Dismiss request message');dismiss.hidden=true;dismiss.addEventListener('click',()=>{toast.hidden=true;});
  toast.append(mark,copy,dismiss);document.body.append(toast);
@@ -12513,4 +12510,21 @@ function rebuild(){list.replaceChildren();const panel=document.querySelector('#p
 const refresh=panel.querySelector('.asset-load-status button');const button=document.createElement('button');button.type='button';button.textContent='Refresh data';button.disabled=refresh?.disabled||!refresh;button.onclick=()=>{menu.open=false;refresh?.click();};list.append(button);}
 menu.addEventListener('toggle',()=>{if(menu.open)rebuild();});document.querySelector('.asset-mobile-category select').addEventListener('change',()=>menu.open=false);document.addEventListener('click',e=>{if(!menu.contains(e.target))menu.open=false;});menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;menu.querySelector('summary').focus();}});media.addEventListener('change',()=>menu.open=false);
 })();
-</script>
+</script><style id="simple-refresh-animation">
+.asset-loading-logo{width:24px!important;height:24px!important;flex:0 0 24px!important;padding:0!important;color:#b7c2d6}
+.asset-loading-logo::after{display:none!important}
+.asset-refresh-spinner{animation:plain-refresh-spin .9s linear infinite}
+@keyframes plain-refresh-spin{to{transform:rotate(360deg)}}
+@media screen and (max-width:700px){
+#panel-inventory[aria-busy=true] .asset-mobile-overflow>summary{font-size:0!important}
+#panel-inventory[aria-busy=true] .asset-mobile-overflow>summary::after{content:'';width:17px;height:17px;border:2px solid #526074;border-top-color:#dce3ee;border-radius:50%;animation:plain-refresh-spin .9s linear infinite}
+}
+@media(prefers-reduced-motion:reduce){.asset-refresh-spinner,#panel-inventory[aria-busy=true] .asset-mobile-overflow>summary::after{animation:none!important}}
+</style><style id="aligned-mobile-section-chevron">
+@media screen and (max-width:700px){
+body #panel-inventory .asset-mobile-category{align-items:center!important}
+body #panel-inventory .asset-mobile-category>select{appearance:none!important;-webkit-appearance:none!important;box-sizing:border-box!important;height:48px!important;min-height:48px!important;margin:0!important;padding:0 42px 0 14px!important;line-height:normal!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23b7c2d6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 14px center!important;background-size:16px 16px!important}
+body #panel-inventory .asset-mobile-overflow{align-self:center!important;height:48px!important}
+body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-height:48px!important;margin:0!important;padding:0!important;line-height:1!important}
+}
+</style>
