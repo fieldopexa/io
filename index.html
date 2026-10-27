@@ -4663,18 +4663,7 @@ body:has(#spare-modal[style*="display:flex"]){
 
     <div class="movement-table-wrap">
       <table class="movement-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Cabinet</th>
-            <th>Movement</th>
-            <th>Route</th>
-            <th>Status</th>
-            <th>Handled By</th>
-            <th>Reference</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Date</th><th>Cabinet</th><th>Movement</th><th>Route</th><th>Details</th></tr></thead>
         <tbody id="movement-body"></tbody>
       </table>
     </div>
@@ -8266,6 +8255,10 @@ function cabinetMatchesSearch(r,site,query,management){
   return fields.some(value=>text(value).includes(q)||(cq&&compact(value).includes(cq)));
 }
 
+function cabinetRegistryActions(row,isMgmt){
+ const id=escapeHtml(String(row.id||''));const open=isMgmt?'data-cab-profile':'data-cab-readonly';
+ return '<div class="cabinet-actions"><button type="button" class="btn-secondary" '+open+'="'+id+'">View details</button>'+(isMgmt?'<details class="cabinet-row-menu"><summary aria-label="More cabinet actions">⋯</summary><div><button type="button" class="btn-secondary" data-cab-edit="'+id+'">Edit</button><button type="button" class="btn-secondary" data-cab-delete="'+id+'">Delete</button></div></details>':'')+'</div>';
+}
 function renderCabinets(){
   const body=document.getElementById('cabinet-body');if(!body)return;
   const s=cabinetSummary();
@@ -8334,13 +8327,11 @@ function renderCabinets(){
   groupNames.forEach(group=>grouped[group].sort(cabinetNaturalSort));
 
   const isMgmt=currentUser?.role==='management';
-  const colCount=isMgmt?8:10;
+  const colCount=4;
   const head=body.closest('table')?.querySelector('thead tr');
 
   if(head){
-    head.innerHTML=isMgmt
-      ?'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Serial Number</th><th>Token</th><th>TeamViewer</th><th>Updated</th><th></th>'
-      :'<th>Cabinet</th><th>Site / Location</th><th>Status</th><th>Cabinet Serial</th><th>Token</th><th>TeamViewer</th><th>BV</th><th>Printer</th><th>System / MPU</th><th>Network</th>';
+    head.innerHTML='<th>Cabinet ID</th><th>Site / Location</th><th>Status</th><th>Details</th>';
   }
 
   if(!rows.length){
@@ -8368,68 +8359,30 @@ function renderCabinets(){
     </tr>`;
   };
 
-  if(isMgmt){
-    body.innerHTML=groupNames.map(group=>{
-      const groupKey='cabgrp-'+btoa(unescape(encodeURIComponent(group))).replace(/[^a-zA-Z0-9]/g,'');
-      const groupRows=grouped[group].map(r=>`<tr class="cabinet-group-item" data-cab-parent="${groupKey}">
-        <td><button class="cabinet-link" data-cab-profile="${escapeHtml(r.id)}">${escapeHtml(r.cabinetId||'—')}</button><div class="muted">${r.permanentNumber?'Cabinet #'+escapeHtml(String(r.permanentNumber).padStart(3,'0')):''}${r.label?(r.permanentNumber?' · ':'')+escapeHtml(r.label):''}</div></td>
-        <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
-        <td>${cabinetStatusMarkup(r)}</td>
-        <td>${escapeHtml(r.cabinetSerial||'—')}</td>
-        <td>${tokenCompactMarkup(r.token)}</td>
-        <td>${escapeHtml(r.teamviewerId||'—')}</td>
-        <td>${r.updatedAt?new Date(r.updatedAt).toLocaleDateString():'—'}</td>
-        <td><div class="cabinet-actions"><button class="btn-secondary" data-cab-profile="${escapeHtml(r.id)}">History</button><button class="btn-secondary" data-cab-edit="${escapeHtml(r.id)}">Edit</button><button class="btn-secondary" data-cab-delete="${escapeHtml(r.id)}">Delete</button></div></td>
-      </tr>`).join('');
-      return groupHeader(group,grouped[group].length)+groupRows;
-    }).join('');
-  }else{
-    body.innerHTML=groupNames.map(group=>{
-      const groupKey='cabgrp-'+btoa(unescape(encodeURIComponent(group))).replace(/[^a-zA-Z0-9]/g,'');
-      const groupRows=grouped[group].map(r=>`<tr class="cabinet-group-item" data-cab-parent="${groupKey}">
-        <td><b>${escapeHtml(r.cabinetId||'—')}</b><div class="muted">${r.permanentNumber?'Cabinet #'+escapeHtml(String(r.permanentNumber).padStart(3,'0')):''}${r.label?(r.permanentNumber?' · ':'')+escapeHtml(r.label):''}</div></td>
-        <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
-        <td>${cabinetStatusMarkup(r)}</td>
-        <td>${escapeHtml(r.cabinetSerial||'—')}</td>
-        <td>${tokenCompactMarkup(r.token)}</td>
-        <td>${escapeHtml(r.teamviewerId||'—')}</td>
-        <td>${escapeHtml(r.bvModel||'—')}<div class="muted">${escapeHtml(r.bvSerial||'')}</div></td>
-        <td>${escapeHtml(r.printerModel||'—')}<div class="muted">${escapeHtml(r.printerSerial||'')}</div></td>
-        <td>${escapeHtml(r.mpuSerial||'—')}</td>
-        <td>${escapeHtml(r.networkNote||'—')}</td>
-      </tr>`).join('');
-      return groupHeader(group,grouped[group].length)+groupRows;
-    }).join('');
-  }
+  body.innerHTML=groupNames.map(group=>{
+    const groupKey='cabgrp-'+btoa(unescape(encodeURIComponent(group))).replace(/[^a-zA-Z0-9]/g,'');
+    const groupRows=grouped[group].map(r=>`<tr class="cabinet-group-item" data-cab-parent="${groupKey}">
+      <td><button type="button" class="cabinet-link" ${isMgmt?'data-cab-profile':'data-cab-readonly'}="${escapeHtml(String(r.id))}">${escapeHtml(r.cabinetId||'—')}</button></td>
+      <td>${escapeHtml(canonicalCabinetSite(r,siteMap)||'—')}</td>
+      <td>${cabinetStatusMarkup(r)}</td>
+      <td>${cabinetRegistryActions(r,isMgmt)}</td>
+    </tr>`).join('');
+    return groupHeader(group,grouped[group].length)+groupRows;
+  }).join('');
   renderCabinetMobileCards(groupNames,grouped,siteMap,isMgmt);
 }
 
 function renderCabinetMobileCards(groupNames,grouped,siteMap,isMgmt){
-  const list=document.getElementById('cabinet-mobile-list');
-  if(!list)return;
-  if(!window.matchMedia('(max-width: 760px)').matches){list.replaceChildren();return;}
-  const value=v=>escapeHtml(String(v||'').trim()||'—');
-  const detail=(label,v)=>`<div class="cabinet-mobile-detail"><small>${label}</small><span>${value(v)}</span></div>`;
-  list.innerHTML=groupNames.map(group=>{
-    const items=grouped[group]||[];
-    const site=items.length?canonicalCabinetSite(items[0],siteMap):'';
-    const cards=items.map(r=>{
-      const id=escapeHtml(r.id||'');
-      const cabinetId=escapeHtml(r.cabinetId||'—');
-      const serial=r.cabinetSerial||r.mpuSerial||'';
-      const label=[r.permanentNumber?'Cabinet #'+String(r.permanentNumber).padStart(3,'0'):'',r.label||''].filter(Boolean).join(' · ');
-      const cabinetName=isMgmt?`<button type="button" class="cabinet-mobile-name cabinet-link" data-cab-profile="${id}">${cabinetId}</button>`:`<b class="cabinet-mobile-name">${cabinetId}</b>`;
-      const actions=isMgmt?`<div class="cabinet-mobile-actions"><button type="button" class="btn-secondary" data-cab-profile="${id}">History</button><button type="button" class="btn-secondary" data-cab-edit="${id}">Edit</button><button type="button" class="btn-secondary" data-cab-delete="${id}">Delete</button></div>`:'';
-      return `<article class="cabinet-mobile-card" role="listitem">
-        <div class="cabinet-mobile-card-head"><div class="cabinet-mobile-title">${cabinetName}<small>${value(site)}${label?' · '+escapeHtml(label):''}</small></div><span class="cabinet-mobile-status">${escapeHtml(cabinetDisplayStatus(r))}</span></div>
-        <div class="cabinet-mobile-primary">${detail('Serial',serial)}${detail('TeamViewer',r.teamviewerId)}</div>
-        <details class="cabinet-mobile-more"><summary>More details</summary><div class="cabinet-mobile-details">
-          ${detail('Token',compactToken(r.token))}${detail('Bill validator',r.bvModel)}${detail('BV serial',r.bvSerial)}${detail('Printer',r.printerModel)}${detail('Printer serial',r.printerSerial)}${detail('System / MPU',r.mpuSerial)}${detail('Network',r.networkNote)}${detail('Updated',r.updatedAt?new Date(r.updatedAt).toLocaleDateString():'')}
-        </div></details>${actions}
-      </article>`;
-    }).join('');
-    return `<details class="cabinet-mobile-group" open><summary><b>${escapeHtml(site||'Unassigned')}</b><span>${items.length} cabinet${items.length===1?'':'s'}</span></summary>${cards}</details>`;
+ const list=document.getElementById('cabinet-mobile-list');if(!list)return;
+ if(!window.matchMedia('(max-width: 760px)').matches){list.replaceChildren();return;}
+ list.innerHTML=groupNames.map(group=>{
+  const items=grouped[group]||[];const site=items.length?canonicalCabinetSite(items[0],siteMap):'';
+  const cards=items.map(row=>{
+   const id=escapeHtml(String(row.id||'')),open=isMgmt?'data-cab-profile':'data-cab-readonly';
+   return '<article class="cabinet-mobile-card" role="listitem"><div class="cabinet-mobile-card-head"><div class="cabinet-mobile-title"><button type="button" class="cabinet-mobile-name cabinet-link" '+open+'="'+id+'">'+escapeHtml(row.cabinetId||'—')+'</button><small>'+escapeHtml(site||'—')+'</small></div><span class="cabinet-mobile-status">'+escapeHtml(cabinetDisplayStatus(row))+'</span></div><div class="cabinet-mobile-actions">'+cabinetRegistryActions(row,isMgmt)+'</div></article>';
   }).join('');
+  return '<details class="cabinet-mobile-group" open><summary><b>'+escapeHtml(site||'Unassigned')+'</b><span>'+items.length+' cabinet'+(items.length===1?'':'s')+'</span></summary>'+cards+'</details>';
+ }).join('');
 }
 
 window.matchMedia('(max-width: 760px)').addEventListener?.('change',()=>renderCabinets());
@@ -8811,14 +8764,12 @@ function renderMovements(){
     .sort((a,b)=>String(b.movementDate||'').localeCompare(String(a.movementDate||'')) || String(b.createdAt||'').localeCompare(String(a.createdAt||'')));
   body.innerHTML=rows.length?rows.map(r=>`<tr>
     <td>${escapeHtml(r.movementDate||'—')}</td>
-    <td><button class="cabinet-link" data-mov-cab="${escapeHtml(r.cabinetRowId)}">${escapeHtml(r.allocationBefore||r.cabinetId||'—')}</button>${(r.allocationAfter&&r.allocationAfter!==(r.allocationBefore||r.cabinetId))?`<div class="muted">→ ${escapeHtml(r.allocationAfter)}</div>`:''}</td>
+    <td><button type="button" class="cabinet-link" data-mov-cab="${escapeHtml(r.cabinetRowId)}">${escapeHtml(r.allocationBefore||r.cabinetId||'—')}</button></td>
     <td><span class="movement-type">${escapeHtml(r.movementType||'—')}</span></td>
     <td><div class="movement-path"><span class="movement-place">${escapeHtml(r.fromLocation||'—')}</span><span class="movement-arrow">→</span><span class="movement-place">${escapeHtml(r.toLocation||'—')}</span></div></td>
-    <td>${escapeHtml(r.statusBefore||'—')} → <b>${escapeHtml(r.statusAfter||'—')}</b></td>
-    <td>${escapeHtml(r.handledBy||'—')}</td>
-    <td>${escapeHtml(r.referenceNo||'—')}</td>
-    <td>${escapeHtml(r.remarks||'—')}</td>
-  </tr>`).join(''):`<tr><td colspan="8"><div class="movement-empty">No cabinet movements recorded yet.</div></td></tr>`;
+    <td><button type="button" class="btn-secondary" data-movement-details="${movementRows.indexOf(r)}">View details</button></td>
+  </tr>`).join(''):`<tr><td colspan="5"><div class="movement-empty">${movementRows.length?'No movements match these filters. Try another search or clear the filters.':'No cabinet movements recorded yet.'}</div></td></tr>`;
+
 }
 function isWarehouseMovementLocation(value){
   const key=normalizeSiteKey(value);
@@ -12165,3 +12116,9 @@ body #panel-report .brief-header .brief-eyebrow{color:#b5c5e5!important;font-wei
 
 <link rel="stylesheet" href="weekly-activities.css">
 <script src="weekly-activities.js"></script>
+
+<link rel="stylesheet" href="cabinet-registry.css">
+<script src="cabinet-registry.js"></script>
+
+<link rel="stylesheet" href="movement-list.css">
+<script src="movement-list.js"></script>
