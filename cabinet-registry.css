@@ -1,0 +1,31 @@
+/* Only simplify the cabinet registry; retain the deployed theme. */
+@media screen {
+ body #inventory-view-cabinets .cabinet-toolbar{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;padding:0!important;border:0!important;background:transparent!important}
+ body #inventory-view-cabinets #cabinet-search{flex:1;min-width:0!important;max-width:none!important;width:100%!important;min-height:46px}
+ body #inventory-view-cabinets .cabinet-filter-toggle{flex:0 0 auto;width:auto!important;min-height:46px;white-space:nowrap}
+ #cabinet-filter-options{display:flex;gap:16px;flex-wrap:wrap;padding:14px;margin:-6px 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+ #cabinet-filter-options[hidden],.cabinet-active-filters[hidden]{display:none!important}
+ #cabinet-filter-options label{flex:1;min-width:160px;font-size:12px;color:var(--ink-soft)}
+ #cabinet-filter-options select{display:block;width:100%;min-height:44px;margin-top:6px}
+ .cabinet-active-filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+ body #inventory-view-cabinets .cabinet-table{min-width:0!important;width:100%;table-layout:auto}
+ body #inventory-view-cabinets .cabinet-table td,body #inventory-view-cabinets .cabinet-table th{white-space:normal;overflow-wrap:anywhere}
+ body #inventory-view-cabinets .cabinet-table td:last-child{width:170px}
+ body #inventory-view-cabinets .cabinet-table-wrap{overflow:visible!important}
+ .cabinet-row-menu{position:relative}
+ .cabinet-row-menu>summary{list-style:none;min-width:40px;min-height:40px;padding:8px 12px;cursor:pointer;color:var(--ink);border:1px solid var(--line);border-radius:8px;text-align:center}
+ .cabinet-row-menu>summary::-webkit-details-marker{display:none}
+ .cabinet-row-menu>div{position:absolute;right:0;top:100%;z-index:30;display:grid;gap:5px;min-width:120px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--card);box-shadow:0 8px 20px #0005}
+ body #inventory-view-cabinets .cabinet-actions{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+ body #inventory-view-cabinets .cabinet-actions>button{white-space:nowrap;min-height:40px}
+ body #inventory-view-cabinets>.banner:empty{display:none!important}
+ #cabinet-registry-details{width:min(650px,calc(100vw - 24px));max-height:85vh;overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:20px}
+ #cabinet-registry-details::backdrop{background:#0009}
+ #cabinet-registry-details>button{float:right;min-height:44px}
+ #cabinet-registry-details h2{font-size:22px;padding-right:80px;margin-bottom:20px}
+ #cabinet-registry-details dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;clear:both}
+ #cabinet-registry-details dl>div{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px}
+ #cabinet-registry-details dt{color:var(--ink-soft);font-size:11px;margin-bottom:6px}
+ #cabinet-registry-details dd{margin:0;font-size:13px;overflow-wrap:anywhere}
+ @media(max-width:760px){body #inventory-view-cabinets .cabinet-mobile-card{padding:14px!important}body #inventory-view-cabinets .cabinet-mobile-actions{display:block!important;margin-top:12px}body #inventory-view-cabinets .cabinet-actions>button{min-height:44px}.cabinet-row-menu>summary{min-height:44px}#cabinet-registry-details dl{grid-template-columns:minmax(0,1fr)}}
+}
