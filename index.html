@@ -10253,6 +10253,11 @@ function presentationMetrics(rows){
  const groups=field=>Object.entries(valid.reduce((out,e)=>{const name=e[field]||'Unspecified';out[name]=(out[name]||0)+1;return out;},{})).sort((a,b)=>b[1]-a[1]);
  return {count,resolved,open,rate:count?Math.round(resolved/count*100):null,categories:groups('category'),sites:groups('site'),statuses:groups('status'),urgent:open.filter(e=>['Critical','High'].includes(e.priority)),excluded:rows.length-count};
 }
+function reportAttentionSummary(open){
+ const order={Critical:0,High:1,Medium:2,Low:3};
+ const rows=open.slice().sort((a,b)=>(order[a.priority]??4)-(order[b.priority]??4)||String(a.date||'').localeCompare(String(b.date||''))).slice(0,5);
+ return '<section class="report-attention"><div class="section-title-row"><h2>Needs attention</h2><span class="muted">'+(open.length?'Showing '+rows.length+' of '+open.length+' open visits':'No open visits in this period')+'</span></div>'+(rows.length?rows.map(e=>'<button type="button" class="report-attention-row" data-report-visit="'+escapeHtml(String(e.id))+'"><span><b>'+escapeHtml(e.site||'Site not recorded')+'</b><small>'+escapeHtml(e.issueType||e.generalType||e.category||e.visitType||'Visit')+' · '+escapeHtml(e.date||'Date not recorded')+'</small></span><span>'+escapeHtml(e.status)+'<small>'+escapeHtml(e.priority||'No priority')+' priority</small></span></button>').join(''):'<p class="muted">No pending or follow-up visits recorded for the selected period.</p>')+'</section>';
+}
 (function(){
  const panel=document.getElementById('panel-report');
  const intro=document.createElement('section');intro.className='presentation-report';intro.id='presentation-report';
@@ -10276,9 +10281,9 @@ function presentationMetrics(rows){
   intro.innerHTML='<header class="brief-header"><div><span class="brief-eyebrow">FIELD OPERATIONS REPORT</span><h1>'+escapeHtml(period||'Select a period')+'</h1><p>Visit activity and current outcomes</p></div><span class="brief-stamp">Prepared '+escapeHtml(new Date().toLocaleDateString())+'<br>Based on loaded records</span></header>'+
    '<div class="brief-takeaway"><span>AT A GLANCE</span><p>'+escapeHtml(takeaway)+'</p></div>'+
    '<div class="brief-metrics"><div><span>Field visits</span><b>'+m.count+'</b><small>Excludes voided records</small></div><div><span>Resolved visits</span><b>'+m.resolved+'</b><small>'+(m.rate===null?'No visits':m.rate+'% of all visits')+'</small></div><div><span>Needs action</span><b>'+m.open.length+'</b><small>Pending + follow-up</small></div><div><span>Sites visited</span><b>'+m.sites.filter(s=>s[0]!=='Unspecified').length+'</b><small>Distinct recorded site names</small></div></div>'+
-   '<div class="brief-grid brief-summary-row"><section><h2>Concerns by category</h2><p class="brief-caption">Number of visits · all categories, including zero</p>'+bars(categories,m.count)+'</section>'+ 
-   '<section><h2>Sites visited '+scope+'</h2><p class="brief-caption">Every recorded site · number of visits</p>'+bars(m.sites.filter(s=>s[0]!=='Unspecified'),m.count)+'</section></div>'+
-   '<section class="brief-site-register"><h2>Visit dates, venues & remarks</h2><p class="brief-caption">One row per visit · oldest first · remarks come from the visit notes</p><div class="brief-site-scroll"><table class="visit-remarks-table"><thead><tr><th>Date</th><th>Venue name</th><th>Concern category</th><th>Remarks / visit notes</th><th>Action taken</th></tr></thead><tbody>'+(siteRows||'<tr><td colspan="5">No site visits recorded for this period.</td></tr>')+'</tbody></table></div></section>'+
+   reportAttentionSummary(m.open)+'<details class="report-secondary-details report-breakdown"><summary>Category &amp; site breakdown</summary><div class="brief-grid brief-summary-row"><section><h2>Concerns by category</h2><p class="brief-caption">Number of visits · all categories, including zero</p>'+bars(categories,m.count)+'</section>'+
+   '<section><h2>Sites visited '+scope+'</h2><p class="brief-caption">Every recorded site · number of visits</p>'+bars(m.sites.filter(s=>s[0]!=='Unspecified'),m.count)+'</section></div></details>'+
+   '<details class="report-secondary-details report-records"><summary>Visit records &amp; remarks · '+m.count+' visits</summary><section class="brief-site-register"><h2>Visit dates, venues & remarks</h2><p class="brief-caption">One row per visit · oldest first · remarks come from the visit notes</p><div class="brief-site-scroll"><table class="visit-remarks-table"><thead><tr><th>Date</th><th>Venue name</th><th>Concern category</th><th>Remarks / visit notes</th><th>Action taken</th></tr></thead><tbody>'+(siteRows||'<tr><td colspan="5">No site visits recorded for this period.</td></tr>')+'</tbody></table></div></section></details>'+
    '<p class="brief-footnote">Scope: visits dated within the selected period; statuses reflect the latest loaded records, not a historical snapshot. '+m.excluded+' voided '+(m.excluded===1?'record':'records')+' excluded. Charts show counts and shares of all visits.</p>';
  }
  const old=renderReport;
@@ -10309,15 +10314,15 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  const label=document.createElement('span');label.setAttribute('role','status');label.setAttribute('aria-live','polite');
  const next=document.createElement('button');next.type='button';next.textContent='Next →';controls.append(previous,label,next);nav.append(sections,controls);report.before(nav);
  function update(){
-  const grids=report.querySelectorAll(':scope > .brief-grid');
+  const grids=report.querySelectorAll('.brief-summary-row');
   const register=report.querySelector('.brief-site-register');
-  const agenda=report.querySelector('.brief-agenda');
+  const agenda=report.querySelector('.report-agenda-details')||report.querySelector('.brief-agenda,.report-agenda-section');
   const rows=Array.from(report.querySelectorAll('.visit-remarks-table tbody tr'));
   const total=reportPageCount(rows.length);page=Math.max(0,Math.min(page,total-1));
   const active=document.body.classList.contains('report-presenting');
   function show(el,yes){if(el)el.classList.toggle('report-page-away',active&&!yes);}
   show(agenda,page===total-1);show(report.querySelector('.brief-takeaway'),page===0);show(report.querySelector('.brief-metrics'),page===0);
-  show(grids[0],page===0);show(register,page>=1);
+  show(grids[0],page===0);show(report.querySelector('.report-attention'),page===0);show(report.querySelector('.report-breakdown'),page===0);show(report.querySelector('.report-records'),page>=1);show(register,page>=1);
   rows.forEach((r,i)=>show(r,page>=1&&i>=(page-1)*5&&i<page*5));
   buttons.forEach((b,i)=>b.setAttribute('aria-current',(i===Math.min(page,1))?'page':'false'));
   label.textContent=(page+1)+' / '+total+(page>=1?' · Remarks '+page+' / '+(total-1):'');
@@ -10497,7 +10502,7 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  const report=document.getElementById('panel-report');const archive=el('details',null,'calm-disclosure planning-snapshots');archive.append(el('summary','Saved report snapshots'));archive.append(el('p','Frozen copies saved in Sheets. Management can download them from any device.','planning-local-note'));const snapshots=el('div');archive.append(snapshots);report.append(archive);
  const snapshotButton=el('button','Save snapshot','btn-secondary');snapshotButton.id='snapshot-btn';snapshotButton.type='button';report.querySelector('.report-actions').append(snapshotButton);
  function snapshotList(){snapshots.replaceChildren();if(!data.snapshots.length){snapshots.append(el('p','No snapshots saved yet.','muted'));return;}data.snapshots.forEach(s=>{const row=el('div',null,'planning-row');const title=el('div');title.append(el('b',s.title),el('p',new Date(s.savedAt).toLocaleString()));const b=el('button','Download HTML','btn-secondary');b.type='button';b.addEventListener('click',async()=>{b.disabled=true;try{const result=await apiPost('planningSnapshot',{kind:'snapshots',id:s.id});download('opexa-report-'+s.period+'-'+s.id.slice(0,8)+'.html',result.html,'text/html');}catch(e){notifyError(e);}finally{b.disabled=false;}});row.append(title,b);snapshots.append(row);});}
- snapshotButton.addEventListener('click',async()=>{try{read();renderReport();const source=document.getElementById('presentation-report');if(!source?.textContent.trim())throw Error('Select a report period first.');const clone=source.cloneNode(true);clone.querySelectorAll('.report-page-away').forEach(n=>n.classList.remove('report-page-away'));clone.querySelectorAll('script,button').forEach(n=>n.remove());clone.querySelectorAll('*').forEach(n=>Array.from(n.attributes).forEach(a=>{if(a.name.startsWith('on'))n.removeAttribute(a.name);}));
+ snapshotButton.addEventListener('click',async()=>{try{read();renderReport();const source=document.getElementById('presentation-report');if(!source?.textContent.trim())throw Error('Select a report period first.');const clone=source.cloneNode(true);clone.querySelectorAll('.report-secondary-details').forEach(n=>n.open=true);clone.querySelectorAll('[data-report-visit]').forEach(n=>{const row=document.createElement('div');row.className=n.className;row.innerHTML=n.innerHTML;n.replaceWith(row);});clone.querySelectorAll('.report-page-away').forEach(n=>n.classList.remove('report-page-away'));clone.querySelectorAll('script,button').forEach(n=>n.remove());clone.querySelectorAll('*').forEach(n=>Array.from(n.attributes).forEach(a=>{if(a.name.startsWith('on'))n.removeAttribute(a.name);}));
    const period=document.getElementById('period-picker').value;const title=periodKeyFns().label(period);const styles=Array.from(document.querySelectorAll('style')).map(s=>s.textContent).join('\n');const now=new Date().toISOString();
    const frozen='<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+escapeHtml(title)+' — Saved report</title><style>'+styles+'</style><style>body{padding:28px!important}#panel-report{display:block!important;max-width:1200px;margin:auto}.snapshot-stamp{color:#9ea8b9;font:12px sans-serif;margin-bottom:20px}.report-page-away{display:revert!important}</style></head><body><main id="panel-report"><p class="snapshot-stamp">Saved report · '+escapeHtml(title)+' · Captured '+escapeHtml(new Date(now).toLocaleString())+'</p>'+clone.outerHTML+'</main></body></html>';
    const record={id:crypto.randomUUID(),period,title,savedAt:now,html:frozen};await commit({...data,snapshots:[record,...data.snapshots]});snapshotList();archive.open=true;showToast('Snapshot saved','This copy will not change when visit records are updated.');
@@ -12153,3 +12158,6 @@ body #panel-report .brief-header .brief-eyebrow{color:#b5c5e5!important;font-wei
 <script src="visit-feedback.js"></script>
 
 <style id="personal-fse-report-scope">body.personal-fse-reports #panel-report .report-subnav,body.personal-fse-reports #panel-report .report-weekly-task-view,body.personal-fse-reports #panel-report .report-agenda-section,body.personal-fse-reports #panel-report .brief-agenda{display:none!important}</style>
+
+<link rel="stylesheet" href="report-overview.css">
+<script src="report-overview.js"></script>
