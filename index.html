@@ -12372,4 +12372,119 @@ body #inventory-view-sites #sites-add-lifecycle-btn::before{content:'+';display:
 </style>
 <script>
 (()=>{const button=document.getElementById('sites-add-lifecycle-btn');if(!button)return;const media=matchMedia('(min-width:901px)');const update=()=>button.textContent=media.matches?'Add site':'＋ Add Site';update();media.addEventListener('change',update);})();
-</script>
+</script><style id="consistent-dashboard-report-title-size">
+@media screen and (min-width:701px){
+body #panel-dashboard .dashboard-head-premium h2.operations-summary-title,
+body:not(.report-presenting) #panel-report h2.report-controls-heading{
+font:700 22px/1.3 'Segoe UI',sans-serif!important;
+letter-spacing:-.02em!important;color:#eef2f8!important;
+text-transform:none!important;-webkit-text-stroke:0!important;text-shadow:none!important;
+}
+}
+</style><style id="mobile-location-actions-refresh-alignment">
+@media screen and (max-width:700px){
+body #inventory-view-sites>.section-head{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;flex-wrap:nowrap!important;gap:8px!important;margin-bottom:14px!important}
+body #inventory-view-sites>.section-head .site-header-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));flex:1;min-width:0;width:auto!important;margin:0!important;gap:8px!important}
+body #inventory-view-sites>.section-head .site-header-actions[hidden]{display:none!important}
+body #inventory-view-sites .site-header-actions>button{width:100%!important;min-width:0!important;min-height:44px!important;margin:0!important;padding:8px 6px!important;font-size:11px!important;white-space:normal!important}
+body #inventory-view-sites>.section-head .asset-load-status{display:flex!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;max-width:44px!important;min-height:44px!important;padding:0!important;margin:0!important;align-items:center!important;justify-content:center!important}
+body #inventory-view-sites>.section-head .asset-load-status>button{width:44px!important;min-height:44px!important;margin:0!important;padding:0!important;display:grid;place-items:center}
+}
+</style><style id="compact-mobile-asset-controls">
+.asset-mobile-category,.site-mobile-actions{display:none}
+@media screen and (max-width:700px){
+body #panel-inventory #asset-groups{display:none!important}
+.asset-mobile-category{display:grid;gap:6px;margin:0 0 14px}.asset-mobile-category>span{font-size:10px;color:#939eaf;letter-spacing:.08em;text-transform:uppercase}.asset-mobile-category select{width:100%;min-height:46px;font-size:14px!important;font-weight:600;border:1px solid #3b4657!important;border-radius:8px!important;background:#151a21!important;color:#eef1f7!important}
+body #inventory-view-sites>.section-head .site-header-actions{display:none!important}
+body #inventory-view-sites>.section-head{margin-bottom:8px!important;gap:8px!important}
+.site-mobile-actions{display:block;position:relative;margin-right:auto;order:-1}
+.site-mobile-actions>summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid #343e4c;border-radius:7px;background:transparent;color:#d1d8e3;font-size:12px;cursor:pointer}.site-mobile-actions>summary::-webkit-details-marker{display:none}
+.site-mobile-actions-menu{position:absolute;top:48px;left:0;width:185px;padding:5px;border:1px solid #414c5e;border-radius:8px;background:#1b222c;box-shadow:0 8px 24px #0006;z-index:20}
+.site-mobile-actions-menu button{display:block;width:100%;min-height:44px;padding:10px;text-align:left;background:transparent;border:0;color:#e8edf6;font-size:12px}.site-mobile-actions-menu button:hover{background:#303b4d}
+body #inventory-view-sites>.site-directory-views{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:0!important;border-bottom:1px solid #303947;padding:0!important;margin:0 0 14px!important}
+body #inventory-view-sites>.site-directory-views button{flex:1;min-width:0;min-height:44px;padding:9px 5px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;color:#9ca8b9!important;font-size:12px!important;box-shadow:none!important;white-space:nowrap}
+body #inventory-view-sites>.site-directory-views button[aria-pressed=true]{background:transparent!important;color:#eef2fa!important;border-bottom-color:#a6b8d3!important}
+body #inventory-view-sites>.site-directory-views>span{display:none!important}
+}
+</style>
+<script>
+(()=>{const panel=document.getElementById('panel-inventory'),groups=document.getElementById('asset-groups');if(!groups)return;const label=document.createElement('label');label.className='asset-mobile-category';label.innerHTML='<span>Section</span><select aria-label="Asset Operations section"></select>';const select=label.querySelector('select'),buttons=Array.from(groups.querySelectorAll('button'));buttons.forEach((b,i)=>select.add(new Option(b.textContent.trim(),String(i))));select.onchange=()=>buttons[Number(select.value)].click();groups.before(label);const sync=()=>{const index=buttons.findIndex(b=>b.getAttribute('aria-pressed')==='true');if(index>=0)select.value=String(index);};sync();new MutationObserver(sync).observe(groups,{subtree:true,attributes:true,attributeFilter:['aria-pressed']});
+const heading=document.querySelector('#inventory-view-sites>.section-head');const menu=document.createElement('details');menu.className='site-mobile-actions';menu.innerHTML='<summary>Site actions <span aria-hidden="true">⋯</span></summary><div class="site-mobile-actions-menu"><button type="button" data-site-menu="sites-add-lifecycle-btn">+ Add site</button><button type="button" data-site-menu="sites-manage-lifecycle-btn">Manage sites</button></div>';heading.append(menu);menu.querySelectorAll('button').forEach(b=>b.onclick=()=>{menu.open=false;document.getElementById(b.dataset.siteMenu)?.click();});const original=applyRoleUI;applyRoleUI=function(){const result=original.apply(this,arguments);menu.hidden=currentUser?.role!=='management';return result;};menu.hidden=currentUser?.role!=='management';document.addEventListener('click',e=>{if(!menu.contains(e.target))menu.open=false;});menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;menu.querySelector('summary').focus();}});
+})();
+</script><style>
+@media screen and (max-width:700px){body #inventory-view-sites>.site-directory-views button[data-mobile-label]{font-size:0!important}body #inventory-view-sites>.site-directory-views button[data-mobile-label]::before{content:attr(data-mobile-label);font-size:12px}}
+.site-mobile-actions[hidden]{display:none!important}
+</style>
+<script>
+(()=>{const active=document.getElementById('sites-active-view'),closed=document.getElementById('sites-closed-view');const sync=()=>{const counts=(active.textContent.match(/\d+/g)||[]).map(Number);active.dataset.mobileLabel='Current ('+counts.reduce((a,b)=>a+b,0)+')';closed.dataset.mobileLabel='Closed ('+(closed.textContent.match(/\d+/)?.[0]||0)+')';};sync();for(const b of [active,closed])new MutationObserver(sync).observe(b,{childList:true,subtree:true,characterData:true});})();
+</script><style id="consistent-mobile-asset-section-controls">
+@media screen and (max-width:700px){
+body #panel-inventory .inventory-subnav{display:flex!important;gap:0!important;background:transparent!important;border:0!important;border-bottom:1px solid #303947!important;border-radius:0!important;padding:0!important;margin:0 0 14px!important;flex-wrap:wrap!important;overflow:visible!important}
+body #panel-inventory .inventory-subnav[hidden]{display:none!important}
+body #panel-inventory .inventory-subnav>.inventory-subtab{flex:1;min-width:0;min-height:44px!important;padding:9px 5px!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent!important;color:#9ca8b9!important;font-size:12px!important;box-shadow:none!important;white-space:normal}
+body #panel-inventory .inventory-subnav>.inventory-subtab.active{background:transparent!important;color:#eef2fa!important;border-bottom-color:#a6b8d3!important}
+body #panel-inventory .inventory-subnav>.inventory-subtab[hidden]{display:none!important}
+body #panel-inventory .section-mobile-actions-menu button{min-height:44px!important;padding:10px!important;border:0!important;border-radius:4px!important;background:transparent!important;color:#e8edf6!important;font:500 12px/1.4 'Segoe UI',sans-serif!important;text-align:left!important;box-shadow:none!important;white-space:normal!important;width:100%!important}
+body #panel-inventory .section-mobile-actions-menu button:hover{background:#303b4d!important}
+body #panel-inventory .section-mobile-actions{order:0;margin-left:auto;margin-right:0}
+body #panel-inventory .registry-heading-actions:empty{display:none!important}
+}
+</style>
+<script>
+(()=>{const media=matchMedia('(max-width:700px)'),records=[];const titles={cabinets:'Cabinet actions',components:'Coverage actions',spares:'Stock actions',requests:'Request actions',movements:'Movement actions',maintenance:'Maintenance actions'};
+for(const [view,title] of Object.entries(titles)){const heading=document.querySelector('#inventory-view-'+view+' .section-head');if(!heading)continue;const buttons=Array.from(heading.querySelectorAll(':scope>button,:scope>.registry-heading-actions>button')).filter(b=>!b.closest('.asset-load-status'));if(!buttons.length)continue;const menu=document.createElement('details');menu.className='site-mobile-actions section-mobile-actions';const summary=document.createElement('summary');summary.textContent=title+' ⋯';const list=document.createElement('div');list.className='site-mobile-actions-menu section-mobile-actions-menu';list.style.left='auto';list.style.right='0';menu.append(summary,list);heading.append(menu);const items=buttons.map(button=>{const anchor=document.createComment('Original action position');button.before(anchor);return {button,anchor};});records.push({menu,list,items});menu.addEventListener('click',event=>{if(event.target.closest('button'))menu.open=false;});menu.addEventListener('keydown',event=>{if(event.key==='Escape'){menu.open=false;summary.focus();}});}
+function update(){for(const record of records){for(const {button,anchor} of record.items){if(media.matches)record.list.append(button);else anchor.after(button);}record.menu.open=false;record.menu.hidden=!media.matches;}}
+update();media.addEventListener('change',update);document.addEventListener('click',event=>{records.forEach(r=>{if(!r.menu.contains(event.target))r.menu.open=false;});});})();
+</script><style id="compact-mobile-cabinet-summary">
+@media screen and (max-width:700px){
+body #inventory-view-cabinets>.section-head{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important}
+body #inventory-view-cabinets>.section-head>div:first-child:not(.registry-heading-actions){flex:1 1 100%;min-width:0}
+body #inventory-view-cabinets>.section-head .section-mobile-actions{margin-left:0!important;margin-right:auto!important}
+body #inventory-view-cabinets>.section-head .asset-load-status{flex:0 0 44px!important;width:44px!important;max-width:44px!important;min-height:44px!important;padding:0!important;margin:0!important;order:2;display:flex!important;align-items:center!important;justify-content:center!important}
+body #inventory-view-cabinets>.section-head .asset-load-status button{width:44px!important;min-height:44px!important;padding:0!important;border-radius:7px!important;background:transparent!important;border:1px solid #343e4c!important;color:#c5cfdf!important;box-shadow:none!important;font-size:18px!important}
+body #inventory-view-cabinets .cabinet-summary{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;margin:10px 0 12px!important;padding:0!important;background:#151a21!important;border:1px solid #303947!important;border-radius:9px!important;overflow:hidden}
+body #inventory-view-cabinets .cabinet-card{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px!important;grid-column:span 2;min-width:0;min-height:72px!important;padding:9px 5px!important;background:transparent!important;border:0!important;border-right:1px solid #303947!important;border-radius:0!important;box-shadow:none!important;text-align:center}
+body #inventory-view-cabinets .cabinet-card:nth-child(-n+3){border-bottom:1px solid #303947!important}
+body #inventory-view-cabinets .cabinet-card:nth-child(3){border-right:0!important}
+body #inventory-view-cabinets .cabinet-card:nth-child(n+4){grid-column:span 3}
+body #inventory-view-cabinets .cabinet-card:last-child{border-right:0!important}
+body #inventory-view-cabinets .cabinet-card .n{font-size:23px!important;line-height:1.15!important;margin:0!important;color:#eef1f7!important}
+body #inventory-view-cabinets .cabinet-card .l{font-size:10px!important;line-height:1.35!important;margin:0!important;letter-spacing:0!important;text-transform:none!important;color:#a5afbd!important}
+}
+</style><style>
+@media screen and (max-width:700px){
+body #inventory-view-cabinets>.section-head{display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;gap:8px!important}
+body #inventory-view-cabinets>.section-head>div:first-child{grid-column:1/-1;grid-row:1}
+body #inventory-view-cabinets>.section-head .section-mobile-actions{grid-column:1;grid-row:2;justify-self:start}
+body #inventory-view-cabinets>.section-head .asset-load-status{grid-column:2;grid-row:2}
+}
+</style><style id="stock-activity-mobile-action-rows">
+@media screen and (max-width:700px){
+body #panel-inventory .inventory-subpanel:not(#inventory-view-sites):not(#inventory-view-cabinets)>.section-head:has(.section-mobile-actions){display:grid!important;grid-template-columns:minmax(0,1fr) 44px!important;gap:8px!important;align-items:center!important}
+body #panel-inventory .inventory-subpanel:not(#inventory-view-sites):not(#inventory-view-cabinets)>.section-head:has(.section-mobile-actions)>div:first-child:not(.asset-load-status){grid-column:1/-1;grid-row:1;min-width:0}
+body #panel-inventory .inventory-subpanel:not(#inventory-view-sites):not(#inventory-view-cabinets)>.section-head:has(.section-mobile-actions) .section-mobile-actions{grid-column:1;grid-row:2;justify-self:start;margin:0!important}
+body #panel-inventory .inventory-subpanel:not(#inventory-view-sites):not(#inventory-view-cabinets)>.section-head:has(.section-mobile-actions) .asset-load-status{grid-column:2;grid-row:2;display:flex!important;align-items:center!important;justify-content:center!important;min-width:44px!important;width:44px!important;max-width:44px!important;min-height:44px!important;margin:0!important;padding:0!important}
+body #panel-inventory .inventory-subpanel .asset-load-status>button{width:44px!important;min-height:44px!important;padding:0!important;background:transparent!important;border:1px solid #343e4c!important;border-radius:7px!important;box-shadow:none!important;color:#c5cfdf!important;font-size:18px!important}
+body #panel-inventory .section-mobile-actions>summary{min-height:44px;border:1px solid #343e4c;border-radius:7px;background:transparent;color:#d1d8e3;padding:0 12px;font:500 12px/1.4 'Segoe UI',sans-serif}
+body #panel-inventory .section-mobile-actions[open]>summary{background:#202834;border-color:#61728c}
+}
+</style>
+<script>
+document.querySelectorAll('#panel-inventory .section-mobile-actions>summary').forEach(summary=>summary.textContent='Actions ⋯');
+</script><style id="asset-actions-match-attention-button">
+@media screen and (max-width:700px){
+body #panel-inventory .site-mobile-actions>summary,
+body #panel-inventory .section-mobile-actions>summary,
+body #panel-inventory>.utility-strip>button.btn-secondary{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ min-height:44px!important;box-sizing:border-box;padding:9px 13px!important;
+ background:#212831!important;border:1px solid #343e4c!important;border-radius:8px!important;
+ color:#edf0f5!important;font:600 12px/1.4 'Segoe UI',sans-serif!important;
+ box-shadow:none!important;cursor:pointer;
+}
+body #panel-inventory .site-mobile-actions>summary:hover,
+body #panel-inventory>.utility-strip>button.btn-secondary:hover{background:#2a3441!important;border-color:#627087!important}
+body #panel-inventory .site-mobile-actions[open]>summary{background:#2a3441!important;border-color:#627087!important}
+body #panel-inventory .site-mobile-actions>summary:focus-visible{outline:2px solid #b7c2d6;outline-offset:3px}
+}
+</style>
