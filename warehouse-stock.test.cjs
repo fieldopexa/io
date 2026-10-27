@@ -45,4 +45,16 @@ const map=context.cabinetCanonicalSiteMap();
 const warehouseCount=context.cabinetRows.filter(row=>context.normalizeSiteKey(context.canonicalCabinetSite(row,map))===context.normalizeSiteKey('Carmona Cavite Warehouse')).length;
 assert.equal(context.cabinetSummary().ready,warehouseCount,'counter and warehouse profile use exactly the same membership');
 assert.equal(context.cabinetSummary().total,2,'legacy warehouse allocation is retained in registered total despite closed old site text');
+context.norm=value=>String(value||'').toLowerCase();context.attention=0;
+const healthStart=html.indexOf('  const healthCounts={');
+const healthEnd=html.indexOf('  const totalCab=',healthStart);
+assert.ok(healthStart>=0&&healthEnd>healthStart);
+const healthCode=html.slice(healthStart,healthEnd).replace('const healthCounts=','globalThis.qaHealth=');
+vm.runInContext(healthCode,context);
+assert.equal(context.qaHealth['Ready / Stock'],warehouseCount,'dashboard uses warehouse membership despite stale status labels');
+context.cabinetRows=context.cabinetRows.filter(row=>row.id!=='cabinet-1');
+// Remove the warehouse row regardless of its fixture ID.
+context.cabinetRows=context.cabinetRows.filter(row=>!/^stock/i.test(row.cabinetId));
+vm.runInContext(healthCode,context);
+assert.equal(context.qaHealth['Ready / Stock'],0,'dashboard decreases when stock cabinet profiles are removed');
 console.log('PASS: closed site → transfer pending → warehouse stock → deployment; inventory overrides and physical condition retention');
