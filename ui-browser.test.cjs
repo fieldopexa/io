@@ -40,6 +40,7 @@ let browser;
         ];
         managementPeriod='all';applyRoleUI();render();renderManagementOverview();
       });
+      await page.addScriptTag({content:fs.readFileSync('preview-fixtures.js','utf8')});
       async function show(panel) {
         await page.evaluate(panel => {
           document.querySelector('.tab[data-tab="'+panel+'"]').click();
@@ -51,11 +52,27 @@ let browser;
         const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
         assert.equal(overflow,false,`${version} ${panel} at ${width}px must not overflow`);
       }
-      for (const panel of ['dashboard','fieldlogs','log']) {
+      for (const panel of ['dashboard','fieldlogs','log','report','inventory','audit','users']) {
         await show(panel);
         await page.screenshot({path:`docs/ui-screens/${version}-${panel}-${width}.png`,fullPage:width>900});
       }
       if (version==='after') {
+        await show('users');
+        assert.equal(await page.locator('#users-body tr').count(),4);
+        assert.equal(await page.locator('#users-body tr:first-child td[data-column="User"]').count(),1);
+        await page.locator('#add-user-toggle').click();
+        assert.equal(await page.locator('#add-user-card').isVisible(),true);
+        await page.locator('#add-user-toggle').click();
+        await show('audit');
+        await page.locator('#audit-search').fill('North Test');
+        assert.equal(await page.locator('#audit-body tr').count(),1);
+        await page.locator('#audit-search').fill('');
+        assert.equal(await page.locator('#audit-body tr').count(),3);
+        await show('report');
+        assert.equal(await page.locator('#presentation-report .brief-header').isVisible(),true);
+        await page.locator('[data-report-view-button="tasks"]').click();
+        assert.equal(await page.locator('.report-weekly-task-view').isVisible(),true);
+        await page.locator('[data-report-view-button="report"]').click();
         await show('dashboard');
         assert.equal(await page.locator('.mgmt-kpi:visible').count(),5);
         assert.equal(await page.locator('.opexa-attention-grid #mgmt-site-risk').count(),1);
@@ -97,7 +114,11 @@ let browser;
           await page.setViewportSize({width:boundary,height:960});
           await show('log');
           assert.equal(await page.locator('.smart-visit-form').isVisible(),true);
-          if(boundary<=900) assert.equal(await page.locator('#mobile-bottom-nav').isVisible(),true);
+          if(boundary<=900) {
+            assert.equal(await page.locator('#mobile-bottom-nav').isVisible(),true);
+            const nav=await page.locator('#mobile-bottom-nav').boundingBox();
+            assert.ok(nav.height<=80 && nav.y>=850,'mobile navigation remains compact at tablet widths');
+          }
         }
         // Existing role rules still hide management controls.
         await page.evaluate(()=>{currentUser={username:'qa',fse:'QA Engineer',role:'fse'};applyRoleUI();});

@@ -68,7 +68,9 @@
   @media(max-width:1100px) {body #panel-dashboard .mgmt-snapshot {grid-template-columns:repeat(3,minmax(0,1fr))!important}}
   @media(max-width:900px) {
     .opexa-attention-grid {grid-template-columns:minmax(0,1fr);gap:12px}
-    .mobile-bottom-nav {display:grid!important}
+    .mobile-bottom-nav {position:fixed;z-index:106;left:0;right:0;bottom:0;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));height:calc(62px + env(safe-area-inset-bottom));padding:4px 5px env(safe-area-inset-bottom);border-top:1px solid var(--line)}
+    .mobile-bottom-nav button {display:flex;min-width:0;min-height:48px;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;border-radius:8px;background:transparent;color:var(--ink-soft);font:500 10px/1.1 'Segoe UI',sans-serif}
+    .mobile-bottom-nav button svg {width:20px;height:20px;flex:0 0 20px}
     .wrap {padding-bottom:calc(90px + env(safe-area-inset-bottom))!important}
     #panel-log .ticket.smart-visit-form {padding:16px!important}
     #panel-log .visit-step-controls button {min-height:44px}

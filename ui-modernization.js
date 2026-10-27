@@ -1,5 +1,23 @@
 /* Presentation and accessibility only: reuse existing data and event handlers. */
 (() => {
+  // Keep the existing accounts table and action listeners on compact screens.
+  const usersBody = document.getElementById('users-body');
+  if (usersBody) {
+    const columns = [...usersBody.closest('table').querySelectorAll('thead th')].map(th => th.textContent.trim());
+    const labelCells = () => [...usersBody.rows].forEach(row => [...row.cells].forEach((cell,index) => {
+      if (cell.colSpan === 1) cell.dataset.column = columns[index] || '';
+    }));
+    new MutationObserver(labelCells).observe(usersBody, {childList:true});
+    labelCells();
+  }
+  const filterLabels = {'audit-search':'Search audit history','audit-action-filter':'Filter by action','audit-entity-filter':'Filter by record type','sites-search':'Search sites','sites-status-filter':'Filter sites by status','period-picker':'Reporting period'};
+  Object.entries(filterLabels).forEach(([id,label]) => document.getElementById(id)?.setAttribute('aria-label',label));
+  document.querySelectorAll('.period-type-btn').forEach(control => {
+    control.setAttribute('role','button');control.tabIndex=0;
+    control.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();control.click();}});
+    const sync=()=>control.setAttribute('aria-pressed',String(control.classList.contains('active')));
+    new MutationObserver(sync).observe(control,{attributes:true,attributeFilter:['class']});sync();
+  });
   const dashboard = document.getElementById('panel-dashboard');
   const snapshot = document.getElementById('mgmt-snapshot');
   if (dashboard && snapshot) {

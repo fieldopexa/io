@@ -15,7 +15,9 @@ Audited the actual `fieldopexa/io` application at commit `cda82ef`, including th
 | Save feedback | Mobile Save did not mirror disabled submit; brief toast duration | Mobile Save mirrors actual busy/disabled state and restores its label; error announcements remain visible for ten seconds |
 | Offline updates | Cache did not include new modules | Versioned shell caches both UI modules using the existing unfinished-work update protection |
 
-The new CSS and JS are isolated in `ui-modernization.css` and `ui-modernization.js`. The legacy application has many cascading presentation layers; this pass deliberately avoids a broad rewrite of them. Visibility and permission rules stay in the application. Print rules are excluded from the new CSS.
+The new CSS and JS are isolated in `ui-modernization.css`, `ui-operations.css` and `ui-modernization.js`. The operations layer follows the supplied OPEXA administration reference: near-black/navy surfaces, restrained gold accents, compact toolbars, subtle table dividers and status badges. Reports, Asset Operations, Audit Trail and Users share those treatments. Accounts become labeled cards on phones while retaining their original action buttons. Report-period chips support keyboard activation and expose their selected state. The tablet bottom navigation is explicitly sized throughout its full 900px breakpoint.
+
+The legacy application has many cascading presentation layers; this pass deliberately avoids a broad rewrite of them. Visibility and permission rules stay in the application. Print rules are excluded from the new CSS.
 
 ## Validation
 
@@ -35,7 +37,7 @@ Run the browser regression with an installed Playwright package and Microsoft Ed
 node ui-browser.test.cjs
 ```
 
-The browser harness uses the actual app and renderers with synthetic records, blocks external requests and disables service workers. It checks desktop/mobile layouts at 390, 820 and 1440px; additional checks cover 320, 760, 900 and 901px. It verifies all KPIs, filtering/reset, client validation/focus, optional step five, busy-state recovery, drawer focus/Escape, form visibility across resize, and management/FSE UI restrictions. These UI checks supplement the existing backend permission tests; hiding controls is not a security boundary.
+The browser harness uses the actual app and renderers with synthetic records, blocks external requests and disables service workers. It checks all seven sections at 390, 820 and 1440px; additional checks cover 320, 760, 900 and 901px. It verifies all KPIs, filtering/reset, client validation/focus, optional step five, busy-state recovery, drawer focus/Escape, form visibility across resize, compact tablet navigation, user-table labeling/add-form disclosure, audit search, Report/Agenda switching, and management/FSE UI restrictions. These UI checks supplement the existing backend permission tests; hiding controls is not a security boundary.
 
 No production records were written. Authenticated end-to-end Sheets saves, Drive uploads and real signature persistence require a staging account/backend and remain a release smoke test. Existing backend and service-form regression tests exercise their mocked round trips. External logos are unavailable in these offline screenshots; sync warnings are expected.
 
@@ -49,8 +51,20 @@ No production records were written. Authenticated end-to-end Sheets saves, Drive
 | Field Logs, phone | [Before](ui-screens/before-fieldlogs-390.png) | [After](ui-screens/after-fieldlogs-390.png) |
 | New Visit, desktop | [Before](ui-screens/before-log-1440.png) | [After](ui-screens/after-log-1440.png) |
 | New Visit, phone | [Before](ui-screens/before-log-390.png) | [After](ui-screens/after-log-390.png) |
+| Reports, desktop | [Before](ui-screens/before-report-1440.png) | [After](ui-screens/after-report-1440.png) |
+| Reports, phone | [Before](ui-screens/before-report-390.png) | [After](ui-screens/after-report-390.png) |
+| Asset Operations, desktop | [Before](ui-screens/before-inventory-1440.png) | [After](ui-screens/after-inventory-1440.png) |
+| Asset Operations, phone | [Before](ui-screens/before-inventory-390.png) | [After](ui-screens/after-inventory-390.png) |
+| Audit Trail, desktop | [Before](ui-screens/before-audit-1440.png) | [After](ui-screens/after-audit-1440.png) |
+| Audit Trail, phone | [Before](ui-screens/before-audit-390.png) | [After](ui-screens/after-audit-390.png) |
+| Users, desktop | [Before](ui-screens/before-users-1440.png) | [After](ui-screens/after-users-1440.png) |
+| Users, phone | [Before](ui-screens/before-users-390.png) | [After](ui-screens/after-users-390.png) |
 
 Screens at 820px are also in `ui-screens/`. Phone/tablet captures show a viewport; desktop captures show the full page. `ui-screens/results.json` records browser runtime errors for each before/after run.
+
+## Standalone HTML preview
+
+`node build-preview.cjs OUTPUT.html` creates a single HTML preview with the local styles/scripts and service-form reference embedded. `preview-fixtures.js` supplies synthetic visit, asset, audit and account records only to this preview and the browser test; production `index.html` never loads it. Network requests and backend writes are blocked in the preview. The preview starts on Dashboard and supports navigating all sections without a login. This file is for interface review, not deployment.
 
 ## Release / rollback
 
