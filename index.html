@@ -7099,7 +7099,7 @@ function siteOperationalState(siteName){
 
 function siteIsClosed(name){return String(lifecycleRecordForSite(name)?.status||'').trim().toLowerCase()==='closed';}
 function siteIsWarehouse(name){return /\b(carmona|endlessmotion)\b/i.test(String(name||'').normalize('NFKC'));}
-function registeredCabinetRows(){return cabinetRows.filter(c=>!siteIsClosed(c.site));}
+function registeredCabinetRows(){return cabinetRows.filter(c=>cabinetIsWarehouseStock(c)||!siteIsClosed(c.site));}
 
 function renderSites(){
   const grid=document.getElementById('sites-grid'); if(!grid)return;
@@ -8021,7 +8021,7 @@ async function loadCabinets(){
     populateVisitCabinets();
   }
 }
-function cabinetIsWarehouseStock(c){return siteIsWarehouse(c?.site)||isWarehouseMovementLocation(c?.site);}
+function cabinetIsWarehouseStock(c){return siteIsWarehouse(c?.site)||/^stock\s*0*\d+/i.test(String(c?.cabinetId||c?.label||''))||normalizeSiteKey(canonicalSiteName(c?.site||''))==='car';}
 function cabinetSiteUnavailable(c){
  if(cabinetIsWarehouseStock(c))return false;
  const key=normalizeSiteKey(canonicalSiteName(c.site||''));if(!key)return false;
@@ -8034,8 +8034,8 @@ function cabinetSummary(){
   const total=registeredCabinetRows().length;
   const operational=cabinetRows.filter(r=>cabinetDisplayStatus(r)==='Operational').length;
   const nonop=cabinetRows.filter(r=>cabinetDisplayStatus(r)==='Non-Operational').length;
-  const ready=cabinetRows.filter(r=>['Ready to Deploy','Warehouse / Stock'].includes(cabinetDisplayStatus(r))).length;
   const siteMap=cabinetCanonicalSiteMap();
+  const ready=cabinetRows.filter(r=>normalizeSiteKey(canonicalCabinetSite(r,siteMap))===normalizeSiteKey('Carmona Cavite Warehouse')).length;
   const sitesCount=new Set(cabinetRows.map(r=>normalizeSiteKey(canonicalCabinetSite(r,siteMap))).filter(Boolean)).size;
   return {total,operational,nonop,ready,sitesCount};
 }
