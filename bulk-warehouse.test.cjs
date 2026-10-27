@@ -26,7 +26,7 @@ let browser;
    };
    window.refreshAssetsFast=async()=>{cabinetRows=structuredClone(qaRows);renderCabinets();};
   });
-  async function open(){await page.evaluate(()=>{openSiteProfile(qaSource);document.querySelector('#site-drawer-content [data-bulk-warehouse]').click();});await page.waitForFunction(()=>document.getElementById('bulk-warehouse-dialog').getAttribute('aria-busy')==='false');}
+  async function open(){await page.evaluate(()=>{document.getElementById('bulk-warehouse-open').click();});await page.waitForFunction(()=>document.getElementById('bulk-warehouse-dialog').getAttribute('aria-busy')==='false');await page.locator('#bulk-warehouse-site').selectOption(await page.evaluate(()=>qaSource));}
   async function review(){await page.locator('#bulk-warehouse-review').click();}
   async function confirm(){await page.locator('#bulk-warehouse-confirm').click();await page.waitForFunction(()=>document.getElementById('bulk-warehouse-dialog').getAttribute('aria-busy')==='false');}
   await open();assert.equal(await page.locator('#bulk-warehouse-list input:checked').count(),3);

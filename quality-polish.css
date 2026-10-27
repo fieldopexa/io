@@ -1,0 +1,18 @@
+/* Small accessibility and interaction fixes; retain approved layouts. */
+@media screen {
+ body button:focus-visible,body summary:focus-visible,body [role=button]:focus-visible,body a:focus-visible{outline:2px solid #b7c2d6!important;outline-offset:3px}
+ body input:focus-visible,body select:focus-visible,body textarea:focus-visible{outline:2px solid #b7c2d6!important;outline-offset:2px}
+ body button:disabled{cursor:not-allowed;opacity:.55}
+ body input,body select,body textarea{scroll-margin-block:90px}
+ .asset-mobile-overflow-list button:focus-visible,.site-mobile-actions-menu button:focus-visible{outline-offset:-3px!important}
+ .asset-mobile-overflow-list{max-height:min(60vh,420px);overflow-y:auto;overscroll-behavior:contain}
+ @media(max-width:700px){
+  .component-cabinet-id .cabinet-link{min-height:44px;display:inline-flex;align-items:center}
+  .cabinet-mobile-group>summary{min-height:44px;box-sizing:border-box;display:flex;align-items:center}
+  #sites-body button,.site-simple-name{min-height:44px}
+  dialog input:not([type=checkbox]):not([type=radio]),dialog select,dialog textarea{font-size:16px!important}
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}

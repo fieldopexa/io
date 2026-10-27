@@ -23,7 +23,7 @@ let browser;
   await page.keyboard.press('Escape');assert.equal(await page.locator('#movement-details-dialog').isVisible(),false);
   await page.locator('#movement-search').fill('');
   await page.locator('[data-mov-cab]').first().click();assert.equal(await page.locator('#cabinet-profile-overlay').isVisible(),true);await page.evaluate(()=>closeCabinetProfile());
-  await page.locator('#movement-add-btn').click();assert.equal(await page.locator('#movement-form').isVisible(),true);await page.locator('#movement-cancel-btn').click();
+  if(width<=700){await page.locator('.asset-mobile-overflow summary').click();await page.locator('.asset-mobile-overflow-list').getByRole('button',{name:'＋ Record Movement',exact:true}).click();}else await page.locator('#movement-add-btn').click();assert.equal(await page.locator('#movement-form').isVisible(),true);await page.locator('#movement-cancel-btn').click();
   await page.evaluate(()=>window.scrollTo(0,0));await page.waitForTimeout(150);await page.screenshot({path:`docs/movement-screens/movements-${width}.png`,fullPage:width>900});
   await page.evaluate(()=>{currentUser={role:'fse',username:'alex.fse',fse:'Alex Santos'};applyRoleUI();renderMovements();});
   assert.equal(await page.locator('#movement-add-btn').isVisible(),false);
