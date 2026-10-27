@@ -1,0 +1,22 @@
+@media screen {
+ body #inventory-view-movements .movement-toolbar{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;padding:0!important;border:0!important;background:transparent!important}
+ body #inventory-view-movements #movement-search{flex:1;min-width:0!important;max-width:none!important;width:100%!important;min-height:46px}
+ body #inventory-view-movements .movement-filter-toggle{flex:0 0 auto;width:auto!important;min-height:46px}
+ #movement-filter-options{padding:14px;margin:-6px 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+ #movement-filter-options label{display:block;max-width:320px;font-size:12px;color:var(--ink-soft)}
+ #movement-filter-options select{display:block;width:100%;min-height:44px;margin-top:6px}
+ #movement-filter-options[hidden],.movement-active-filter[hidden]{display:none!important}
+ .movement-active-filter{margin:0 0 16px}
+ body #inventory-view-movements .movement-table{min-width:0!important;width:100%;table-layout:auto}
+ body #inventory-view-movements .movement-table td,body #inventory-view-movements .movement-table th{white-space:normal;overflow-wrap:anywhere}
+ body #inventory-view-movements [data-movement-details]{min-height:40px;white-space:nowrap}
+ #movement-details-dialog{width:min(650px,calc(100vw - 24px));max-height:85vh;overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:20px}
+ #movement-details-dialog::backdrop{background:#0009}
+ #movement-details-dialog>button{float:right;min-height:44px}
+ #movement-details-dialog h2{font-size:22px;padding-right:80px;margin-bottom:20px}
+ #movement-details-dialog dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;clear:both}
+ #movement-details-dialog dl>div{min-width:0;padding:12px;border:1px solid var(--line);border-radius:8px}
+ #movement-details-dialog dt{color:var(--ink-soft);font-size:11px;margin-bottom:6px}
+ #movement-details-dialog dd{margin:0;font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap}
+ @media(max-width:700px){body #inventory-view-movements [data-movement-details]{min-height:44px}body #inventory-view-movements .movement-table td:last-child::before{display:none!important}#movement-details-dialog dl{grid-template-columns:minmax(0,1fr)}}
+}

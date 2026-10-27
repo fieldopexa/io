@@ -21,16 +21,21 @@
     {id:'audit-2',timestamp:date+'T10:15:00+08:00',actorUsername:'mika.fse',actorName:'Mika Reyes',actorRole:'fse',action:'UPDATE',entityType:'Field Log',entityId:'qa-2',label:'South Test Site',details:'Updated visit status to Resolved after connectivity checks.'},
     {id:'audit-3',timestamp:date+'T11:00:00+08:00',actorUsername:'preview',actorName:'Preview Manager',actorRole:'management',action:'DISABLE',entityType:'Account',entityId:'previous.fse',label:'Previous Engineer',details:'Disabled access for a former team member.'}
   ];
+  const demoMovements=[
+    {id:'movement-demo-1',cabinetRowId:'cab-1',cabinetId:'OPX-001',movementDate:date,movementType:'Transfer',fromLocation:'North Test Site',toLocation:'South Test Site',statusBefore:'Operational',statusAfter:'Operational',allocationBefore:'OPX-001',allocationAfter:'OPX-001',handledBy:'Alex Santos',referenceNo:'DEMO-TRANSFER-01',remarks:'Transferred for the approved site allocation.'},
+    {id:'movement-demo-2',cabinetRowId:'cab-2',cabinetId:'OPX-002',movementDate:date,movementType:'For Repair',fromLocation:'South Test Site',toLocation:'Carmona Cavite Warehouse',statusBefore:'Non-Operational',statusAfter:'For Repair',allocationBefore:'OPX-002',allocationAfter:'STOCK002',handledBy:'Mika Reyes',referenceNo:'DEMO-REPAIR-02',remarks:'Returned for power supply inspection.'}
+  ];
   // Guard the preview before making any renderer visible. No writes or real login.
   window.fetch=()=>Promise.reject(new Error('Offline interface preview: network requests disabled.'));
   apiPost=async action=>{
     if(action==='listUsers')return structuredClone(demoUsers);
     throw new Error('Preview only. Saving and account changes are disabled.');
   };
-  apiGet=async type=>structuredClone(({entries:demoEntries,sites:demoSites.map(s=>s.name),fses:['Alex Santos','Mika Reyes'],cabinets:demoCabinets,siteRegistry:demoSites,siteRecords:demoSites,auditTrail:demoAudit})[type]||[]);
+  apiGet=async type=>structuredClone(({entries:demoEntries,sites:demoSites.map(s=>s.name),fses:['Alex Santos','Mika Reyes'],cabinets:demoCabinets,movements:demoMovements,siteRegistry:demoSites,siteRecords:demoSites,auditTrail:demoAudit})[type]||[]);
   currentUser={username:'preview',name:'Preview Manager',role:'management'};authToken='';
   entries=structuredClone(demoEntries);fses=['Alex Santos','Mika Reyes'];sites=demoSites.map(s=>s.name);
   cabinetRows=structuredClone(demoCabinets);window.__lifecycleSites=structuredClone(demoSites);
+  movementRows=structuredClone(demoMovements);
   auditRowsCache=structuredClone(demoAudit);auditLoadedOnce=true;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-shell').style.display='block';

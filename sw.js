@@ -1,8 +1,8 @@
 'use strict';
 const CACHE_PREFIX='opexa-io-shell-';
-const CACHE=CACHE_PREFIX+'20261027-cabinet-registry-v1';
+const CACHE=CACHE_PREFIX+'20261027-asset-lists-v1';
 const ROOT=new URL('./',self.location.href);
-const SHELL=['./','./index.html','./service-form.js','./log-filters.js','./visit-feedback.js','./report-overview.css','./report-overview.js','./weekly-activities.css','./weekly-activities.js','./cabinet-registry.css','./cabinet-registry.js','./service-form-reference.png','./manifest.webmanifest','./install.js','./install.css','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png'];
+const SHELL=['./','./index.html','./service-form.js','./log-filters.js','./visit-feedback.js','./report-overview.css','./report-overview.js','./weekly-activities.css','./weekly-activities.js','./cabinet-registry.css','./cabinet-registry.js','./movement-list.css','./movement-list.js','./service-form-reference.png','./manifest.webmanifest','./install.js','./install.css','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL.map(file=>new Request(new URL(file,ROOT),{cache:'reload'})))));});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{for(const name of await caches.keys())if(name.startsWith(CACHE_PREFIX)&&name!==CACHE)await caches.delete(name);await self.clients.claim();})());});
 self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
