@@ -8261,6 +8261,19 @@ function cabinetRegistryActions(row,isMgmt){
  const id=escapeHtml(String(row.id||''));const open=isMgmt?'data-cab-profile':'data-cab-readonly';
  return '<div class="cabinet-actions"><button type="button" class="btn-secondary" '+open+'="'+id+'">View details</button>'+(isMgmt?'<details class="cabinet-row-menu"><summary aria-label="More cabinet actions">⋯</summary><div><button type="button" class="btn-secondary" data-cab-edit="'+id+'">Edit</button><button type="button" class="btn-secondary" data-cab-delete="'+id+'">Delete</button></div></details>':'')+'</div>';
 }
+function paintCabinetPages(total,start,pageCount){
+ const panel=document.getElementById('inventory-view-cabinets');
+ const table=document.getElementById('cabinet-body')?.closest('.cabinet-table-wrap')||document.getElementById('cabinet-body')?.closest('table');
+ if(!panel||!table)return;
+ for(const position of ['top','bottom']){
+  let bar=document.getElementById('cabinet-pages-'+position);
+  if(!bar){bar=document.createElement('nav');bar.id='cabinet-pages-'+position;bar.setAttribute('aria-label','Cabinet pages '+position);bar.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0;padding:10px 0;border-top:1px solid var(--line)';if(position==='top')table.before(bar);else panel.append(bar);}
+  bar.replaceChildren();const text=document.createElement('span');text.setAttribute('role','status');text.textContent=(total?(start+1)+'–'+Math.min(start+25,total):'0')+' of '+total+' cabinets';bar.append(text);
+  const controls=document.createElement('div');controls.style.cssText='display:flex;align-items:center;gap:10px';
+  for(const direction of [-1,1]){const b=document.createElement('button');b.type='button';b.className='btn-secondary';b.style.minHeight='44px';b.textContent=direction<0?'← Previous':'Next →';b.disabled=direction<0?window.cabinetPage<=1:window.cabinetPage>=pageCount;b.onclick=()=>{window.cabinetPage+=direction;renderCabinets();document.getElementById('cabinet-pages-top')?.scrollIntoView({block:'start'});};controls.append(b);if(direction<0){const label=document.createElement('span');label.textContent=window.cabinetPage+' / '+pageCount;controls.append(label);}}
+  bar.append(controls);
+ }
+}
 function renderCabinets(){
   const body=document.getElementById('cabinet-body');if(!body)return;
   const s=cabinetSummary();
@@ -8273,7 +8286,7 @@ function renderCabinets(){
   const siteMap=cabinetCanonicalSiteMap();
   const siteFilter=document.getElementById('cabinet-site-filter');
   const currentSite=siteFilter?.value||'All';
-  const siteList=[...new Set(cabinetRows.map(r=>canonicalCabinetSite(r,siteMap)).filter(Boolean))]
+  const siteList=[...new Set([...cabinetRows.map(r=>canonicalCabinetSite(r,siteMap)),...(currentSite!=='All'?[currentSite]:[])].filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'}));
 
   if(siteFilter){
@@ -8314,10 +8327,17 @@ function renderCabinets(){
     return cabinetMatchesSearch(r,canonicalSite,q,currentUser?.role==='management');
   });
 
+  const pageKey=JSON.stringify([q,st,site,assetAttentionOnly]);
+  if(window.cabinetPageKey!==pageKey){window.cabinetPageKey=pageKey;window.cabinetPage=1;}
+  const pageSize=25,pageCount=Math.max(1,Math.ceil(rows.length/pageSize));
+  window.cabinetPage=Math.max(1,Math.min(window.cabinetPage||1,pageCount));
+  const start=(window.cabinetPage-1)*pageSize;
+  paintCabinetPages(rows.length,start,pageCount);
+  const visibleRows=[...rows].sort((a,b)=>cabinetGroupPrefix(a.cabinetId).localeCompare(cabinetGroupPrefix(b.cabinetId),undefined,{numeric:true,sensitivity:'base'})||cabinetNaturalSort(a,b)).slice(start,start+pageSize);
   // Group by cabinet prefix, not by the raw site string. This merges aliases
   // such as OT8MAR saved under both "Venezia" and "Venezia Marikina".
   const grouped={};
-  rows.forEach(r=>{
+  visibleRows.forEach(r=>{
     const prefix=cabinetGroupPrefix(r.cabinetId);
     if(!grouped[prefix])grouped[prefix]=[];
     grouped[prefix].push(r);
@@ -12130,3 +12150,13 @@ body #panel-report .brief-header .brief-eyebrow{color:#b5c5e5!important;font-wei
 <link rel="stylesheet" href="bulk-warehouse.css">
 <script src="bulk-warehouse.js"></script>
 <link rel="stylesheet" href="bulk-delete.css"><script src="bulk-delete.js"></script>
+<script>(() => {
+siteAssetOverview=function(name){
+ const rows=cabinetRows.filter(r=>normalizeSiteKey(canonicalCabinetSite(r,cabinetCanonicalSiteMap()))===normalizeSiteKey(siteIsWarehouse(name)?'Carmona Cavite Warehouse':canonicalSiteName(name)));
+ const operational=rows.filter(r=>cabinetDisplayStatus(r)==='Operational').length;
+ return '<section class="site-section"><h3>Cabinets at this location</h3><div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:16px;border:1px solid var(--line);border-radius:10px"><div><b style="font-size:30px">'+rows.length+'</b><span style="margin-left:10px">'+(siteIsWarehouse(name)?'in warehouse stock':'currently assigned')+'</span><p class="muted" style="margin:8px 0 0">'+(siteIsWarehouse(name)?'Stock is counted from this warehouse’s current cabinet records.':operational+' operational · '+(rows.length-operational)+' other status')+'</p></div><button type="button" onclick="viewLocationCabinets('+escapeHtml(JSON.stringify(name))+')">View cabinets →</button></div><p class="muted" style="margin-top:10px">Cabinet details, transfers and deletion are managed in Cabinet Registry.</p></section>';
+};
+window.viewLocationCabinets=function(name){closeSiteProfile();document.querySelector('.tab[data-tab="inventory"]')?.click();setInventoryView('cabinets');assetAttentionOnly=false;document.getElementById('cabinet-search').value='';document.getElementById('cabinet-status-filter').value='All';renderCabinets();const filter=document.getElementById('cabinet-site-filter');const target=siteIsWarehouse(name)?'Carmona Cavite Warehouse':canonicalSiteName(name);if(!Array.from(filter.options).some(o=>o.value===target))filter.add(new Option(target,target));filter.value=target;renderCabinets();document.getElementById('inventory-view-cabinets').scrollIntoView({block:'start'});};
+const previousProfile=openSiteProfile;openSiteProfile=function(name){previousProfile(name);document.querySelectorAll('#site-drawer-content .drawer-actions button').forEach(b=>{if(/Move cabinets|Delete cabinet profiles/.test(b.textContent))b.remove();});};
+
+})();</script>
