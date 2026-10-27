@@ -7795,7 +7795,7 @@ function renderManagementOverview(){
 
   const healthCounts={
     Operational:cabinetRows.filter(c=>norm(c.status)==='operational').length,
-    'Ready / Stock':cabinetRows.filter(c=>['ready to deploy','warehouse / stock'].includes(norm(c.status))).length,
+    'Ready / Stock':cabinetSummary().ready,
     'Needs Attention':attention
   };
   const totalCab=Math.max(1,cabinetRows.length);
@@ -9487,6 +9487,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
 
     if(Array.isArray(data.cabinets)){
       cabinetRows=data.cabinets;
+      const stockCounter=document.getElementById('cab-ready');if(stockCounter)stockCounter.textContent=cabinetSummary().ready;
       cabinetsLoadedOnce=true;
     }
 
@@ -9537,6 +9538,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     if(assetsBootstrapInFlight){
       if(typeof window.setInventoryLoadState==='function')window.setInventoryLoadState('Loading asset data…',false,true);
       await assetsBootstrapInFlight;
+      if(force)return refreshAssets(target,true);
       paintCurrentAssets(target);
       return;
     }
