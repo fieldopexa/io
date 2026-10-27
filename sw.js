@@ -1,6 +1,6 @@
 'use strict';
 const CACHE_PREFIX='opexa-io-shell-';
-const CACHE=CACHE_PREFIX+'20261027-locations-layout-v1';
+const CACHE=CACHE_PREFIX+'20261027-mobile-asset-controls-v1';
 const ROOT=new URL('./',self.location.href);
 const SHELL=['./','./index.html','./service-form.js','./log-filters.js','./visit-feedback.js','./report-overview.css','./report-overview.js','./weekly-activities.css','./weekly-activities.js','./cabinet-registry.css','./cabinet-registry.js','./movement-list.css','./movement-list.js','./bulk-warehouse.css','./bulk-warehouse.js','./bulk-delete.js','./bulk-delete.css','./service-form-reference.png','./manifest.webmanifest','./install.js','./install.css','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL.map(file=>new Request(new URL(file,ROOT),{cache:'reload'})))));});
