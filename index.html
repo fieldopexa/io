@@ -8021,11 +8021,13 @@ async function loadCabinets(){
     populateVisitCabinets();
   }
 }
+function cabinetIsWarehouseStock(c){return siteIsWarehouse(c?.site)||isWarehouseMovementLocation(c?.site);}
 function cabinetSiteUnavailable(c){
+ if(cabinetIsWarehouseStock(c))return false;
  const key=normalizeSiteKey(canonicalSiteName(c.site||''));if(!key)return false;
  return siteIsClosed(c.site)||inventoryRows.some(r=>normalizeSiteKey(canonicalSiteName(r.site))===key&&String(r.operationalStatus||'').trim().toLowerCase()==='non-operational');
 }
-function cabinetDisplayStatus(c){return siteIsClosed(c.site)?'Closed site — transfer pending':cabinetSiteUnavailable(c)?'Non-Operational':c.status||'—';}
+function cabinetDisplayStatus(c){return cabinetIsWarehouseStock(c)?'Warehouse / Stock':siteIsClosed(c.site)?'Closed site — transfer pending':cabinetSiteUnavailable(c)?'Non-Operational':c.status||'—';}
 function cabinetStatusMarkup(c){return '<span class="inventory-status">'+escapeHtml(cabinetDisplayStatus(c))+'</span>'+(cabinetSiteUnavailable(c)?'<small class="cabinet-site-state-note">Site '+(siteIsClosed(c.site)?'closed':'non-operational')+' · Cabinet condition: '+escapeHtml(c.status||'Not recorded')+'</small>':'');}
 
 function cabinetSummary(){
