@@ -12487,4 +12487,30 @@ body #panel-inventory>.utility-strip>button.btn-secondary:hover{background:#2a34
 body #panel-inventory .site-mobile-actions[open]>summary{background:#2a3441!important;border-color:#627087!important}
 body #panel-inventory .site-mobile-actions>summary:focus-visible{outline:2px solid #b7c2d6;outline-offset:3px}
 }
+</style><style id="mobile-section-overflow-menu">
+.asset-mobile-overflow{display:none}
+@media screen and (max-width:700px){
+body #panel-inventory .asset-mobile-category{grid-template-columns:minmax(0,1fr) 44px;gap:6px 8px;align-items:center}
+body #panel-inventory .asset-mobile-category>span{grid-column:1/-1}
+body #panel-inventory .asset-mobile-category>select{grid-column:1;grid-row:2;min-width:0}
+body #panel-inventory .asset-mobile-overflow{display:block;position:relative;grid-column:2;grid-row:2;align-self:stretch}
+body #panel-inventory .asset-mobile-overflow>summary{display:grid;place-items:center;list-style:none;width:44px;height:46px;box-sizing:border-box;border:1px solid #3b4657;border-radius:8px;background:#151a21;color:#dce3ee;font:700 22px/1 'Segoe UI',sans-serif;cursor:pointer}
+.asset-mobile-overflow>summary::-webkit-details-marker{display:none}
+.asset-mobile-overflow>summary:focus-visible{outline:2px solid #b7c2d6;outline-offset:3px}
+.asset-mobile-overflow-list{position:absolute;right:0;top:52px;width:210px;max-width:calc(100vw - 40px);padding:5px;background:#1b222c;border:1px solid #414c5e;border-radius:8px;box-shadow:0 8px 24px #0006;z-index:40}
+body #panel-inventory .asset-mobile-overflow-list>button{display:block;width:100%;min-height:44px;padding:10px 12px;text-align:left;border:0;border-radius:4px;background:transparent;color:#e8edf6;font:500 12px/1.4 'Segoe UI',sans-serif;cursor:pointer}
+body #panel-inventory .asset-mobile-overflow-list>button:hover{background:#303b4d}
+body #panel-inventory .asset-mobile-overflow-list>button:disabled{opacity:.5;cursor:wait}
+body #panel-inventory .inventory-subpanel>.section-head>.site-mobile-actions,
+body #panel-inventory .inventory-subpanel>.section-head>.asset-load-status{display:none!important}
+body #inventory-view-sites>.section-head{display:none!important}
+body #panel-inventory .inventory-subpanel>.section-head:has(.section-mobile-actions){grid-template-columns:minmax(0,1fr)!important;row-gap:0!important;margin-bottom:10px!important}
+}
 </style>
+<script>
+(()=>{const label=document.querySelector('.asset-mobile-category');if(!label)return;const host=document.createElement('div');host.style.display='contents';label.after(host);host.append(label);const menu=document.createElement('details');menu.className='asset-mobile-overflow';menu.innerHTML='<summary aria-label="Actions for current asset section" title="Section actions">⋯</summary><div class="asset-mobile-overflow-list"></div>';label.append(menu);const list=menu.querySelector('div'),media=matchMedia('(max-width:700px)');
+function rebuild(){list.replaceChildren();const panel=document.querySelector('#panel-inventory .inventory-subpanel.active');if(!panel)return;const source=panel.querySelector('.site-mobile-actions');for(const original of (!source?.hidden?source?.querySelectorAll('button'):[])||[]){if(original.hidden||getComputedStyle(original).display==='none')continue;const proxy=document.createElement('button');proxy.type='button';proxy.textContent=original.textContent.trim();proxy.disabled=original.disabled;proxy.onclick=()=>{menu.open=false;original.click();};list.append(proxy);}
+const refresh=panel.querySelector('.asset-load-status button');const button=document.createElement('button');button.type='button';button.textContent='Refresh data';button.disabled=refresh?.disabled||!refresh;button.onclick=()=>{menu.open=false;refresh?.click();};list.append(button);}
+menu.addEventListener('toggle',()=>{if(menu.open)rebuild();});document.querySelector('.asset-mobile-category select').addEventListener('change',()=>menu.open=false);document.addEventListener('click',e=>{if(!menu.contains(e.target))menu.open=false;});menu.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.open=false;menu.querySelector('summary').focus();}});media.addEventListener('change',()=>menu.open=false);
+})();
+</script>
