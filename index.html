@@ -12346,4 +12346,30 @@ body #panel-inventory #asset-groups svg{flex:0 0 18px;opacity:.85}
 </style>
 <script>
 (()=>{const paths=['<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>','<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 11h14M9 6h6M9 16h6"/>','<path d="m3 7 9-5 9 5v10l-9 5-9-5V7Zm0 0 9 5 9-5M12 12v10"/>','<path d="M3 12h4l3-8 4 16 3-8h4"/>'];document.querySelectorAll('#asset-groups>button').forEach((button,i)=>{const label=document.createElement('span');label.textContent=button.textContent;button.replaceChildren(label);const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('width','18');icon.setAttribute('height','18');icon.setAttribute('fill','none');icon.setAttribute('stroke','currentColor');icon.setAttribute('stroke-width','1.5');icon.setAttribute('stroke-linejoin','round');icon.setAttribute('aria-hidden','true');icon.innerHTML=paths[i]||'';button.prepend(icon);});})();
+</script><style id="hide-redundant-locations-intro">
+#inventory-view-sites>.section-head>div:first-child{display:none!important}
+#inventory-view-sites>.section-head{justify-content:flex-end!important}
+</style><style id="desktop-locations-layout">
+@media screen and (min-width:901px){
+#inventory-view-sites{display:none}
+#inventory-view-sites.active{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(320px,1fr);gap:14px 18px;align-items:start}
+#inventory-view-sites>.section-head{grid-column:2;grid-row:1;margin:0!important;min-height:44px!important;align-items:center!important;gap:10px!important}
+#inventory-view-sites>.site-directory-views{grid-column:1;grid-row:1;margin:0!important;min-height:44px;display:flex!important;align-items:center;flex-wrap:wrap;gap:8px!important}
+#inventory-view-sites>.warehouse-shortcut{grid-column:1;grid-row:2;margin:0!important;min-height:76px!important;box-sizing:border-box}
+#inventory-view-sites>.inventory-toolbar{grid-column:2;grid-row:2;margin:0!important;padding:0!important;min-height:76px!important;display:flex!important;align-items:center!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#inventory-view-sites>.inventory-toolbar #sites-search{width:100%!important;max-width:none!important;min-height:48px!important;flex:1!important;box-sizing:border-box}
+#inventory-view-sites>.site-status-summary{grid-column:1/-1;margin:0!important}
+#inventory-view-sites>div:not(.section-head):not(.site-directory-views):not(.inventory-toolbar):not(.site-status-summary),#inventory-view-sites>section{grid-column:1/-1}
+#inventory-view-sites>.section-head .site-header-actions{display:flex;gap:8px;align-items:center}
+}
+</style><style id="desktop-add-site-action">
+@media screen and (min-width:901px){
+body #inventory-view-sites #sites-add-lifecycle-btn{display:inline-flex!important;align-items:center;justify-content:center;gap:9px;min-height:42px!important;padding:9px 15px!important;background:#303b4e!important;border:1px solid #61728c!important;border-radius:8px!important;color:#f0f3f9!important;box-shadow:none!important;font:600 12px/1.4 'Segoe UI',sans-serif!important;white-space:nowrap;cursor:pointer}
+body #inventory-view-sites #sites-add-lifecycle-btn:hover{background:#3b4960!important;border-color:#98abc8!important}
+body #inventory-view-sites #sites-add-lifecycle-btn:focus-visible{outline:2px solid #b7c2d6;outline-offset:3px}
+body #inventory-view-sites #sites-add-lifecycle-btn::before{content:'+';display:grid;place-items:center;width:20px;height:20px;border:1px solid #899ab4;border-radius:5px;color:#edf2fa;font:400 18px/1 'Segoe UI',sans-serif}
+}
+</style>
+<script>
+(()=>{const button=document.getElementById('sites-add-lifecycle-btn');if(!button)return;const media=matchMedia('(min-width:901px)');const update=()=>button.textContent=media.matches?'Add site':'＋ Add Site';update();media.addEventListener('change',update);})();
 </script>
