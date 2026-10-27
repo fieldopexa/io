@@ -1,10 +1,16 @@
 /* Reference-led operations surfaces. No workflow or permission visibility rules. */
 @media screen {
-  :root {--paper:#0b1216;--card:#101a20;--input-bg:#151f27;--line:#29333b;--ink:#edf0f2;--ink-soft:#a7b2bd;--accent:#e0b54f;--accent-soft:#e0b54f16}
-  body .app-top,body .mobile-app-header,body .mobile-nav-drawer,body .mobile-bottom-nav {background:#0b1216!important}
+  body,body #app-shell,body .app-content,body .wrap,body footer {background:#000!important;background-image:none!important}
+  body #app-shell :is(h1,h2),body #mobile-page-title,body .app-nav .tab,body .mobile-drawer-nav button {text-transform:uppercase!important}
+  body #app-shell :is(.system-bar,.mobile-system-strip,.utility-strip,.readable-log-menu>div) {background:#111!important;border-color:#303030!important}
+  body #login-screen {background:#000!important}
+  body #login-screen .login-card {background:#111!important;border-color:#303030!important}
+
+  :root {--paper:#000000;--card:#111111;--input-bg:#1a1a1a;--line:#303030;--ink:#edf0f2;--ink-soft:#a7b2bd;--accent:#e0b54f;--accent-soft:#e0b54f16}
+  body .app-top,body .mobile-app-header,body .mobile-nav-drawer,body .mobile-bottom-nav {background:#000000!important}
   body :is(#panel-report,#panel-inventory,#panel-audit,#panel-users) {--director-card:var(--card);--director-border:var(--line);--director-muted:var(--ink-soft);--asset-card:var(--card);--asset-border:var(--line);--asset-muted:var(--ink-soft)}
   body :is(#panel-report,#panel-inventory,#panel-audit,#panel-users) :is(.section-head,.brief-header) {gap:16px;margin:20px 0!important}
-  body :is(#panel-inventory,#panel-audit,#panel-users) .section-head h2 {font:600 25px/1.25 'Segoe UI',sans-serif!important;color:var(--ink)!important;letter-spacing:-.025em!important;text-transform:none!important}
+  body :is(#panel-inventory,#panel-audit,#panel-users) .section-head h2 {font:600 25px/1.25 'Segoe UI',sans-serif!important;color:var(--ink)!important;letter-spacing:-.025em!important;text-transform:uppercase!important}
   body :is(#panel-inventory,#panel-audit,#panel-users) .section-head p {font-size:13px!important;line-height:1.65!important;color:var(--ink-soft)!important;max-width:720px}
   body :is(#panel-report,#panel-inventory,#panel-audit,#panel-users) :is(.chart-card,.inventory-card,.movement-card,.cabinet-card,.audit-kpi,.audit-mobile-card,.cabinet-mobile-card,.site-simple-row) {background:var(--card)!important;border:1px solid var(--line)!important;border-radius:8px!important;box-shadow:none!important}
   body :is(#panel-report,#panel-inventory,#panel-audit,#panel-users) :is(input,select,textarea) {min-height:44px;background:var(--input-bg)!important;border-color:var(--line)!important;color:var(--ink)!important;border-radius:6px!important;font-size:14px!important}
@@ -15,13 +21,13 @@
   body #asset-groups button,body #panel-inventory .inventory-subtab,body #panel-report .report-subnav button {flex:0 0 auto;min-height:44px!important;padding:10px 16px!important;border:1px solid transparent!important;border-radius:6px!important;background:transparent!important;color:var(--ink-soft)!important;font-size:13px!important;box-shadow:none!important}
   body #asset-groups button[aria-pressed=true],body #panel-inventory .inventory-subtab.active,body #panel-report .report-subnav button.active {background:var(--accent-soft)!important;border-color:#e0b54f33!important;color:var(--accent)!important}
   body #panel-inventory .inventory-subnav {background:transparent!important;border-color:var(--line)!important;border-radius:0!important}
-  body :is(#panel-inventory,#panel-audit,#panel-users) :is(.table-scroll,.inventory-table-wrap,.cabinet-table-wrap,.movement-table-wrap) {border-color:var(--line)!important;border-radius:8px!important;scrollbar-color:#45525d var(--paper);overflow-x:auto;max-width:100%}
+  body :is(#panel-inventory,#panel-audit,#panel-users) :is(.table-scroll,.inventory-table-wrap,.cabinet-table-wrap,.movement-table-wrap) {border-color:var(--line)!important;border-radius:8px!important;scrollbar-color:#505050 var(--paper);overflow-x:auto;max-width:100%}
   body :is(#panel-inventory,#panel-audit,#panel-users) table {width:100%;border-collapse:collapse;font:13px/1.6 'Segoe UI',sans-serif!important}
-  body :is(#panel-inventory,#panel-audit,#panel-users) table th {background:#19222c!important;color:var(--ink-soft)!important;padding:12px 16px!important;font:500 11px/1.5 'Segoe UI',sans-serif!important;text-transform:none!important;letter-spacing:.02em!important;border-bottom:1px solid var(--line)!important;white-space:nowrap}
+  body :is(#panel-inventory,#panel-audit,#panel-users) table th {background:#1c1c1c!important;color:var(--ink-soft)!important;padding:12px 16px!important;font:500 11px/1.5 'Segoe UI',sans-serif!important;text-transform:uppercase!important;letter-spacing:.02em!important;border-bottom:1px solid var(--line)!important;white-space:nowrap}
   body :is(#panel-inventory,#panel-audit,#panel-users) table td {background:transparent!important;padding:14px 16px!important;border-bottom:1px solid var(--line)!important;color:var(--ink)!important;font-size:13px!important;vertical-align:middle;overflow-wrap:anywhere}
-  body :is(#panel-inventory,#panel-audit,#panel-users) tbody tr {background:#0d1920}
-  body :is(#panel-inventory,#panel-audit,#panel-users) tbody tr:nth-child(even) {background:#101b22}
-  body :is(#panel-inventory,#panel-audit,#panel-users) tbody tr:hover {background:#19252b}
+  body :is(#panel-inventory,#panel-audit,#panel-users) tbody tr {background:#0c0c0c}
+  body :is(#panel-inventory,#panel-audit,#panel-users) tbody tr:nth-child(even) {background:#111111}
+  body :is(#panel-inventory,#panel-audit,#panel-users) tbody tr:hover {background:#1d1d1d}
   body #panel-users tbody td:first-child b,body #panel-inventory :is(.site-simple-name,.cabinet-id-link,.cabinet-name-btn) {color:var(--accent)!important}
   body #panel-users .user-status {display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;white-space:nowrap;border:1px solid transparent}
   body #panel-users .user-status.active {background:#073c2b!important;border-color:#0e6548;color:#6cddb0!important}
@@ -45,7 +51,7 @@
   body #panel-report .period-type-btn {min-height:40px;display:inline-flex;align-items:center;padding:8px 13px!important;border-radius:6px!important}
   body #panel-report .period-type-btn.active {background:var(--accent-soft)!important;border-color:#e0b54f50!important;color:var(--accent)!important}
   body #panel-report :is(.brief-metrics span,.brief-caption,.brief-footnote,.brief-stamp) {color:var(--ink-soft)!important}
-  body #panel-report .visit-remarks-table th {background:#19222c!important;color:var(--ink-soft)!important;border-color:var(--line)!important}
+  body #panel-report .visit-remarks-table th {background:#1c1c1c!important;color:var(--ink-soft)!important;border-color:var(--line)!important}
   body #panel-report .visit-remarks-table td {border-color:var(--line)!important}
   body #panel-inventory table.asset-phone-cards>tbody>tr {background:var(--card)!important;border-color:var(--line)!important}
   body #panel-inventory table.asset-phone-cards>tbody>tr>td[data-asset-label]::before {color:var(--ink-soft)!important}
