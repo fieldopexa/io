@@ -62,7 +62,9 @@
     if(!result?.customToken)throw new Error('FSM server did not return a Team Chat identity. Update the Apps Script deployment.');
     await state.lib.signInWithCustomToken(state.auth,result.customToken);
     const firebaseUser=state.auth.currentUser;
-    const expectedUid='fsm_'+String(fsmUser.username||'').trim().toLowerCase();
+    // Encode the normalized username into a regex-safe, collision-free Firebase UID.
+    const normalizedUsername=String(fsmUser.username||'').trim().toLowerCase();
+    const expectedUid='fsm_'+btoa(normalizedUsername).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
     if(!firebaseUser || firebaseUser.uid!==expectedUid)throw new Error('Chat identity mismatch. Contact the administrator.');
     await startChat(firebaseUser);
   }
