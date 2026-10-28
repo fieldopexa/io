@@ -5761,6 +5761,7 @@ async function loadEntries(){
     showSyncError("Couldn't reach the shared sheet, showing your last known data. Check your internet connection and reload.");
   }
   renderActivePanel();
+  openRequestedFSMFieldLog();
 }
 
 document.querySelectorAll('.tab').forEach(t=>{
@@ -6432,12 +6433,87 @@ function visitDetailLayout(e,fields,tracking){
  '<div class="vd-footer"><span>Visit #'+esc(tracking)+'</span><div class="drawer-actions"><button class="btn-primary" type="button" onclick="editFieldLog('+esc(JSON.stringify(String(e.id)))+')">Edit visit</button><button class="btn-secondary" type="button" onclick="duplicateEntry('+esc(JSON.stringify(String(e.id)))+')">Duplicate</button></div></div>';
 }
 
+
+/* Link incidents to FSE Team without changing any Field Log data or automatically
+   sending a message. Only records visible to the signed-in FSM user can be opened. */
+function isChatDiscussableVisit(entry){
+  return /incident|breakdown/i.test(String(entry?.visitType||''))
+    && entry.status!=='Voided';
+}
+function fieldLogShareUrl(id){
+  // Production URL remains stable across devices; local testing intercepts this
+  // link to open the same record without jumping out of the development build.
+  const url=new URL('https://fieldopexa.github.io/io/');
+  url.searchParams.set('fieldlog',String(id));
+  return url.href;
+}
+function discussFieldLog(id){
+  const e=entries.find(row=>String(row.id)===String(id));
+  if(!e||!isChatDiscussableVisit(e)){
+    showToast('Cannot discuss this visit','Incident record is unavailable or outside your Field Logs.','bad');
+    return false;
+  }
+  const clean=(value,max=170)=>String(value||'').replace(/\s+/g,' ').trim().slice(0,max);
+  const lines=[
+    '🚨 FIELD INCIDENT · FSE TEAM',
+    'Site: '+clean(e.site,130),
+    'Visit date: '+clean(e.date,30),
+    e.ticketNo?'Ticket / IR: '+clean(e.ticketNo,80):'Visit reference: '+clean(e.id,80),
+    e.machineNo?'Cabinet / Machine: '+clean(e.machineNo,80):'',
+    'Concern: '+clean(e.issueType||e.category||'Incident',100),
+    e.notes?'Details: '+clean(e.notes,240):'',
+    'Priority: '+clean(e.priority||'Not specified',40),
+    'Status: '+clean(e.status||'Unspecified',40),
+    'Reported by: '+clean(e.tech||'FSE',100),
+    '',
+    'View Field Log: '+fieldLogShareUrl(e.id)
+  ].filter(Boolean).join('\n');
+  if(typeof window.fsmChatPrepareDraft!=='function'){
+    showToast('Chat unavailable','Open Messages and reload the latest FSM development version.','bad');
+    return false;
+  }
+  closeDetail();
+  return window.fsmChatPrepareDraft({roomId:'engineering',text:lines});
+}
+function openFSMFieldLogFromChat(id){
+  if(!currentUser)return false;
+  const entry=entries.find(row=>String(row.id)===String(id));
+  if(!entry){
+    showToast('Field Log unavailable','This visit is not among the records your FSM account can access.','bad');
+    return false;
+  }
+  document.querySelector('.tab[data-tab="fieldlogs"]')?.click();
+  openDetail(entry.id);
+  return true;
+}
+window.fsmOpenFieldLogFromChat=openFSMFieldLogFromChat;
+function openRequestedFSMFieldLog(){
+  const url=new URL(window.location.href);
+  const id=url.searchParams.get('fieldlog');
+  if(!id)return;
+  url.searchParams.delete('fieldlog');
+  history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+  if(id.length>120){showToast('Invalid Field Log link','The visit reference is too long.','bad');return;}
+  openFSMFieldLogFromChat(id);
+}
+
 function openDetail(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e) return;
   const m=computeTrackingMap()[e.id]||'-';
   const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
+  if(isChatDiscussableVisit(e)){
+    const container=document.querySelector('#drawer-content .vd-footer .drawer-actions');
+    if(container){
+      const discuss=document.createElement('button');
+      discuss.type='button';discuss.className='fsm-discuss-chat-btn';
+      discuss.textContent='💬 Discuss in Chat';
+      discuss.title='Prepare this incident in FSE Team. Review before sending.';
+      discuss.addEventListener('click',()=>discussFieldLog(e.id));
+      container.prepend(discuss);
+    }
+  }
   document.getElementById('visit-service-form-print')?.addEventListener('click',()=>printEntryServiceForm(e.id));
   document.getElementById('detail-overlay').querySelector('.detail-drawer').scrollTop=0;
   requestAnimationFrame(()=>document.getElementById('drawer-close').focus());
@@ -7562,7 +7638,7 @@ function renderReadableLog(e,tracking){
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
-  <div class="readable-log-actions"><button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div><button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button><button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button></div></details></div></div>
+  <div class="readable-log-actions">${isChatDiscussableVisit(e)?`<button type="button" class="fsm-discuss-chat-btn" data-discuss-visit="${safe(String(e.id))}" onclick="event.stopPropagation();discussFieldLog(this.dataset.discussVisit)">💬 Discuss in Chat</button>`:''}<button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div><button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button><button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button></div></details></div></div>
  </article>`;
 }
 
@@ -12541,5 +12617,6 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 <link rel="stylesheet" href="quality-polish.css"><script src="quality-polish.js"></script>
 <!-- FSM Live Chat: independently scoped and loaded only when needed -->
 <link rel="stylesheet" href="./live-chat.css">
+<link rel="stylesheet" href="./fieldlog-chat.css">
 <script src="./chat-config.js"></script>
-<script defer src="./live-chat.js?v=fsm-comms-v4-search-fse-20261028"></script>
+<script defer src="./live-chat.js?v=fsm-incident-discuss-20261028"></script>
