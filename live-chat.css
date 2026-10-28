@@ -41,35 +41,33 @@
   min-width:0;min-height:0;background:var(--cm-side);
   border-right:1px solid var(--cm-border);
 }
-#panel-chat .fsm-chat-sidebar-heading{
-  padding:24px 22px 14px;display:flex;justify-content:space-between;
-  gap:10px;align-items:flex-end;
-}
-#panel-chat .fsm-chat-sidebar-overline{
-  display:block;margin-bottom:5px;color:#808999;
-  font:700 9px/1.4 'IBM Plex Mono',ui-monospace,monospace;
-  letter-spacing:.13em;
-}
-#panel-chat .fsm-chat-sidebar-heading h3{
-  margin:0;color:var(--cm-text);letter-spacing:-.035em;
-  font:650 24px/1.25 'Space Grotesk','Segoe UI',sans-serif;
-}
-#panel-chat .fsm-chat-count-rooms{
-  padding-bottom:3px;color:var(--cm-dim);font-size:10px;white-space:nowrap;
-}
+/* Same search treatment as the Field Logs .global-search component. */
 #panel-chat .fsm-chat-search-wrap{
-  display:flex;align-items:center;gap:10px;height:43px;
-  margin:2px 15px 12px;padding:0 13px;
-  color:#8f98aa;border:1px solid #303640;border-radius:9px;
-  background:#111419;
+  display:flex;align-items:center;gap:8px;
+  height:40px;min-height:40px;
+  margin:14px 15px 12px!important;
+  padding:0 11px;
+  border:1px solid var(--line,#272c34)!important;
+  background:var(--input-bg,#1d1d1b)!important;
+  border-radius:8px!important;
+  color:var(--ink-soft,#8e96a3);
 }
-#panel-chat .fsm-chat-search-wrap svg{width:17px;height:17px;flex:0 0 17px;opacity:.75}
+#panel-chat .fsm-chat-search-wrap span{
+  color:#697382;font-size:20px;line-height:1;flex:0 0 auto;
+}
 #panel-chat #fsm-chat-search{
-  height:39px;flex:1;min-width:0;width:100%;outline:0;
-  border:0;background:transparent;color:var(--cm-text);
-  font:12px/1.4 system-ui,'Segoe UI',sans-serif;
+  display:block;flex:1;min-width:0;width:100%;height:38px;
+  padding:0!important;margin:0;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;outline:0;
+  background:transparent!important;
+  color:var(--ink,#f1f3f5);font-size:12px;
 }
-#panel-chat #fsm-chat-search::placeholder{color:#777f8e}
+#panel-chat #fsm-chat-search::placeholder{color:#858e9b}
+#panel-chat .fsm-chat-search-wrap:focus-within{
+  border-color:var(--accent,#6d8cff)!important;
+  box-shadow:0 0 0 2px rgba(109,140,255,.10);
+}
 #panel-chat .fsm-chat-filters{
   display:flex;align-items:center;gap:7px;
   padding:0 15px 13px;border-bottom:1px solid #252a32;
@@ -383,11 +381,12 @@ body:has(#panel-chat.active) .pwa-install-button{display:none!important}
   #panel-chat .fsm-chat-thread{display:none;width:100%;height:100%;min-height:0}
   #fsm-chat-panel.fsm-chat-mobile-thread .fsm-chat-sidebar{display:none!important}
   #fsm-chat-panel.fsm-chat-mobile-thread .fsm-chat-thread{display:flex}
-  #panel-chat .fsm-chat-sidebar-heading{padding:19px 18px 13px}
-  #panel-chat .fsm-chat-sidebar-heading h3{font-size:25px}
-  #panel-chat .fsm-chat-sidebar-overline{font-size:9px}
-  #panel-chat .fsm-chat-count-rooms{font-size:10px}
-  #panel-chat .fsm-chat-search-wrap{display:flex;margin:2px 13px 11px;height:46px;min-height:46px}
+  #panel-chat .fsm-chat-search-wrap{
+    display:flex;margin:15px 13px 12px!important;
+    height:50px;min-height:50px;
+    border-radius:11px!important;
+  }
+  #panel-chat #fsm-chat-search{font-size:16px;height:48px}
   #panel-chat .fsm-chat-filters{padding:0 13px 12px;gap:9px}
   #panel-chat .fsm-chat-filter{min-height:33px;padding:7px 13px}
   #panel-chat .fsm-chat-contacts{
@@ -445,7 +444,7 @@ body:has(#panel-chat.active) .pwa-install-button{display:none!important}
 }
 @media(max-width:420px){
   #fsm-chat-panel{height:calc(100dvh - 145px);min-height:320px}
-  #panel-chat .fsm-chat-sidebar-heading{padding:17px 16px 11px}
+  #panel-chat .fsm-chat-search-wrap{margin:13px 12px 10px!important}
   #panel-chat .fsm-chat-contact{min-height:73px;padding:9px 11px}
   #panel-chat .fsm-chat-avatar{width:43px;height:43px;flex-basis:43px}
   #panel-chat .fsm-chat-thread-header{gap:7px;padding:9px 8px}
