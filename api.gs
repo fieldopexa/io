@@ -2484,7 +2484,7 @@ function firebaseChatCustomToken_(fsmUser) {
     aud:'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
     iat:now,
     exp:now + 3600,
-    uid:'fsm_' + username,
+    uid:'fsm_' + Utilities.base64EncodeWebSafe(Utilities.newBlob(username).getBytes()).replace(/=+$/,''),
     claims:{
       fsm:true,
       fsm_username:username,
