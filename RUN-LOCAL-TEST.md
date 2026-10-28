@@ -8,7 +8,7 @@ This branch adds **Team Chat as a page inside FSM**, not a separate app. Open it
 2. Double-click `START-FSM-LOCAL.bat` (requires Python installed).
 3. Open `http://127.0.0.1:8765/` in the browser if not opened automatically.
 4. Sign in using your existing FSM username/password.
-5. Select **Operations → Team Chat**.
+5. Select **Operations → Team Chat**. The conversation list shows **Team Chat (Engineering group)** plus direct messages for **Popoy, Erwin, and Kenneth** (excluding your own account). Those direct-message choices are available even if a teammate has not opened Firebase chat yet.
 6. Team Chat should sign in **automatically using your existing FSM account**. There is no second email/password form. This only works **after** the FSM Apps Script backend and the updated Firestore rules are deployed as described in `docs/FSM-LIVE-CHAT-SETUP.md`.
 7. Switch to **Engineering Team** or a direct message. Test using Kenneth's **FSM** login on another browser or device.
 
