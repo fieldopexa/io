@@ -1,0 +1,33 @@
+name: Validate FSM Chat V2
+on:
+  push:
+    branches:
+      - feature/fsm-live-chat-v1
+  pull_request:
+    paths:
+      - 'live-chat.js'
+      - 'sw.js'
+      - 'FirebaseChatSSO.gs'
+      - 'FirebaseChatPush.gs'
+      - 'firestore.rules'
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify client and worker JavaScript syntax
+        run: |
+          node --check live-chat.js
+          node --check sw.js
+          node --check chat-config.js
+      - name: Verify Apps Script helpers compile as JavaScript
+        run: |
+          cp FirebaseChatSSO.gs /tmp/fsm-sso.js
+          cp FirebaseChatPush.gs /tmp/fsm-push.js
+          node --check /tmp/fsm-sso.js
+          node --check /tmp/fsm-push.js
+      - name: Check chat rule sections are present
+        run: |
+          grep -Fq "match /chatRooms/{roomId}/messages/{messageId}" firestore.rules
+          grep -Fq "request.resource.data.diff(resource.data)" firestore.rules
+          grep -Fq "match /chatPresence/{uid}" firestore.rules
