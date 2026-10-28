@@ -308,9 +308,13 @@
     if(state.user.uid!==uidForFsmUsername(username))return;
     visitAnnouncementFlush=(async()=>{
       const {doc,runTransaction,serverTimestamp}=state.lib;
-      const pending=loadPendingVisitAnnouncements(username);
-      for(const item of pending){
-        if(!state.user||state.user.uid!==uidForFsmUsername(username))break;
+      // Re-read on each iteration so a second confirmed visit arriving during
+      // a previous upload is included in the same flush.
+      const attempted=new Set();
+      while(true){
+        const item=loadPendingVisitAnnouncements(username).find(row=>!attempted.has(row.id));
+        if(!item||!state.user||state.user.uid!==uidForFsmUsername(username))break;
+        attempted.add(item.id);
         try{
           const ref=doc(state.db,'chatRooms','engineering','messages','visit_'+item.id);
           const activity=doc(state.db,'chatActivity','engineering');
@@ -811,7 +815,7 @@
   window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user&&isThreadVisible())markRead();launcher.click();});
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncPresence();if(state.user)void flushVisitAnnouncements();}});
   navigator.serviceWorker?.addEventListener('message',event=>{
     if(event.data?.type!=='FSM_CHAT_OPEN'||!state.user)return;
     const room=event.data.roomId;
