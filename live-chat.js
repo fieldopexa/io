@@ -246,7 +246,7 @@
     const fsmUser=(typeof currentUser!=='undefined')?currentUser:null;
     if(!fsmUser?.username)throw new Error('Sign in to FSM first.');
     const result=await apiPost('chatSSO',{});
-    if(!result?.customToken)throw new Error('FSM server did not return a Team Chat identity. Update the Apps Script deployment.');
+    if(!result?.customToken)throw new Error('FSM server did not return a Messages identity. Update the Apps Script deployment.');
     await state.lib.signInWithCustomToken(state.auth,result.customToken);
     const firebaseUser=state.auth.currentUser;
     // Encode the normalized username into a regex-safe, collision-free Firebase UID.
@@ -479,7 +479,7 @@
   async function startChat(user){
     const {doc,getDoc,setDoc,getIdTokenResult,collection,onSnapshot,query,limit,orderBy}=state.lib;
     const claims=(await getIdTokenResult(user)).claims;
-    if(claims.fsm!==true)throw new Error('Team Chat requires a verified FSM login.');
+    if(claims.fsm!==true)throw new Error('Messages requires a verified FSM login.');
     const profileRef=doc(state.db,'chatMembers',user.uid);
     let self=await getDoc(profileRef);
     if(!self.exists()){
@@ -490,7 +490,7 @@
       self=await getDoc(profileRef);
     }
     if(!self.exists()||self.data().active!==true){
-      gate('Access disabled','Your Team Chat access is disabled. Contact your FSM administrator.');
+      gate('Access disabled','Your messaging access is disabled. Contact your FSM administrator.');
       return;
     }
     state.user=user;state.member=self.data();
@@ -625,7 +625,7 @@
       await connectFromFSM();
     }catch(err){
       const message=err?.message||'Check your connection, backend deployment, or chat permissions.';
-      gate('Team Chat connection failed',message);
+      gate('Messages connection failed',message);
     }finally{
       state.booting=false;
     }
