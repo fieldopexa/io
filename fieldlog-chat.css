@@ -112,3 +112,20 @@
   #panel-fieldlogs .fsm-discuss-chat-btn,
   #detail-overlay .fsm-discuss-chat-btn {transition:none}
 }
+
+/* A saved visit and its group announcement have independent outcomes. */
+#fsm-visit-chat-status{
+  display:flex;align-items:center;gap:7px;
+  width:fit-content;max-width:100%;margin:6px 0 0;
+  padding:8px 11px;border-radius:8px;
+  border:1px solid #374353;background:#202834;
+  color:#c8d6e9;font-size:11px;line-height:1.45;
+}
+#fsm-visit-chat-status[hidden]{display:none!important}
+#fsm-visit-chat-status[data-state="posted"]{
+  background:#1b2d28;border-color:#305847;color:#a6ddc2;
+}
+#fsm-visit-chat-status[data-state="pending"],
+#fsm-visit-chat-status[data-state="queued"]{
+  background:#2b2923;border-color:#57503a;color:#e3ce96;
+}
