@@ -83,3 +83,6 @@
   #fsm-chat-panel .fsm-chat-compose {padding:8px;gap:6px;}
   #fsm-chat-panel .fsm-chat-send {padding:0 11px;}
 }
+
+/* FSM is the only sign-in/sign-out entry point for Team Chat. */
+#fsm-chat-signout{display:none!important;}
