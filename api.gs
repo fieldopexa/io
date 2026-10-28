@@ -320,6 +320,10 @@ function doPost(e) {
     if (action === 'chatSSO') {
       return json_({ok:true, customToken:firebaseChatCustomToken_(user)});
     }
+    // Optional: trusted FCM push after an authenticated sender saves a message.
+    if (action === 'chatPush') {
+      return json_(firebaseChatPush_(user, body));
+    }
 
     // Agenda writes are available only to authenticated Master users.
     // The separate public viewer can read Agenda through doGet(viewer=1),
