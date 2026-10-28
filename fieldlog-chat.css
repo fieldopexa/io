@@ -1,0 +1,38 @@
+/* Field Logs → FSE Team discussion handoff.
+   Scoped to Field Logs cards/detail drawers and the chat draft banner. */
+#panel-fieldlogs .fsm-discuss-chat-btn,
+#detail-overlay .fsm-discuss-chat-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:32px;padding:6px 11px;white-space:nowrap;
+  font:650 11px/1.25 'Segoe UI',Arial,sans-serif;
+  letter-spacing:0;background:#262e40;color:#d3dcff;
+  border:1px solid #424f70;border-radius:8px;
+  cursor:pointer;transition:background-color .15s,border-color .15s;
+}
+#panel-fieldlogs .fsm-discuss-chat-btn:hover,
+#detail-overlay .fsm-discuss-chat-btn:hover{
+  background:#343e56;border-color:#6d80b5;color:#f2f5ff;
+}
+#panel-fieldlogs .fsm-discuss-chat-btn:focus-visible,
+#detail-overlay .fsm-discuss-chat-btn:focus-visible{
+  outline:2px solid var(--accent,#6d8cff);outline-offset:2px;
+}
+#panel-fieldlogs .readable-log-actions .fsm-discuss-chat-btn{
+  min-height:30px;font-size:10.5px;padding:5px 9px;
+}
+#detail-overlay .vd-footer .drawer-actions .fsm-discuss-chat-btn{
+  min-height:36px;font-size:11px;
+}
+#panel-chat .fsm-chat-draft-note{
+  display:block;padding:10px 16px;margin:0;
+  color:#d6e0fa;background:#232d42;
+  border-top:1px solid #425478;font-size:11.5px;
+}
+#panel-chat .fsm-chat-draft-note[hidden]{display:none!important}
+@media(max-width:900px){
+  #panel-fieldlogs .readable-log-actions{flex-wrap:wrap;justify-content:flex-end}
+  #panel-fieldlogs .fsm-discuss-chat-btn{min-height:42px!important}
+  #detail-overlay .vd-footer .drawer-actions{flex-wrap:wrap}
+  #detail-overlay .fsm-discuss-chat-btn{min-height:44px!important}
+  #panel-chat .fsm-chat-draft-note{padding:9px 12px;line-height:1.45}
+}
