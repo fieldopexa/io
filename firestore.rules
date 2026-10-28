@@ -105,6 +105,22 @@ service cloud.firestore {
         && request.resource.data.lastSeen == request.time;
       allow delete: if false;
     }
+    // Web-push device tokens are private to their signed-in FSM owner.
+    // Only the trusted Apps Script service account may read them for delivery.
+    match /chatDevices/{uid}/tokens/{deviceId} {
+      allow read: if activeMember() && uid == request.auth.uid;
+      allow create, update: if activeMember()
+        && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['token','registeredAt','userAgent'])
+        && request.resource.data.keys().hasAll(['token','registeredAt','userAgent'])
+        && request.resource.data.token is string
+        && request.resource.data.token.size() > 10
+        && request.resource.data.token.size() <= 1024
+        && request.resource.data.userAgent is string
+        && request.resource.data.userAgent.size() <= 150
+        && request.resource.data.registeredAt == request.time;
+      allow delete: if activeMember() && uid == request.auth.uid;
+    }
     match /{document=**} {
       allow read, write: if false;
     }
