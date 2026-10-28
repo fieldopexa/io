@@ -360,6 +360,13 @@
 }
 .fsm-chat-nav-badge[hidden]{display:none!important}
 
+/* Keep the global install prompt from covering the message composer.
+   It remains available from the other FSM pages. */
+body:has(#panel-chat.active) .pwa-install-button{display:none!important}
+
+/* If the connection screen is displayed, center it in either layout. */
+#fsm-chat-panel .fsm-chat-body:has(> .fsm-chat-gate){display:flex;align-items:center;justify-content:center}
+
 /* Mobile: two real screens rather than horizontally swiped contacts.
    Default screen = inbox. Opening a conversation switches to full thread. */
 @media(max-width:820px){
