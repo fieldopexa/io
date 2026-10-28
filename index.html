@@ -4340,6 +4340,7 @@ body:has(#spare-modal[style*="display:flex"]){
 <button type="button" class="mobile-save-fab" id="mobile-save-fab"><span>Save Field Visit</span><b>→</b></button>
       <div class="err" id="err-msg" role="alert" aria-live="polite">Fill in the site and category before logging.</div>
       <div id="visit-save-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.6;margin-top:10px"></div>
+      <div id="fsm-visit-chat-status" role="status" aria-live="polite" hidden></div>
       </div>
       </div>
       <div class="visit-step-error" id="visit-step-error" role="alert" aria-live="polite"></div>
@@ -5763,6 +5764,19 @@ async function loadEntries(){
   renderActivePanel();
   openRequestedFSMFieldLog();
 }
+window.addEventListener('fsm-visit-announcement-status',event=>{
+  const node=document.getElementById('fsm-visit-chat-status');
+  const id=String(event.detail?.id||'');
+  if(!node||!id||node.dataset.visitId!==id)return;
+  const status=event.detail.status;
+  node.dataset.state=status;
+  node.hidden=false;
+  node.textContent=status==='posted'
+    ?'✓ Notification posted to FSE Team'
+    :status==='pending'
+      ?'◷ FSE Team notification pending. FSM will retry when connected.'
+      :'◷ Posting notification to FSE Team…';
+});
 
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
@@ -6822,6 +6836,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const saveStatus=document.getElementById('visit-save-status');
   if(saveStatus)saveStatus.textContent='Saving visit. Keep this page open until the save is confirmed.';
+  const chatStatus=document.getElementById('fsm-visit-chat-status');
+  if(chatStatus){chatStatus.hidden=true;chatStatus.textContent='';chatStatus.dataset.visitId='';}
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
   const date=document.getElementById('f-date').value||todayStr();
@@ -6859,6 +6875,12 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
       clearPendingVisitAttachments();
       queueVisitAttachmentUpload(entry.id,filesToUpload);
     }
+    if(!isEdit&&chatStatus){
+      chatStatus.dataset.visitId=String(entry.id);
+      chatStatus.textContent='Preparing FSE Team notification…';
+      chatStatus.hidden=false;
+      chatStatus.dataset.state='queued';
+    }
     window.dispatchEvent(new CustomEvent('visit-committed',{detail:{isEdit,entry}}));
     if(!isEdit)window.dispatchEvent(new Event('visit-saved'));
     let spareWarning='';
@@ -6895,6 +6917,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     }
     storageSet(STORAGE_KEY,entries);
     render();renderReport();renderDashboard();
+    if(chatStatus){chatStatus.hidden=true;chatStatus.dataset.visitId='';}
     if(saveStatus)saveStatus.textContent='Save not confirmed. Your entries are still in the form. '+(e.message||'Check your connection.')+' Review Field Logs before retrying if the connection dropped during saving.';
     showToast(isEdit?'Update failed':'Visit not saved',e.message||'Unable to sync with the shared sheet.','bad');
   }
@@ -12620,4 +12643,4 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 <link rel="stylesheet" href="./live-chat.css">
 <link rel="stylesheet" href="./fieldlog-chat.css?v=20261028-compact-discuss">
 <script src="./chat-config.js"></script>
-<script defer src="./live-chat.js?v=fsm-auto-visit-20261028"></script>
+<script defer src="./live-chat.js?v=fsm-auto-visit-feedback-20261028"></script>
