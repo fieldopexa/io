@@ -21,6 +21,22 @@
   const notifyMemory=new Map();
   let pendingIncidentDraft=null;
   let visitAnnouncementFlush=null;
+  let visitAnnouncementRetryTimer=null;
+  let visitAnnouncementRetryDelay=30000;
+  function visitAnnouncementStatus(id,status){
+    window.dispatchEvent(new CustomEvent('fsm-visit-announcement-status',{
+      detail:{id:String(id||''),status}
+    }));
+  }
+  function scheduleVisitAnnouncementRetry(){
+    if(visitAnnouncementRetryTimer)return;
+    const delay=visitAnnouncementRetryDelay;
+    visitAnnouncementRetryDelay=Math.min(300000,Math.round(delay*1.8));
+    visitAnnouncementRetryTimer=setTimeout(()=>{
+      visitAnnouncementRetryTimer=null;
+      if(state.user)void flushVisitAnnouncements();
+    },delay);
+  }
   const visitAnnounceKey=username=>'fsm-chat-visit-announcements-v1:'+String(username||'').trim().toLowerCase();
   const announcementMaxAge=14*24*60*60*1000;
   // Directory entries are based on confirmed existing FSM usernames, not Firebase
@@ -296,6 +312,7 @@
       queued.push({id,payload:text,queuedAt:Date.now()});
       storePendingVisitAnnouncements(username,queued);
     }
+    visitAnnouncementStatus(id,'queued');
     // This is deliberately fire-and-forget and cannot roll back the successful
     // visit save; if Firebase is unavailable, keep the announcement for retry.
     if(state.user)void flushVisitAnnouncements();
@@ -336,13 +353,18 @@
           });
           const latest=loadPendingVisitAnnouncements(username);
           storePendingVisitAnnouncements(username,latest.filter(row=>row.id!==item.id));
+          visitAnnouncementRetryDelay=30000;
+          visitAnnouncementStatus(item.id,'posted');
           if(created&&window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
             apiPost('chatPush',{roomId:'engineering',messageId:ref.id})
               .catch(err=>console.warn('Visit push notification unavailable:',err.message));
           }
         }catch(err){
           console.warn('FSE Team visit announcement pending:',err.code||err.message);
-          // Avoid aggressively retrying against offline/permission failures.
+          visitAnnouncementStatus(item.id,'pending');
+          // Network and temporary permission issues can resolve without a
+          // page reload. Retry gradually; never compromise the saved visit.
+          scheduleVisitAnnouncementRetry();
           break;
         }
       }
@@ -812,7 +834,7 @@
     }
 
   }
-  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;clearTimeout(visitAnnouncementRetryTimer);visitAnnouncementRetryTimer=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user&&isThreadVisible())markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncPresence();if(state.user)void flushVisitAnnouncements();}});
