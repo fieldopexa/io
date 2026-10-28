@@ -73,3 +73,13 @@ Make sure every engineer uses the **latest development ZIP** (old local or live 
 After a newly confirmed save, the visit form shows **Posting notification**, **Notification posted to FSE Team**, or **Notification pending (will retry)**. If you saved a visit in an earlier test build, it is **not automatically backfilled**. To share that already-saved visit, open **Field Logs → the visit's ••• menu → Notify FSE Team**. This queues the existing record using its stable visit ID and will not create a duplicate group card if it was already posted. For detailed incident discussion, **Discuss in Chat** remains a separate manual, editable draft action.
 
 A successful Field Log save is independent of the Firebase message. The retry queue lives in this browser (per authenticated FSM username) for up to 14 days, so do not assume guaranteed delivery after the browser is closed. A system-wide guarantee for visits created from any older client would require a server-side Apps Script hook and deployment. As with other group messages, the **sender will not get an incoming-message alert for their own visit**; teammates should see the group update and unread indicator while FSM is open. True closed-app push requires the separate FCM setup.
+
+## Shared FSE Field Logs (new)
+**Requires merging and redeploying the updated Apps Script `api.gs` first.** Older deployed APIs still filter FSE records to the current technician. See [complete setup and authorization guide](docs/FSE-SHARED-FIELD-LOGS.md).
+
+1. Sign in as Popoy. Open Field Logs → **All FSEs**. You should see Erwin's, Kenneth's and Ian's visits (when they exist). Use **All technicians** to filter Erwin.
+2. Switch to **My Work**. Only visits where Popoy participated should remain. Keep the category/date/search filters available.
+3. Open an Erwin visit. Details and attachments should be readable, but **Edit**, **Duplicate**, **Void** and **Add attachment** should not be available. Discuss in FSE Team must still work for incidents.
+4. Sign in as Erwin and verify that Erwin can edit and void **only Erwin's Primary FSE visits**. Supporting FSEs may view but not change someone else's log.
+5. Sign in as Management. All Field Logs are visible, but New Visit, Edit, Void and permanent delete requests are blocked.
+6. Check automatic new-visit notifications in FSE Team still appear once for newly saved visits, and old logs/history have not changed.
