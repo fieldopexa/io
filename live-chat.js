@@ -132,7 +132,7 @@
     content.innerHTML=`<aside class="fsm-chat-contacts" id="fsm-chat-contacts"></aside><div class="fsm-chat-thread"><div class="fsm-chat-thread-head" id="fsm-chat-thread-head"></div><div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div><form class="fsm-chat-compose" id="fsm-chat-compose"><input id="fsm-chat-input" maxlength="2000" placeholder="Write a message…" aria-label="Message" autocomplete="off" required><button id="fsm-chat-send" class="fsm-chat-send" type="submit">Send</button></form><div id="fsm-chat-error" role="status" style="padding:0 12px;color:#ffb3a4;font-size:11px"></div></div>`;
     el('fsm-chat-compose').addEventListener('submit',sendMessage);
     state.unsubMembers=onSnapshot(collection(state.db,'chatMembers'),snap=>{
-      state.profiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>p.active===true);
+      state.profiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>p.active===true && /^fsm_[A-Za-z0-9_-]+$/.test(p.uid));
       const me=state.profiles.find(p=>p.uid===user.uid);if(!me){stopListeners();gate('Access disabled','Contact your FSM administrator.');return;}
       state.member=me;renderContacts();
     },()=>{});
