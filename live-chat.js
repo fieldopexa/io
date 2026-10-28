@@ -122,7 +122,7 @@
         const link=document.createElement('a');
         link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';
         const fieldlogId=url.hostname==='fieldopexa.github.io'
-          && url.pathname.replace(/\\/$/,'')==='/io'
+          && url.pathname.replace(/\/$/,'')==='/io'
           ?url.searchParams.get('fieldlog'):null;
         if(fieldlogId){
           link.title='Open the original FSM Field Log';
