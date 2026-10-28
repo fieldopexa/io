@@ -515,9 +515,18 @@
     },err=>console.warn('Presence listener:',err.code));
     syncPresence();
     state.presenceTimer=setInterval(syncPresence,90000);
+    // Restore previously granted FCM permission when this device reconnects.
+    if('Notification' in window && Notification.permission==='granted' && window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
+      registerPushDevice().then(enabled=>{
+        if(enabled){
+          const button=el('fsm-chat-enable-alerts');
+          if(button?.querySelector('span'))button.querySelector('span').textContent='Push on';
+        }
+      }).catch(err=>console.warn('Chat push re-registration unavailable:',err.code||err.message));
+    }
 
   }
-  window.fsmChatSignOut=async()=>{stopListeners();await unregisterPushDevice();state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
