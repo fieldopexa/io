@@ -18,8 +18,22 @@
   const launcher=el('fsm-chat-launcher'),panel=el('fsm-chat-panel'),content=el('fsm-chat-content');
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unread:{},lastSeen:{},messages:[],loading:false};
-  const STATUS='fsm-chat-seen-v1';
-  try{state.lastSeen=JSON.parse(localStorage.getItem(STATUS)||'{}');}catch{}
+  // Directory entries are based on confirmed existing FSM usernames, not Firebase
+  // email accounts. Add future users here if you need them to appear before
+  // their first chat login. Users who have already used chat appear dynamically.
+  const TEAM_DIRECTORY=[
+    {username:'ian',name:'Ian'},
+    {username:'kenneth',name:'Kenneth'},
+    {username:'erwin',name:'Erwin'},
+    {username:'popoy',name:'Popoy'}
+  ];
+  function uidForFsmUsername(username){
+    const value=String(username||'').trim().toLowerCase();
+    if(!/^[a-z0-9._-]{1,64}$/.test(value))return '';
+    return 'fsm_'+btoa(value).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  // Keep read status separate for different FSM accounts using the same browser.
+  const seenStorageKey=()=>state.user?'fsm-chat-seen-v2:'+state.user.uid:'';
   const isOpen=()=>!!document.getElementById('panel-chat')?.classList.contains('active');
   const roomId=(a,b)=>'dm~'+[a,b].sort().join('~');
   function openToggle(force){if(force===false&&isOpen())document.querySelector('.tab[data-tab="dashboard"]')?.click();}
@@ -32,14 +46,36 @@
   function syncVisible(){const visible=app.style.display!=='none'&&!!document.getElementById('logged-user')?.textContent?.trim()&&document.getElementById('logged-user')?.textContent!=='—';host.hidden=!visible;}
   new MutationObserver(syncVisible).observe(app,{attributes:true,attributeFilter:['style']});
   syncVisible();
-  function persistSeen(){try{localStorage.setItem(STATUS,JSON.stringify(state.lastSeen));}catch{}}
+  function persistSeen(){try{if(state.user)localStorage.setItem(seenStorageKey(),JSON.stringify(state.lastSeen));}catch{}}
+  function chatPeople(){
+    if(!state.user)return [];
+    const profiles=new Map(state.profiles.map(p=>[p.uid,p]));
+    const people=new Map();
+    for(const entry of TEAM_DIRECTORY){
+      const uid=uidForFsmUsername(entry.username);
+      const profile=profiles.get(uid);
+      if(!uid||uid===state.user.uid||profile?.active===false)continue;
+      people.set(uid,{uid,name:entry.name,username:entry.username});
+    }
+    for(const profile of state.profiles){
+      if(profile.uid===state.user.uid||profile.active!==true)continue;
+      if(!people.has(profile.uid)){
+        people.set(profile.uid,{uid:profile.uid,name:profile.name||profile.username||'Teammate',username:profile.username||''});
+      }
+    }
+    return Array.from(people.values()).sort((a,b)=>a.name.localeCompare(b.name));
+  }
+  function conversations(){
+    return [{id:'engineering',name:'Team Chat',type:'group',description:'Engineering group'},
+      ...chatPeople().map(person=>({id:roomId(state.user.uid,person.uid),name:person.name,type:'direct',description:'Private message'}))];
+  }
   function updateUnread(){
     const total=Object.values(state.unread).reduce((a,b)=>a+b,0),badge=el('fsm-chat-badge');
     badge.hidden=!total;badge.textContent=total>99?'99+':String(total);
     for(const id of ['fsm-chat-nav-badge','fsm-chat-mobile-badge']){const n=el(id);if(n){n.hidden=!total;n.textContent=total>99?'99+':String(total);}}
     launcher.title=total?`${total} unread chat messages`:'Team Chat';
   }
-  function roomName(){if(state.room==='engineering')return'Engineering Team';return state.profiles.find(p=>roomId(p.uid,state.user.uid)===state.room)?.name||'Direct message';}
+  function roomName(){return conversations().find(c=>c.id===state.room)?.name||'Direct message';}
   function markRead(){if(!state.user)return;state.lastSeen[state.room]=Date.now();state.unread[state.room]=0;persistSeen();updateUnread();renderContacts();}
   async function loadSdk(){
     if(state.lib)return state.lib;
@@ -63,17 +99,26 @@
     await state.lib.signInWithCustomToken(state.auth,result.customToken);
     const firebaseUser=state.auth.currentUser;
     // Encode the normalized username into a regex-safe, collision-free Firebase UID.
-    const normalizedUsername=String(fsmUser.username||'').trim().toLowerCase();
-    const expectedUid='fsm_'+btoa(normalizedUsername).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const expectedUid=uidForFsmUsername(fsmUser.username);
     if(!firebaseUser || firebaseUser.uid!==expectedUid)throw new Error('Chat identity mismatch. Contact the administrator.');
     await startChat(firebaseUser);
   }
   function stopListeners(){state.unsubMessages?.();state.unsubMembers?.();state.unsubActivity?.();state.unsubMessages=state.unsubMembers=state.unsubActivity=null;}
   function renderContacts(){
     const list=el('fsm-chat-contacts');if(!list||!state.user)return;
-    const options=[{id:'engineering',name:'Engineering Team'},...state.profiles.filter(p=>p.uid!==state.user.uid&&p.active===true).map(p=>({id:roomId(state.user.uid,p.uid),name:p.name||p.email||'Teammate'}))];
-    list.innerHTML='<div class="fsm-chat-caption">Conversations</div>'+options.map(x=>`<button type="button" class="fsm-chat-contact ${state.room===x.id?'active':''}" data-chat-room="${escapeHtml(x.id)}"><span>${escapeHtml(x.name)}</span>${state.unread[x.id]?`<span class="fsm-chat-count">${state.unread[x.id]}</span>`:''}</button>`).join('');
-    list.querySelectorAll('[data-chat-room]').forEach(b=>b.onclick=()=>selectRoom(b.dataset.chatRoom));
+    const all=conversations();
+    const button=x=>{
+      const active=state.room===x.id;
+      const badge=state.unread[x.id];
+      const avatar=x.type==='group'?'👥':String(x.name||'?').trim().charAt(0).toUpperCase();
+      return `<button type="button" class="fsm-chat-contact ${active?'active':''}" data-chat-room="${escapeHtml(x.id)}" aria-current="${active?'true':'false'}"><span class="fsm-chat-avatar ${x.type==='group'?'group':''}" aria-hidden="true">${escapeHtml(avatar)}</span><span class="fsm-chat-contact-detail"><strong>${escapeHtml(x.name)}</strong><small>${escapeHtml(x.description)}</small></span>${badge?`<span class="fsm-chat-count" aria-label="${badge} unread messages">${badge}</span>`:''}</button>`;
+    };
+    list.innerHTML='<div class="fsm-chat-caption">Group conversation</div>'
+      +all.filter(c=>c.type==='group').map(button).join('')
+      +'<div class="fsm-chat-caption fsm-chat-direct-label">Direct messages</div>'
+      +all.filter(c=>c.type==='direct').map(button).join('')
+      +(all.length===1?'<p class="fsm-chat-contacts-help">Other FSM members appear here after they first use Team Chat.</p>':'');
+    list.querySelectorAll('[data-chat-room]').forEach(b=>b.addEventListener('click',()=>selectRoom(b.dataset.chatRoom)));
   }
   function renderMessages(){
     const node=el('fsm-chat-messages');if(!node)return;const atBottom=node.scrollHeight-node.scrollTop-node.clientHeight<85;
@@ -92,7 +137,10 @@
   function selectRoom(id){
     if(!state.user||!id)return;
     state.unsubMessages?.();state.room=id;state.messages=[];renderContacts();
-    el('fsm-chat-thread-head').textContent=roomName();renderMessages();
+    el('fsm-chat-thread-head').textContent=roomName();
+    el('fsm-chat-subtitle').textContent=state.room==='engineering'?'Engineering group conversation':'Private messages between FSM members';
+    const input=el('fsm-chat-input');if(input)input.placeholder=state.room==='engineering'?'Message the team…':`Message ${roomName()}…`;
+    renderMessages();
     const {collection,query,orderBy,limit,onSnapshot}=state.lib;
     state.unsubMessages=onSnapshot(query(collection(state.db,'chatRooms',id,'messages'),orderBy('createdAt','desc'),limit(100)),snap=>{
       state.messages=snap.docs.map(d=>({id:d.id,...d.data()})).reverse();renderMessages();
@@ -129,10 +177,12 @@
       return;
     }
     state.user=user;state.member=self.data();el('fsm-chat-signout').hidden=false;
+    try{state.lastSeen=JSON.parse(localStorage.getItem(seenStorageKey())||'{}');}catch{state.lastSeen={};}
+    state.unread={};updateUnread();
     content.innerHTML=`<aside class="fsm-chat-contacts" id="fsm-chat-contacts"></aside><div class="fsm-chat-thread"><div class="fsm-chat-thread-head" id="fsm-chat-thread-head"></div><div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div><form class="fsm-chat-compose" id="fsm-chat-compose"><input id="fsm-chat-input" maxlength="2000" placeholder="Write a message…" aria-label="Message" autocomplete="off" required><button id="fsm-chat-send" class="fsm-chat-send" type="submit">Send</button></form><div id="fsm-chat-error" role="status" style="padding:0 12px;color:#ffb3a4;font-size:11px"></div></div>`;
     el('fsm-chat-compose').addEventListener('submit',sendMessage);
     state.unsubMembers=onSnapshot(collection(state.db,'chatMembers'),snap=>{
-      state.profiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>p.active===true && /^fsm_[A-Za-z0-9_-]+$/.test(p.uid));
+      state.profiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>/^fsm_[A-Za-z0-9_-]+$/.test(p.uid));
       const me=state.profiles.find(p=>p.uid===user.uid);if(!me){stopListeners();gate('Access disabled','Contact your FSM administrator.');return;}
       state.member=me;renderContacts();
     },()=>{});
@@ -140,14 +190,14 @@
     // Lightweight room activity badges while the app is open, even if chat is minimized.
     state.unsubActivity=onSnapshot(query(collection(state.db,'chatActivity'),orderBy('updatedAt','desc'),limit(100)),snap=>{
       for(const entry of snap.docs){const data=entry.data();const id=entry.id;
-        if(id!=='engineering'&&!state.profiles.some(p=>p.uid!==user.uid&&roomId(user.uid,p.uid)===id))continue;
+        if(!conversations().some(c=>c.id===id))continue;
         const millis=data.updatedAt?.toMillis?.()||0;
         state.unread[id]=(data.senderId!==user.uid&&millis>(state.lastSeen[id]||0))?1:0;
       }
       updateUnread();renderContacts();
     },()=>{});
   }
-  window.fsmChatSignOut=async()=>{stopListeners();state.user=null;if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{stopListeners();state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.unread={};if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   launcher.addEventListener('click',async()=>{
