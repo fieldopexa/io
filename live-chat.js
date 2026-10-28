@@ -56,7 +56,7 @@
     gate('Sign in to Team Chat',message,`<form id="fsm-chat-login-form"><input type="email" name="email" aria-label="Email" placeholder="Work email" autocomplete="email" required><input type="password" name="password" aria-label="Password" placeholder="Password" autocomplete="current-password" required minlength="6"><button type="submit">Sign in</button></form>`);
     el('fsm-chat-login-form').addEventListener('submit',async e=>{
       e.preventDefault();const form=e.currentTarget,button=form.querySelector('button');button.disabled=true;setStatus('Signing in…');
-      try{await state.lib.signInWithEmailAndPassword(state.auth,form.email.value.trim(),form.password.value);}catch(err){setStatus('Unable to sign in. Check your account or ask the administrator.');button.disabled=false;}
+      try{await state.lib.signInWithEmailAndPassword(state.auth,form.elements.namedItem('email').value.trim(),form.elements.namedItem('password').value);}catch(err){setStatus('Unable to sign in. Check your account or ask the administrator.');button.disabled=false;}
     });
   }
   function stopListeners(){state.unsubMessages?.();state.unsubMembers?.();state.unsubActivity?.();state.unsubMessages=state.unsubMembers=state.unsubActivity=null;}
@@ -93,10 +93,10 @@
   async function sendMessage(e){
     e.preventDefault();if(state.loading||!state.user||!state.member?.active)return;
     const input=el('fsm-chat-input'),text=input.value.trim();if(!text||text.length>2000)return;
-    const {collection,addDoc,serverTimestamp}=state.lib;
+    const {collection,doc,writeBatch,serverTimestamp}=state.lib;
     state.loading=true;el('fsm-chat-send').disabled=true;
     try{
-      await addDoc(collection(state.db,'chatRooms',state.room,'messages'),{text,senderId:state.user.uid,senderName:state.member.name||state.user.email,createdAt:serverTimestamp()});
+      const messageRef=doc(collection(state.db,'chatRooms',state.room,'messages'));const batch=writeBatch(state.db);batch.set(messageRef,{text,senderId:state.user.uid,senderName:state.member.name||state.user.email,createdAt:serverTimestamp()});batch.set(doc(state.db,'chatActivity',state.room),{senderId:state.user.uid,updatedAt:serverTimestamp()});await batch.commit();
       input.value='';markRead();
     }catch(err){const n=el('fsm-chat-error');n.textContent='Message not sent. Check your connection or permissions.';}
     finally{state.loading=false;el('fsm-chat-send').disabled=false;input.focus();}
