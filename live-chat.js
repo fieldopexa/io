@@ -146,6 +146,9 @@
   function relativePreview(msg){
     if(!msg)return 'Start a conversation';
     if(msg.deleted)return 'Message unsent';
+    if(/^visit_[A-Za-z0-9_-]+$/.test(String(msg.id||''))&&String(msg.text||'').startsWith('📋 NEW FIELD VISIT LOGGED')){
+      return 'New field visit · '+(visitNoticeDetail(msg.text).Site||'FSE Team');
+    }
     return String(msg.text||'').replace(/\s+/g,' ').slice(0,58)||'New message';
   }
   function relativeTime(stamp){
@@ -162,17 +165,19 @@
     notifyMemory.set(room,msg.id);
     const person=conversations().find(c=>c.id===room);
     const label=person?.name||'A teammate';
+    const isNewVisit=/^visit_[A-Za-z0-9_-]+$/.test(String(msg?.id||''))&&String(msg?.text||'').startsWith('📋 NEW FIELD VISIT LOGGED');
+    const alertTitle=isNewVisit?(msg.senderName||'An FSE')+' logged a field visit':'New message from '+label;
     const toast=el('fsm-chat-toast');
     if(toast&&document.visibilityState==='visible'){
       toast.hidden=false;
-      toast.textContent='New message from '+label;
+      toast.textContent=alertTitle;
       toast.onclick=()=>{document.querySelector('.tab[data-tab="chat"]')?.click();selectRoom(room);toast.hidden=true;};
       clearTimeout(state.toastTimer);
       state.toastTimer=setTimeout(()=>toast.hidden=true,5200);
     }else if(!state.pushEnabled&&'Notification' in window&&Notification.permission==='granted'){
       try{
-        const notice=new Notification('New message · '+label,{
-          body:'Open FSM to read your message',tag:'fsm-chat-'+room,
+        const notice=new Notification(alertTitle,{
+          body:isNewVisit?'FSE Team · Open FSM to view the new field visit':'Open FSM to read your message',tag:'fsm-chat-'+room,
           icon:'./icons/icon-192.png'
         });
         notice.onclick=()=>{window.focus();document.querySelector('.tab[data-tab="chat"]')?.click();selectRoom(room);notice.close();};
@@ -452,6 +457,54 @@
     const yesterday=new Date(now);yesterday.setDate(now.getDate()-1);
     return yesterday.toDateString()===d.toDateString()?'Yesterday':d.toLocaleDateString([],{month:'long',day:'numeric',year:'numeric'});
   }
+  function isVisitNotice(msg){
+    return state.room==='engineering'&&/^visit_[A-Za-z0-9_-]+$/.test(String(msg?.id||''))
+      &&String(msg?.text||'').startsWith('📋 NEW FIELD VISIT LOGGED');
+  }
+  function visitNoticeDetail(text){
+    const result={};
+    for(const line of String(text||'').split('\n')){
+      const i=line.indexOf(': ');
+      if(i>0)result[line.slice(0,i)]=line.slice(i+2);
+    }
+    return result;
+  }
+  function renderVisitNotice(body,msg){
+    const details=visitNoticeDetail(msg.text);
+    const eyebrow=document.createElement('div');
+    eyebrow.className='fsm-chat-visit-eyebrow';
+    eyebrow.textContent='FIELD LOG · AUTOMATIC UPDATE';
+    const heading=document.createElement('strong');
+    heading.className='fsm-chat-visit-heading';
+    heading.textContent=details.Site||'New Field Visit';
+    const summary=document.createElement('div');
+    summary.className='fsm-chat-visit-summary';
+    summary.textContent=[details.Visit,details.FSE].filter(Boolean).join(' · ');
+    body.append(eyebrow,heading,summary);
+    const status=document.createElement('div');
+    status.className='fsm-chat-visit-details';
+    for(const [label,value] of [
+      ['Date',details['Visit date']],
+      ['Status',details.Status],
+      ['Priority',details.Priority],
+      ['Machine',details.Machine],
+      ['Ticket',details.Ticket]
+    ]){
+      if(!value)continue;
+      const fact=document.createElement('span');
+      fact.textContent=label+': '+value;
+      status.append(fact);
+    }
+    body.append(status);
+    if(details['View Field Log']){
+      const footer=document.createElement('div');
+      footer.className='fsm-chat-visit-link';
+      renderTextWithLinks(footer,details['View Field Log']);
+      const link=footer.querySelector('a');
+      if(link)link.textContent='View Field Log ↗';
+      body.append(footer);
+    }
+  }
   function renderMessages(){
     const node=el('fsm-chat-messages');if(!node)return;
     const atBottom=node.scrollHeight-node.scrollTop-node.clientHeight<100;
@@ -474,10 +527,11 @@
         }
       }
       const row=document.createElement('div');row.className='fsm-chat-message-row'+(mine?' mine':'');
-      const item=document.createElement('div');item.className='fsm-chat-message'+(mine?' mine':'')+(msg.deleted?' deleted':'');
+      const item=document.createElement('div');item.className='fsm-chat-message'+(mine?' mine':'')+(msg.deleted?' deleted':'')+(isVisitNotice(msg)&&!msg.deleted?' fsm-chat-visit-notice':'');
       const by=document.createElement('div');by.className='fsm-chat-byline';by.textContent=mine?'You':msg.senderName||'Teammate';
       const body=document.createElement('div');body.className='fsm-chat-text';
       if(msg.deleted)body.textContent=mine?'You unsent a message':'Message unsent';
+      else if(isVisitNotice(msg))renderVisitNotice(body,msg);
       else renderTextWithLinks(body,msg.text);
       const stamp=document.createElement('div');stamp.className='fsm-chat-stamp';
       const dt=ms?new Date(ms):null;
@@ -490,7 +544,7 @@
         trigger.title='Message actions';trigger.setAttribute('aria-label','Message actions');trigger.setAttribute('aria-expanded','false');
         trigger.textContent='⋯';
         const menu=document.createElement('div');menu.className='fsm-chat-message-menu';menu.hidden=true;
-        const options=[['Copy','copy'],...(mine?[['Edit','edit'],['Unsend','unsend']]:[])];
+        const options=[['Copy','copy'],...(mine&&!isVisitNotice(msg)?[['Edit','edit'],['Unsend','unsend']]:[])];
         for(const [label,action] of options){
           const btn=document.createElement('button');btn.type='button';btn.textContent=label;
           btn.dataset.action=action;btn.addEventListener('click',event=>{event.stopPropagation();menu.hidden=true;handleMessageAction(action,msg);});
