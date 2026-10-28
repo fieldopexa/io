@@ -132,3 +132,16 @@
 
 /* Keep the optional one-time notification action within the Field Log menu. */
 #panel-fieldlogs .readable-log-menu>div{width:165px}
+
+/* Shared Field Logs: fast, readable technician selector in both layouts. */
+#panel-fieldlogs #log-fse-filter{
+  min-height:40px;min-width:170px;max-width:230px;padding:8px 12px;
+  border:1px solid var(--line,#30343b);border-radius:9px;
+  background:var(--input-bg,#151719);color:var(--ink,#f1f3f5);
+  font:12px/1.4 'Segoe UI',sans-serif;
+}
+#panel-fieldlogs #log-fse-filter:focus-visible{outline:2px solid var(--accent,#6d8cff);outline-offset:2px}
+#panel-fieldlogs #fieldlogs-new-btn[hidden]{display:none!important}
+@media(max-width:900px){
+  #panel-fieldlogs #log-fse-filter{width:100%;min-width:0;max-width:none;min-height:44px}
+}
