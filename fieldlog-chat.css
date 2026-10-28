@@ -129,3 +129,6 @@
 #fsm-visit-chat-status[data-state="queued"]{
   background:#2b2923;border-color:#57503a;color:#e3ce96;
 }
+
+/* Keep the optional one-time notification action within the Field Log menu. */
+#panel-fieldlogs .readable-log-menu>div{width:165px}
