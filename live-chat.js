@@ -16,7 +16,7 @@
   el('fsm-chat-panel').hidden=false; // Embedded in FSM Operations navigation.
   const launcher=el('fsm-chat-launcher'),panel=el('fsm-chat-panel'),content=el('fsm-chat-content');
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unsubPresence:null,unsubPreviews:new Map(),previewReady:{},preview:{},unread:{},lastSeen:{},presence:{},messages:[],filter:'',editingId:null,loading:false,booting:false,presenceTimer:null,firebaseApp:null,messaging:null,pushLib:null,pushEnabled:false,pushToken:null,pushTokenRef:null};
+  const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unsubPresence:null,unsubPreviews:new Map(),previewReady:{},preview:{},unread:{},lastSeen:{},presence:{},messages:[],filter:'',editingId:null,loading:false,booting:false,presenceTimer:null,firebaseApp:null,messaging:null,pushLib:null,pushEnabled:false,pushToken:null,pushTokenRef:null,mobileThreadOpen:false,unreadOnly:false};
   const defaultTitle=document.title;
   const notifyMemory=new Map();
   // Directory entries are based on confirmed existing FSM usernames, not Firebase
@@ -36,6 +36,23 @@
   // Keep read status separate for different FSM accounts using the same browser.
   const seenStorageKey=()=>state.user?'fsm-chat-seen-v2:'+state.user.uid:'';
   const isOpen=()=>!!document.getElementById('panel-chat')?.classList.contains('active');
+  const isMobileChat=()=>window.matchMedia('(max-width:820px)').matches;
+  const isThreadVisible=()=>isOpen()&&(!isMobileChat()||state.mobileThreadOpen);
+  function showChatScreen(screen){
+    state.mobileThreadOpen=screen==='thread';
+    panel.classList.toggle('fsm-chat-mobile-thread',state.mobileThreadOpen);
+    panel.dataset.mobileScreen=state.mobileThreadOpen?'thread':'inbox';
+    if(state.mobileThreadOpen&&state.user)markRead();
+    if(state.mobileThreadOpen)requestAnimationFrame(()=>{
+      const node=el('fsm-chat-messages');
+      if(node)node.scrollTop=node.scrollHeight;
+    });
+  }
+  function backToInbox(){
+    showChatScreen('inbox');
+    const search=el('fsm-chat-search');
+    if(search)search.blur();
+  }
   const roomId=(a,b)=>'dm~'+[a,b].sort().join('~');
   function openToggle(force){if(force===false&&isOpen())document.querySelector('.tab[data-tab="dashboard"]')?.click();}
   // Chat stays embedded in the FSM page. The normal sidebar navigates away.
@@ -122,7 +139,7 @@
     return d.toLocaleDateString([],{month:'short',day:'numeric'});
   }
   function notifyIncoming(room,msg){
-    if(!state.user||room===savedRoomId()||isOpen()&&state.room===room||msg?.senderId===state.user.uid)return;
+    if(!state.user||room===savedRoomId()||isThreadVisible()&&state.room===room||msg?.senderId===state.user.uid)return;
     const last=notifyMemory.get(room);
     if(last===msg?.id)return;
     notifyMemory.set(room,msg.id);
@@ -277,7 +294,7 @@
   function renderContacts(){
     const list=el('fsm-chat-contacts');if(!list||!state.user)return;
     const filter=state.filter.trim().toLowerCase();
-    const all=conversations();
+    const all=conversations().filter(c=>!state.unreadOnly||!!state.unread[c.id]);
     const entry=x=>{
       const active=state.room===x.id,preview=state.preview[x.id];
       const isOnline=x.type==='direct'&&isRecentlyActive(x.uid);
@@ -405,6 +422,7 @@
   function selectRoom(id){
     if(!state.user||!id||!conversations().some(c=>c.id===id))return;
     state.unsubMessages?.();state.room=id;state.messages=[];stopEdit();
+    if(isMobileChat())showChatScreen('thread');
     renderContacts();
     const current=conversations().find(c=>c.id===id);
     refreshThreadHeader();
@@ -415,7 +433,7 @@
     state.unsubMessages=onSnapshot(query(collection(state.db,'chatRooms',id,'messages'),orderBy('createdAt','desc'),limit(100)),snap=>{
       if(state.room!==id)return;
       state.messages=snap.docs.map(d=>({id:d.id,...d.data()})).reverse();
-      renderMessages();if(isOpen())markRead();
+      renderMessages();if(isThreadVisible())markRead();
     },err=>{
       console.warn('Chat messages listener:',err.code);
       const n=el('fsm-chat-messages');
@@ -482,15 +500,17 @@
     }
     try{state.lastSeen=JSON.parse(localStorage.getItem(seenStorageKey())||'{}');}catch{state.lastSeen={};}
     state.unread={};updateUnread();
+    showChatScreen(requestedRoom&&conversations().some(c=>c.id===requestedRoom)?'thread':'inbox');
     content.innerHTML='<aside class="fsm-chat-sidebar">'
-      +'<div class="fsm-chat-sidebar-heading"><h3>Inbox</h3><span class="fsm-chat-sidebar-label">OPEXA</span></div>'
-      +'<div class="fsm-chat-search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="fsm-chat-search" placeholder="Search people…" autocomplete="off" aria-label="Search conversations"></div>'
+      +'<div class="fsm-chat-sidebar-heading"><div><span class="fsm-chat-sidebar-overline">OPEXA / MESSAGES</span><h3>Inbox</h3></div><span class="fsm-chat-count-rooms" id="fsm-chat-conversation-count">0 conversations</span></div>'
+      +'<label class="fsm-chat-search-wrap"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input type="search" id="fsm-chat-search" placeholder="Search conversations" autocomplete="off" aria-label="Search conversations"></label>'
+      +'<div class="fsm-chat-filters" role="group" aria-label="Filter conversations"><button type="button" class="fsm-chat-filter active" id="fsm-chat-filter-all" aria-pressed="true">All chats</button><button type="button" class="fsm-chat-filter" id="fsm-chat-filter-unread" aria-pressed="false">Unread <span id="fsm-chat-unread-count" hidden>0</span></button></div>'
       +'<div class="fsm-chat-contacts" id="fsm-chat-contacts" role="navigation" aria-label="Conversations"></div>'
       +'<div class="fsm-chat-sidebar-foot"><span class="fsm-chat-sidebar-status"></span><span>Signed in as '+escapeHtml(state.member.name||state.member.username||'FSM user')+'</span></div>'
       +'</aside>'
       +'<section class="fsm-chat-thread">'
-      +'<header class="fsm-chat-thread-header"><span class="fsm-chat-thread-avatar" id="fsm-chat-thread-avatar" aria-hidden="true">✦</span><span class="fsm-chat-thread-title"><strong id="fsm-chat-thread-head"></strong><span class="fsm-chat-status-line"><i class="fsm-chat-presence-dot" id="fsm-chat-thread-presence" hidden></i><small id="fsm-chat-thread-subtitle"></small></span></span>'
-      +'<button class="fsm-chat-notify-button" id="fsm-chat-enable-alerts" type="button" title="Enable browser alerts">♧ <span>Enable alerts</span></button></header>'
+      +'<header class="fsm-chat-thread-header"><button type="button" class="fsm-chat-back" id="fsm-chat-back" aria-label="Back to conversations"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></svg></button><span class="fsm-chat-thread-avatar" id="fsm-chat-thread-avatar" aria-hidden="true">✦</span><span class="fsm-chat-thread-title"><strong id="fsm-chat-thread-head"></strong><span class="fsm-chat-status-line"><i class="fsm-chat-presence-dot" id="fsm-chat-thread-presence" hidden></i><small id="fsm-chat-thread-subtitle"></small></span></span>'
+      +'<button class="fsm-chat-notify-button" id="fsm-chat-enable-alerts" type="button" title="Enable browser alerts"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span>Alerts</span></button></header>
       +'<div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div>'
       +'<div class="fsm-chat-edit-bar" id="fsm-chat-edit-bar" hidden><span>✎ Editing your message</span><button id="fsm-chat-edit-cancel" type="button">Cancel</button></div>'
       +'<form class="fsm-chat-compose" id="fsm-chat-compose">'
@@ -501,6 +521,16 @@
       +'</section>';
     const search=el('fsm-chat-search');
     search.addEventListener('input',()=>{state.filter=search.value;renderContacts();});
+    el('fsm-chat-back').addEventListener('click',backToInbox);
+    const setFilter=unread=>{
+      state.unreadOnly=unread;
+      for(const [id,pressed] of [['fsm-chat-filter-all',!unread],['fsm-chat-filter-unread',unread]]){
+        const btn=el(id);btn.classList.toggle('active',pressed);btn.setAttribute('aria-pressed',String(pressed));
+      }
+      renderContacts();
+    };
+    el('fsm-chat-filter-all').addEventListener('click',()=>setFilter(false));
+    el('fsm-chat-filter-unread').addEventListener('click',()=>setFilter(true));
     el('fsm-chat-edit-cancel').addEventListener('click',stopEdit);
     el('fsm-chat-attach-link').addEventListener('click',()=>{
       const raw=window.prompt('Paste an HTTPS link to share (Drive, report, or document):');
@@ -567,9 +597,9 @@
     }
 
   }
-  window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
-  document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
+  document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user&&isThreadVisible())markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
   navigator.serviceWorker?.addEventListener('message',event=>{
     if(event.data?.type!=='FSM_CHAT_OPEN'||!state.user)return;
