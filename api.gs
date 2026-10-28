@@ -315,6 +315,12 @@ function doPost(e) {
       });
     }
 
+    // Firebase Live Chat custom sign-in: issue tokens only after validating
+    // the existing FSM session. Never accept a requested UID from the browser.
+    if (action === 'chatSSO') {
+      return json_({ok:true, customToken:firebaseChatCustomToken_(user)});
+    }
+
     // Agenda writes are available only to authenticated Master users.
     // The separate public viewer can read Agenda through doGet(viewer=1),
     // but it has no session token and cannot reach these actions.
@@ -2446,5 +2452,51 @@ function fseOwnsVisit_(user,row){
  var source=row.supportingFses||row.supportingFSEs||row.withFses||row.supporting||'';
  var names=Array.isArray(source)?source:String(source).split(/[,;\n]+/);
  return names.some(function(name){return fseNameKey_(name)===assigned;});
+}
+
+
+// One-login Firebase Chat SSO. Store the entire Firebase service account JSON
+// in Apps Script Project Settings > Script Properties under
+// FIREBASE_CHAT_SERVICE_ACCOUNT_JSON. NEVER commit the private key to GitHub.
+// This code uses Apps Script's native RSA-SHA256 signing; no npm or Admin SDK.
+function firebaseChatCustomToken_(fsmUser) {
+  var username = String(fsmUser && fsmUser.username || '').trim().toLowerCase();
+  // FSM usernames are server authenticated. Limit to safe, stable identifiers
+  // (including no tilde, the separator used in private chat room IDs).
+  if (!/^[a-z0-9._-]{1,64}$/.test(username)) {
+    throw new Error('Your FSM username is not eligible for Team Chat. Contact support.');
+  }
+  var name = String(fsmUser.name || fsmUser.displayName || username).trim().slice(0,120);
+  var role = String(fsmUser.role || 'fse').trim().slice(0,32);
+  var keyText = PropertiesService.getScriptProperties().getProperty('FIREBASE_CHAT_SERVICE_ACCOUNT_JSON');
+  if (!keyText) throw new Error('Team Chat SSO is not configured. Set the Firebase service account in Apps Script properties.');
+  var serviceAccount;
+  try { serviceAccount = JSON.parse(keyText); }
+  catch (e) { throw new Error('Team Chat service account configuration is invalid.'); }
+  if (serviceAccount.project_id !== 'opexa-fsm-chat' || !serviceAccount.client_email || !serviceAccount.private_key) {
+    throw new Error('Team Chat service account is missing fields or belongs to another project.');
+  }
+  var now = Math.floor(Date.now() / 1000);
+  var header = {alg:'RS256', typ:'JWT'};
+  var payload = {
+    iss:serviceAccount.client_email,
+    sub:serviceAccount.client_email,
+    aud:'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit',
+    iat:now,
+    exp:now + 3600,
+    uid:'fsm_' + username,
+    claims:{
+      fsm:true,
+      fsm_username:username,
+      fsm_name:name,
+      fsm_role:role
+    }
+  };
+  var encode = function(value) {
+    return Utilities.base64EncodeWebSafe(Utilities.newBlob(JSON.stringify(value)).getBytes()).replace(/=+$/,'');
+  };
+  var signingInput = encode(header) + '.' + encode(payload);
+  var signature = Utilities.computeRsaSha256Signature(signingInput, serviceAccount.private_key);
+  return signingInput + '.' + Utilities.base64EncodeWebSafe(signature).replace(/=+$/,'');
 }
 
