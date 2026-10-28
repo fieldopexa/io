@@ -8,6 +8,7 @@ on:
       - 'live-chat.js'
       - 'live-chat.css'
       - 'index.html'
+      - 'api.gs'
       - 'fieldlog-chat.css'
       - 'sw.js'
       - 'FirebaseChatSSO.gs'
@@ -110,6 +111,42 @@ jobs:
           assert(html.includes("if(!isEdit&&chatStatus)"), 'Visit notifications must only be prepared for new logs');
 
           console.log('Validated '+parsed+' inline scripts and incident/chat integration.');
+          NODE
+      - name: Validate team-wide Field Logs access and edit ownership
+        run: |
+          cp api.gs /tmp/fsm-backend.js
+          node --check /tmp/fsm-backend.js
+          node <<'NODE'
+          const fs=require('node:fs');
+          const vm=require('node:vm');
+          const assert=require('node:assert/strict');
+          const backend=fs.readFileSync('api.gs','utf8');
+          const html=fs.readFileSync('index.html','utf8');
+          const sandbox=vm.createContext({});
+          vm.runInContext(backend,sandbox,{timeout:3000});
+          const ian={username:'ian',fse:'Ian',role:'fse'};
+          const popoy={username:'popoy',fse:'Popoy',role:'fse'};
+          const mgmt={username:'manager',role:'management'};
+          const record={id:'visit-01',tech:'Ian',supportingFses:'Popoy'};
+          assert.doesNotThrow(()=>sandbox.requirePrimaryFseFieldLogOwner_(ian,record));
+          assert.throws(()=>sandbox.requirePrimaryFseFieldLogOwner_(popoy,record),/another FSE/);
+          assert.throws(()=>sandbox.requirePrimaryFseFieldLogOwner_(mgmt,record),/Only an authenticated/);
+          assert.doesNotThrow(()=>sandbox.requireFseFieldLogWrite_(popoy));
+          assert.throws(()=>sandbox.requireFseFieldLogWrite_(mgmt),/Only an authenticated/);
+          assert(!backend.includes("rows = rows.filter(function(row) { return fseOwnsVisit_(user, row); });"),'Backend still restricts FSE reads');
+          assert(backend.includes("requirePrimaryFseFieldLogOwner_(user, beforeEntry)"),'Backend update ownership guard missing');
+          assert(backend.includes("requirePrimaryFseFieldLogOwner_(user, beforeArchive)"),'Backend void ownership guard missing');
+          assert(backend.includes("if (forWrite) requirePrimaryFseFieldLogOwner_(user, entry)"),'Attachment write owner guard missing');
+          assert(backend.includes("requireVisitAttachmentAccess_(user, uploadVisitId, true)"),'File upload lacks owner guard');
+          assert(backend.includes("requireVisitAttachmentAccess_(user, directVisitId, true)"),'Direct Drive upload lacks owner guard');
+          assert(backend.includes("requireVisitAttachmentAccess_(user, visitIdForSession, true)"),'Drive session lacks owner guard');
+          assert(html.includes("return Array.isArray(rows)?rows:[]"),'Client still limits FSE history');
+          assert(html.includes("activeWork==='mine'&&!isMyFieldLogWork(e)"),'My Work filter missing');
+          assert(html.includes('id="log-fse-filter"'), 'FSE selector missing');
+          assert(html.includes("if(!canEditFieldLog(e)){fieldLogEditDenied();return;}"),'Client edit/void guards missing');
+          assert(html.includes("currentUser?.role!=='fse'"),'Client role gate missing');
+          assert(html.includes("document.getElementById('work-toggle').hidden=false"),'FSE work switch still hidden');
+          console.log('PASS: shared reads and primary-owner-only backend writes for Ian, Popoy, Management.');
           NODE
       - name: Check chat rule sections are present
         run: |
