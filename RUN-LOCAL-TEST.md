@@ -30,3 +30,16 @@
 - Message search now uses the exact **Field Logs** search field pattern (`global-search`, search icon, border, background and mobile tap size).
 - Renamed the Engineering group label from **Team Chat** to **FSE Team**, without changing its Firestore room ID (`engineering`) or existing message history.
 - No Google Apps Script or Firebase rules change is required for these interface changes.
+
+## Discuss in Chat: Field Logs → FSE Team
+1. Open **Field Logs** and find a **Breakdown / Incident** record. Non-incident/routine records deliberately do not display the share action.
+2. On an incident card, select **💬 Discuss in Chat**; alternatively select **View details** and use **Discuss in Chat** in the visit drawer.
+3. FSM switches to **Messages → FSE Team**, opens the conversation on mobile, and **prepares** (does not send) a message with site, visit date, incident/ticket reference, issue, priority, status, reporting FSE and **View Field Log** link. Review it and press **Send** yourself.
+4. Click the resulting **View Field Log** link inside the chat. In the development version, it opens the corresponding existing Field Log in the **same local FSM session** without leaving the localhost test build.
+5. On the real GitHub Pages deployment, the canonical URL will be `https://fieldopexa.github.io/io/?fieldlog=<stable-visit-id>`. After this development branch is merged, opening this URL signs in/restores the FSM account if needed, loads permitted visits, then opens the matching detail drawer. The stable ID is used because display tracking numbers may repeat across dates.
+
+**Important access rule:** FSM currently restricts Field Log lists by account/assigned FSE. Sharing a record in FSE Team does **not** grant teammates permission to open it. Unauthorized teammates still see the short summary posted in Chat but receive **Field Log unavailable** if the full record is outside their accessible records. This is intentional and should be reviewed before wider rollout.
+
+**No automatic posts.** Engineers may edit or cancel the draft before sending. No Apps Script handler, new Firebase collection, or Firestore rule change is needed for this feature.
+
+**Test note:** Until the branch is merged into GitHub Pages, an externally opened production URL will run the older live FSM and may not process the new `fieldlog` query parameter. Test the link by clicking it inside this development build, where the URL is intercepted.
