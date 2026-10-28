@@ -6490,6 +6490,24 @@ function discussFieldLog(id){
   closeDetail();
   return window.fsmChatPrepareDraft({roomId:'engineering',text:lines});
 }
+function announceExistingFieldLog(id){
+  const entry=entries.find(row=>String(row.id)===String(id));
+  if(!entry||entry.status==='Voided'){
+    showToast('Visit unavailable','This Field Log cannot be announced.','bad');
+    return;
+  }
+  if(typeof window.fsmChatAnnounceExistingVisit!=='function'){
+    showToast('Chat unavailable','Reload the latest FSM test build and try again.','bad');
+    return;
+  }
+  if(!window.confirm('Post this existing Field Visit to FSE Team?'))return;
+  const queued=window.fsmChatAnnounceExistingVisit(entry);
+  showToast(
+    queued?'FSE Team notification queued':'Chat not connected',
+    queued?'FSM will publish this visit in FSE Team when messaging connects.':'Sign in to Messages with your FSM account and try again.',
+    queued?'ok':'bad'
+  );
+}
 function openFSMFieldLogFromChat(id){
   if(!currentUser)return false;
   const entry=entries.find(row=>String(row.id)===String(id));
@@ -7662,7 +7680,7 @@ function renderReadableLog(e,tracking){
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
-  <div class="readable-log-actions">${isChatDiscussableVisit(e)?`<button type="button" class="fsm-discuss-chat-btn fsm-discuss-chat-inline" data-discuss-visit="${safe(String(e.id))}" aria-label="Discuss this incident in FSE Team" title="Discuss in FSE Team" onclick="event.stopPropagation();discussFieldLog(this.dataset.discussVisit)">${FIELDLOG_CHAT_ICON}<span>Discuss</span></button>`:''}<button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div><button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button><button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button></div></details></div></div>
+  <div class="readable-log-actions">${isChatDiscussableVisit(e)?`<button type="button" class="fsm-discuss-chat-btn fsm-discuss-chat-inline" data-discuss-visit="${safe(String(e.id))}" aria-label="Discuss this incident in FSE Team" title="Discuss in FSE Team" onclick="event.stopPropagation();discussFieldLog(this.dataset.discussVisit)">${FIELDLOG_CHAT_ICON}<span>Discuss</span></button>`:''}<button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div><button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button><button type="button" onclick="event.stopPropagation();announceExistingFieldLog('${id}')">Notify FSE Team</button><button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button></div></details></div></div>
  </article>`;
 }
 
@@ -12643,4 +12661,4 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 <link rel="stylesheet" href="./live-chat.css">
 <link rel="stylesheet" href="./fieldlog-chat.css?v=20261028-visit-notify-status">
 <script src="./chat-config.js"></script>
-<script defer src="./live-chat.js?v=fsm-auto-visit-feedback-retry-20261028"></script>
+<script defer src="./live-chat.js?v=fsm-auto-visit-feedback-manual-20261028"></script>
