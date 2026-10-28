@@ -19,6 +19,7 @@
   const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unsubPresence:null,unsubPreviews:new Map(),previewReady:{},preview:{},unread:{},lastSeen:{},presence:{},messages:[],filter:'',editingId:null,loading:false,booting:false,presenceTimer:null,firebaseApp:null,messaging:null,pushLib:null,pushEnabled:false,pushToken:null,pushTokenRef:null,mobileThreadOpen:false,unreadOnly:false};
   const defaultTitle=document.title;
   const notifyMemory=new Map();
+  let pendingIncidentDraft=null;
   // Directory entries are based on confirmed existing FSM usernames, not Firebase
   // email accounts. Add future users here if you need them to appear before
   // their first chat login. Users who have already used chat appear dynamically.
@@ -120,6 +121,19 @@
         if(url.protocol!=='https:'&&url.protocol!=='http:')throw Error('protocol');
         const link=document.createElement('a');
         link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';
+        const fieldlogId=url.hostname==='fieldopexa.github.io'
+          && url.pathname.replace(/\\/$/,'')==='/io'
+          ?url.searchParams.get('fieldlog'):null;
+        if(fieldlogId){
+          link.title='Open the original FSM Field Log';
+          link.addEventListener('click',event=>{
+            if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+            if(typeof window.fsmOpenFieldLogFromChat==='function'){
+              event.preventDefault();
+              window.fsmOpenFieldLogFromChat(fieldlogId);
+            }
+          });
+        }
         link.textContent=safe;node.append(link);
       }catch{node.append(document.createTextNode(safe));}
       last=regex.lastIndex;
@@ -425,6 +439,7 @@
   function selectRoom(id,openMobile=true){
     if(!state.user||!id||!conversations().some(c=>c.id===id))return;
     state.unsubMessages?.();state.room=id;state.messages=[];stopEdit();
+    if(el('fsm-chat-draft-note'))el('fsm-chat-draft-note').hidden=true;
     if(isMobileChat()&&openMobile)showChatScreen('thread');
     renderContacts();
     const current=conversations().find(c=>c.id===id);
@@ -443,6 +458,31 @@
       if(n)n.innerHTML='<div class="fsm-chat-empty">Unable to load messages. Check Firestore permissions.</div>';
     });
   }
+  function applyIncidentChatDraft(){
+    if(!pendingIncidentDraft||!state.user||!el('fsm-chat-input'))return;
+    const draft=pendingIncidentDraft;
+    pendingIncidentDraft=null;
+    const composer=el('fsm-chat-input');
+    const existing=composer.value.trim();
+    if(existing&&existing!==draft.text&&!window.confirm('Replace your current unsent message with this incident summary?'))return;
+    selectRoom('engineering');
+    composer.value=draft.text;
+    const banner=el('fsm-chat-draft-note');
+    if(banner)banner.hidden=false;
+    el('fsm-chat-error').textContent='';
+    composer.focus({preventScroll:true});
+    const node=el('fsm-chat-messages');
+    if(node)node.scrollTop=node.scrollHeight;
+  }
+  window.fsmChatPrepareDraft=payload=>{
+    const text=String(payload?.text||'').trim().slice(0,2000);
+    if(!text||payload?.roomId!=='engineering')return false;
+    pendingIncidentDraft={text};
+    document.querySelector('.tab[data-tab="chat"]')?.click();
+    if(state.user)applyIncidentChatDraft();
+    else launcher.click();
+    return true;
+  };
   async function sendMessage(event){
     event.preventDefault();
     if(state.loading||!state.user||!state.member?.active)return;
@@ -466,7 +506,9 @@
           apiPost('chatPush',{roomId:state.room,messageId:ref.id})
             .catch(err=>console.warn('Background notification unavailable:',err.message));
         }
-        input.value='';markRead();
+        input.value='';
+        if(el('fsm-chat-draft-note'))el('fsm-chat-draft-note').hidden=true;
+        markRead();
       }
       el('fsm-chat-error').textContent='';
     }catch(err){
@@ -514,6 +556,7 @@
       +'<header class="fsm-chat-thread-header"><button type="button" class="fsm-chat-back" id="fsm-chat-back" aria-label="Back to conversations"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></svg></button><span class="fsm-chat-thread-avatar" id="fsm-chat-thread-avatar" aria-hidden="true">✦</span><span class="fsm-chat-thread-title"><strong id="fsm-chat-thread-head"></strong><span class="fsm-chat-status-line"><i class="fsm-chat-presence-dot" id="fsm-chat-thread-presence" hidden></i><small id="fsm-chat-thread-subtitle"></small></span></span>'
       +'<button class="fsm-chat-notify-button" id="fsm-chat-enable-alerts" type="button" title="Enable browser alerts"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span>Alerts</span></button></header>'
       +'<div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div>'
+      +'<div class="fsm-chat-draft-note" id="fsm-chat-draft-note" role="status" hidden>Incident summary prepared. Review the details below, then press Send.</div>'
       +'<div class="fsm-chat-edit-bar" id="fsm-chat-edit-bar" hidden><span>✎ Editing your message</span><button id="fsm-chat-edit-cancel" type="button">Cancel</button></div>'
       +'<form class="fsm-chat-compose" id="fsm-chat-compose">'
       +'<button id="fsm-chat-attach-link" class="fsm-chat-attach-link" type="button" title="Insert a shared link" aria-label="Insert a shared link">🔗</button>'
@@ -580,6 +623,7 @@
       state.member=me;syncRoomPreviews();
     },err=>console.warn('Team directory listener:',err.code));
     selectRoom(state.room,false);
+    if(pendingIncidentDraft)applyIncidentChatDraft();
     state.unsubPresence=onSnapshot(collection(state.db,'chatPresence'),snap=>{
       state.presence={};
       for(const entry of snap.docs)state.presence[entry.id]=entry.data().lastSeen;
@@ -599,7 +643,7 @@
     }
 
   }
-  window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user&&isThreadVisible())markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
