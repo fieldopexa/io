@@ -303,9 +303,9 @@
   }
   function queueVisitAnnouncement(entry){
     const username=announcementFsmUsername();
-    if(!username||!entry?.id)return;
+    if(!username||!entry?.id)return false;
     const text=formatVisitAnnouncement(entry);
-    if(!text)return;
+    if(!text)return false;
     const id=String(entry.id).trim();
     const queued=loadPendingVisitAnnouncements(username);
     if(!queued.some(item=>item.id===id)){
@@ -317,7 +317,9 @@
     // visit save; if Firebase is unavailable, keep the announcement for retry.
     if(state.user)void flushVisitAnnouncements();
     else if(!state.booting)launcher.click();
+    return true;
   }
+  window.fsmChatAnnounceExistingVisit=entry=>queueVisitAnnouncement(entry);
   async function flushVisitAnnouncements(){
     if(visitAnnouncementFlush)return visitAnnouncementFlush;
     const username=announcementFsmUsername();
