@@ -47,7 +47,12 @@ jobs:
           assert(css.includes('overflow-x:hidden;overflow-y:auto'), 'Mobile inbox should be a vertically scrolling list');
           assert(js.includes("name:'Saved Messages'"), 'Private self-chat lost');
           assert(js.includes('isRecentlyActive'), 'Active indicators lost');
-          assert(html.includes('live-chat.js?v=fsm-comms-v4-mobile-20261028'), 'Stale V3 chat script URL');
+          assert(html.includes('live-chat.js?v=fsm-comms-v4-search-fse-20261028'), 'Stale chat script URL');
+          assert(!js.includes('OPEXA / MESSAGES'), 'Redundant inbox eyebrow is still present');
+          assert(!js.includes('<h3>Inbox</h3>'), 'Redundant inbox header is still present');
+          assert(js.includes("name:'FSE Team'"), 'FSE group name not updated');
+          assert(js.includes('global-search fsm-chat-search-wrap'), 'Field Logs search component is not reused');
+          assert(!css.includes('.fsm-chat-sidebar-heading'), 'Unused inbox heading styling remains');
           assert(!js.includes("el('fsm-chat-signout').addEventListener"), 'Old removed element reference remains');
           console.log('FSM mobile chat navigation and UX wiring checks passed.');
           NODE
