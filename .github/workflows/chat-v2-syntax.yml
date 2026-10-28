@@ -8,6 +8,7 @@ on:
       - 'live-chat.js'
       - 'live-chat.css'
       - 'index.html'
+      - 'fieldlog-chat.css'
       - 'sw.js'
       - 'FirebaseChatSSO.gs'
       - 'FirebaseChatPush.gs'
@@ -47,7 +48,7 @@ jobs:
           assert(css.includes('overflow-x:hidden;overflow-y:auto'), 'Mobile inbox should be a vertically scrolling list');
           assert(js.includes("name:'Saved Messages'"), 'Private self-chat lost');
           assert(js.includes('isRecentlyActive'), 'Active indicators lost');
-          assert(html.includes('live-chat.js?v=fsm-comms-v4-search-fse-20261028'), 'Stale chat script URL');
+          assert(html.includes('live-chat.js?v=fsm-incident-discuss-v1-20261028'), 'Stale chat script URL');
           assert(!js.includes('OPEXA / MESSAGES'), 'Redundant inbox eyebrow is still present');
           assert(!js.includes('<h3>Inbox</h3>'), 'Redundant inbox header is still present');
           assert(js.includes("name:'FSE Team'"), 'FSE group name not updated');
@@ -55,6 +56,38 @@ jobs:
           assert(!css.includes('.fsm-chat-sidebar-heading'), 'Unused inbox heading styling remains');
           assert(!js.includes("el('fsm-chat-signout').addEventListener"), 'Old removed element reference remains');
           console.log('FSM mobile chat navigation and UX wiring checks passed.');
+          NODE
+      - name: Parse inline FSM scripts and validate incident handoff
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const assert = require('node:assert/strict');
+          const html = fs.readFileSync('index.html','utf8');
+          const js = fs.readFileSync('live-chat.js','utf8');
+          const sw = fs.readFileSync('sw.js','utf8');
+          const matches = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)];
+          let parsed=0;
+          for(const match of matches){
+            const attrs=match[1];
+            if(/\\bsrc\\s*=/.test(attrs))continue;
+            if(/\\btype\\s*=\\s*['"]?(?:application\\/json|text\\/template|module)/i.test(attrs))continue;
+            if(!match[2].trim())continue;
+            new vm.Script(match[2], {filename:'index.html inline script '+(++parsed)});
+          }
+          assert(parsed>0,'No FSM JavaScript was checked');
+          assert(html.includes('function discussFieldLog(id)'), 'Incident discussion function not found');
+          assert(html.includes('function openRequestedFSMFieldLog()'), 'Deep link opener missing');
+          assert(html.includes('openRequestedFSMFieldLog();'), 'Deep link opener not called after loadEntries');
+          assert(html.includes('function isChatDiscussableVisit(entry)'), 'Incident-only scope missing');
+          assert(html.includes('data-discuss-visit='), 'Field Logs Discuss in Chat action not present');
+          assert(html.includes("container.prepend(discuss)"), 'Detail drawer discuss button missing');
+          assert(js.includes('window.fsmChatPrepareDraft=payload=>'), 'Chat draft handoff missing');
+          assert(js.includes("selectRoom('engineering')"), 'Draft not opening FSE Team');
+          assert(js.includes("url.searchParams.get('fieldlog')"), 'Chat not opening Field Log links');
+          assert(fs.existsSync('fieldlog-chat.css'), 'Discussion stylesheet missing');
+          assert(sw.includes("'./fieldlog-chat.css'"), 'Missing cached discussion stylesheet');
+          console.log('Validated '+parsed+' inline scripts and incident/chat integration.');
           NODE
       - name: Check chat rule sections are present
         run: |
