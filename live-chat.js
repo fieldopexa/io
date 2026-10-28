@@ -70,9 +70,16 @@
     }
     return Array.from(people.values()).sort((a,b)=>a.name.localeCompare(b.name));
   }
+  // A self-to-self room uses the same authenticated DM rules as other private
+  // conversations. No new Firestore collection or rule deployment is required.
+  function savedRoomId(){return state.user?roomId(state.user.uid,state.user.uid):'';}
   function conversations(){
-    return [{id:'engineering',name:'Team Chat',type:'group',description:'Engineering group'},
-      ...chatPeople().map(person=>({id:roomId(state.user.uid,person.uid),name:person.name,type:'direct',description:'Private message'}))];
+    if(!state.user)return [];
+    return [
+      {id:savedRoomId(),name:'Saved Messages',type:'saved',description:'Only you can see this'},
+      {id:'engineering',name:'Team Chat',type:'group',description:'Engineering group'},
+      ...chatPeople().map(person=>({id:roomId(state.user.uid,person.uid),name:person.name,type:'direct',uid:person.uid,description:'Private message'}))
+    ];
   }
   function updateUnread(){
     const total=Object.values(state.unread).reduce((a,b)=>a+b,0);
@@ -115,7 +122,7 @@
     return d.toLocaleDateString([],{month:'short',day:'numeric'});
   }
   function notifyIncoming(room,msg){
-    if(!state.user||isOpen()&&state.room===room||msg?.senderId===state.user.uid)return;
+    if(!state.user||room===savedRoomId()||isOpen()&&state.room===room||msg?.senderId===state.user.uid)return;
     const last=notifyMemory.get(room);
     if(last===msg?.id)return;
     notifyMemory.set(room,msg.id);
@@ -237,30 +244,63 @@
     state.unsubPreviews.clear();
     clearInterval(state.presenceTimer);state.presenceTimer=null;
   }
+  function lastActiveText(uid){
+    if(!uid)return 'FSM member';
+    const seen=state.presence[uid]?.toMillis?.()||0;
+    if(!seen)return 'Not active yet';
+    const delta=Date.now()-seen;
+    if(delta<180000)return 'Active now';
+    if(delta<3600000)return 'Last active '+Math.max(3,Math.floor(delta/60000))+'m ago';
+    if(delta<86400000)return 'Last active '+Math.floor(delta/3600000)+'h ago';
+    return 'Last active '+new Date(seen).toLocaleDateString([],{month:'short',day:'numeric'});
+  }
+  function groupActiveText(){
+    const online=state.profiles.filter(p=>p.active===true&&isRecentlyActive(p.uid)).length;
+    return online?online+' active recently':'Engineering group';
+  }
+  function refreshThreadHeader(){
+    if(!state.user)return;
+    const current=conversations().find(c=>c.id===state.room);
+    if(!current)return;
+    const head=el('fsm-chat-thread-head'),subtitle=el('fsm-chat-thread-subtitle'),avatar=el('fsm-chat-thread-avatar'),status=el('fsm-chat-thread-presence');
+    if(head)head.textContent=current.name;
+    if(avatar){
+      avatar.textContent=current.type==='saved'?'✧':current.type==='group'?'✦':current.name.slice(0,1).toUpperCase();
+      avatar.className='fsm-chat-thread-avatar '+current.type;
+    }
+    if(status)status.hidden=current.type!=='direct'||!isRecentlyActive(current.uid);
+    if(subtitle)subtitle.textContent=current.type==='saved'
+      ?'Your private space · visible only to you'
+      :current.type==='group'?groupActiveText()
+      :lastActiveText(current.uid);
+  }
   function renderContacts(){
     const list=el('fsm-chat-contacts');if(!list||!state.user)return;
     const filter=state.filter.trim().toLowerCase();
     const all=conversations();
-    const mk=x=>{
+    const entry=x=>{
       const active=state.room===x.id,preview=state.preview[x.id];
-      const avatar=x.type==='group'?'✦':String(x.name||'?').charAt(0).toUpperCase();
-      const presence=x.type==='direct'&&chatPeople().find(p=>roomId(state.user.uid,p.uid)===x.id);
-      const online=presence&&isRecentlyActive(presence.uid);
-      const title=x.type==='group'?'Group conversation':'Private conversation';
-      const label=relativePreview(preview);
+      const isOnline=x.type==='direct'&&isRecentlyActive(x.uid);
+      const avatar=x.type==='saved'?'✧':x.type==='group'?'✦':x.name.charAt(0).toUpperCase();
+      const status=x.type==='direct'?lastActiveText(x.uid):x.type==='group'?groupActiveText():'Personal notes';
+      const snippet=preview?relativePreview(preview):status;
       const unread=state.unread[x.id];
-      return '<button type="button" class="fsm-chat-contact '+(active?'active':'')+'" data-chat-room="'+escapeHtml(x.id)+'" aria-current="'+(active?'page':'false')+'" title="'+escapeHtml(title)+'">'
-        +'<span class="fsm-chat-avatar '+(x.type==='group'?'group':'')+'">'+escapeHtml(avatar)+(online?'<i class="fsm-chat-online" aria-label="Recently active"></i>':'')+'</span>'
-        +'<span class="fsm-chat-contact-detail"><strong>'+escapeHtml(x.name)+'</strong><small>'+escapeHtml(label)+'</small></span>'
+      return '<button type="button" class="fsm-chat-contact '+(active?'active':'')+'" data-chat-room="'+escapeHtml(x.id)+'" aria-current="'+(active?'page':'false')+'" title="'+escapeHtml(x.name)+'">'
+        +'<span class="fsm-chat-avatar '+x.type+'" aria-hidden="true">'+escapeHtml(avatar)+(isOnline?'<i class="fsm-chat-online"></i>':'')+'</span>'
+        +'<span class="fsm-chat-contact-detail"><strong>'+escapeHtml(x.name)+'</strong><small>'+escapeHtml(snippet)+'</small>'
+        +(x.type==='direct'&&isOnline?'<span class="fsm-chat-person-active">Active now</span>':'')+'</span>'
         +'<span class="fsm-chat-contact-aside"><span class="fsm-chat-contact-time">'+escapeHtml(relativeTime(preview?.createdAt))+'</span>'
-        +(unread?'<span class="fsm-chat-count" aria-label="Unread message">1</span>':'')+'</span></button>';
+        +(unread?'<span class="fsm-chat-count" aria-label="Unread message"></span>':'')+'</span></button>';
     };
     const group=all.filter(c=>c.type==='group'&&c.name.toLowerCase().includes(filter));
+    const saved=all.filter(c=>c.type==='saved'&&c.name.toLowerCase().includes(filter));
     const direct=all.filter(c=>c.type==='direct'&&c.name.toLowerCase().includes(filter));
-    list.innerHTML='<div class="fsm-chat-caption">Group</div>'+group.map(mk).join('')
-      +'<div class="fsm-chat-caption fsm-chat-direct-label">People</div>'+direct.map(mk).join('')
-      +(!group.length&&!direct.length?'<div class="fsm-chat-no-results">No conversations found</div>':'');
+    list.innerHTML='<div class="fsm-chat-caption">Personal</div>'+saved.map(entry).join('')
+      +'<div class="fsm-chat-caption fsm-chat-direct-label">Group chat</div>'+group.map(entry).join('')
+      +'<div class="fsm-chat-caption fsm-chat-direct-label">Team members</div>'+direct.map(entry).join('')
+      +(!saved.length&&!group.length&&!direct.length?'<div class="fsm-chat-no-results">No conversations found</div>':'');
     list.querySelectorAll('[data-chat-room]').forEach(btn=>btn.addEventListener('click',()=>selectRoom(btn.dataset.chatRoom)));
+    refreshThreadHeader();
   }
   function formatChatDay(ms){
     const d=new Date(ms),now=new Date();
@@ -273,7 +313,10 @@
     const atBottom=node.scrollHeight-node.scrollTop-node.clientHeight<100;
     node.replaceChildren();
     if(!state.messages.length){
-      node.innerHTML='<div class="fsm-chat-empty"><span class="fsm-chat-empty-symbol">✉</span><strong>No messages yet</strong><span>Say hello or share an update with the team.</span></div>';
+      const isSaved=state.room===savedRoomId();
+      node.innerHTML=isSaved
+        ?'<div class="fsm-chat-empty"><span class="fsm-chat-empty-symbol">✧</span><strong>Your space, your notes</strong><span>Save useful links, reminders and messages here. Only your account can access them.</span></div>'
+        :'<div class="fsm-chat-empty"><span class="fsm-chat-empty-symbol">✉</span><strong>No messages yet</strong><span>Start the conversation with a message.</span></div>';
       return;
     }
     let lastDay='';
@@ -364,11 +407,9 @@
     state.unsubMessages?.();state.room=id;state.messages=[];stopEdit();
     renderContacts();
     const current=conversations().find(c=>c.id===id);
-    el('fsm-chat-thread-head').textContent=current.name;
-    el('fsm-chat-thread-subtitle').textContent=current.type==='group'
-      ?'Engineering group conversation':'Private conversation · '+(isRecentlyActive(chatPeople().find(p=>roomId(state.user.uid,p.uid)===id)?.uid)?'Recently active':'FSM teammate');
+    refreshThreadHeader();
     const input=el('fsm-chat-input');
-    if(input)input.placeholder=current.type==='group'?'Message the group…':'Message '+current.name+'…';
+    if(input)input.placeholder=current.type==='saved'?'Write a note to yourself…':current.type==='group'?'Message your team…':'Message '+current.name+'…';
     renderMessages();
     const {collection,query,orderBy,limit,onSnapshot}=state.lib;
     state.unsubMessages=onSnapshot(query(collection(state.db,'chatRooms',id,'messages'),orderBy('createdAt','desc'),limit(100)),snap=>{
@@ -400,7 +441,7 @@
         await batch.commit();
         // The trusted Apps Script endpoint verifies the stored message, sender
         // and recipients before sending push. This never blocks sending.
-        if(window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
+        if(window.FSM_CHAT_WEB_PUSH_VAPID_KEY&&state.room!==savedRoomId()){
           apiPost('chatPush',{roomId:state.room,messageId:ref.id})
             .catch(err=>console.warn('Background notification unavailable:',err.message));
         }
@@ -442,13 +483,13 @@
     try{state.lastSeen=JSON.parse(localStorage.getItem(seenStorageKey())||'{}');}catch{state.lastSeen={};}
     state.unread={};updateUnread();
     content.innerHTML='<aside class="fsm-chat-sidebar">'
-      +'<div class="fsm-chat-sidebar-heading"><h3>Messages</h3><span>FSM Team</span></div>'
+      +'<div class="fsm-chat-sidebar-heading"><h3>Inbox</h3><span class="fsm-chat-sidebar-label">OPEXA</span></div>'
       +'<div class="fsm-chat-search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="fsm-chat-search" placeholder="Search people…" autocomplete="off" aria-label="Search conversations"></div>'
       +'<div class="fsm-chat-contacts" id="fsm-chat-contacts" role="navigation" aria-label="Conversations"></div>'
-      +'<div class="fsm-chat-sidebar-foot"><span class="fsm-chat-sidebar-status"></span>Connected with your FSM account</div>'
+      +'<div class="fsm-chat-sidebar-foot"><span class="fsm-chat-sidebar-status"></span><span>Signed in as '+escapeHtml(state.member.name||state.member.username||'FSM user')+'</span></div>'
       +'</aside>'
       +'<section class="fsm-chat-thread">'
-      +'<header class="fsm-chat-thread-header"><span class="fsm-chat-thread-avatar" aria-hidden="true">✦</span><span class="fsm-chat-thread-title"><strong id="fsm-chat-thread-head"></strong><small id="fsm-chat-thread-subtitle"></small></span>'
+      +'<header class="fsm-chat-thread-header"><span class="fsm-chat-thread-avatar" id="fsm-chat-thread-avatar" aria-hidden="true">✦</span><span class="fsm-chat-thread-title"><strong id="fsm-chat-thread-head"></strong><span class="fsm-chat-status-line"><i class="fsm-chat-presence-dot" id="fsm-chat-thread-presence" hidden></i><small id="fsm-chat-thread-subtitle"></small></span></span>'
       +'<button class="fsm-chat-notify-button" id="fsm-chat-enable-alerts" type="button" title="Enable browser alerts">♧ <span>Enable alerts</span></button></header>'
       +'<div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div>'
       +'<div class="fsm-chat-edit-bar" id="fsm-chat-edit-bar" hidden><span>✎ Editing your message</span><button id="fsm-chat-edit-cancel" type="button">Cancel</button></div>'
@@ -511,9 +552,10 @@
       state.presence={};
       for(const entry of snap.docs)state.presence[entry.id]=entry.data().lastSeen;
       renderContacts();
+      refreshThreadHeader();
     },err=>console.warn('Presence listener:',err.code));
     syncPresence();
-    state.presenceTimer=setInterval(syncPresence,90000);
+    state.presenceTimer=setInterval(()=>{syncPresence();renderContacts();refreshThreadHeader();},90000);
     // Restore previously granted FCM permission when this device reconnects.
     if('Notification' in window && Notification.permission==='granted' && window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
       registerPushDevice().then(enabled=>{
