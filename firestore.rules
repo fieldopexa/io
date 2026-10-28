@@ -54,17 +54,55 @@ service cloud.firestore {
         && request.resource.data.senderName is string
         && request.resource.data.senderName.size() <= 120
         && request.resource.data.createdAt == request.time;
-      allow update, delete: if false;
+      // A sender can edit text or unsend. Original sender and timestamp are
+      // immutable; deleted text becomes empty for everyone in real time.
+      allow update: if canAccessRoom(roomId)
+        && resource.data.senderId == request.auth.uid
+        && (
+          (
+            resource.data.get('deleted', false) == false
+            && request.resource.data.get('deleted', false) == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','editedAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasAll(['text','editedAt'])
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 2000
+            && request.resource.data.editedAt == request.time
+          )
+          ||
+          (
+            resource.data.get('deleted', false) == false
+            && request.resource.data.deleted == true
+            && request.resource.data.text == ''
+            && request.resource.data.deletedBy == request.auth.uid
+            && request.resource.data.deletedAt == request.time
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text','deleted','deletedAt','deletedBy'])
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasAll(['text','deleted','deletedAt','deletedBy'])
+          )
+        );
+      allow delete: if false;
     }
     match /chatActivity/{roomId} {
-      // Metadata only, no message contents. Approved staff can read room
-      // activity timestamps, including other private chat rooms.
-      allow read: if activeMember();
+      // Metadata is visible only to participants in this room.
+      allow read: if canAccessRoom(roomId);
       allow create, update: if canAccessRoom(roomId)
         && request.resource.data.keys().hasOnly(['senderId','updatedAt'])
         && request.resource.data.keys().hasAll(['senderId','updatedAt'])
         && request.resource.data.senderId == request.auth.uid
         && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    match /chatPresence/{uid} {
+      // Presence is approximate and only written by the authenticated user.
+      allow read: if activeMember();
+      allow create, update: if activeMember()
+        && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid','lastSeen'])
+        && request.resource.data.keys().hasAll(['uid','lastSeen'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.lastSeen == request.time;
       allow delete: if false;
     }
     match /{document=**} {
