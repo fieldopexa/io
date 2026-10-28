@@ -183,7 +183,7 @@
     el('fsm-chat-compose').addEventListener('submit',sendMessage);
     state.unsubMembers=onSnapshot(collection(state.db,'chatMembers'),snap=>{
       state.profiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>/^fsm_[A-Za-z0-9_-]+$/.test(p.uid));
-      const me=state.profiles.find(p=>p.uid===user.uid);if(!me){stopListeners();gate('Access disabled','Contact your FSM administrator.');return;}
+      const me=state.profiles.find(p=>p.uid===user.uid);if(!me||me.active!==true){stopListeners();gate('Access disabled','Contact your FSM administrator.');return;}
       state.member=me;renderContacts();
     },()=>{});
     selectRoom(state.room);
