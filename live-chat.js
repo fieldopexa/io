@@ -1,4 +1,4 @@
-/* FSM Live Chat v1.0. Separate Firebase login, no changes to FSM sign-in. */
+/* FSM Live Chat v1.1. Uses session-validated FSM SSO through Firebase custom authentication. */
 (() => {
   'use strict';
   const cfg=window.FSM_CHAT_FIREBASE_CONFIG;
@@ -21,7 +21,7 @@
   const STATUS='fsm-chat-seen-v1';
   try{state.lastSeen=JSON.parse(localStorage.getItem(STATUS)||'{}');}catch{}
   const isOpen=()=>!!document.getElementById('panel-chat')?.classList.contains('active');
-  const roomId=(a,b)=>'dm_'+[a,b].sort().join('_');
+  const roomId=(a,b)=>'dm~'+[a,b].sort().join('~');
   function openToggle(force){if(force===false&&isOpen())document.querySelector('.tab[data-tab="dashboard"]')?.click();}
   el('fsm-chat-close').addEventListener('click',()=>openToggle(false));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())openToggle(false);});
@@ -53,13 +53,18 @@
     await authMod.setPersistence(state.auth,authMod.browserLocalPersistence);
     return state.lib={...authMod,...storeMod};
   }
-  function showLogin(message='Use your approved team chat account. Your device remembers this sign-in.'){
-    stopListeners();el('fsm-chat-signout').hidden=true;
-    gate('Sign in to Team Chat',message,`<form id="fsm-chat-login-form"><input type="email" name="email" aria-label="Email" placeholder="Work email" autocomplete="email" required><input type="password" name="password" aria-label="Password" placeholder="Password" autocomplete="current-password" required minlength="6"><button type="submit">Sign in</button></form>`);
-    el('fsm-chat-login-form').addEventListener('submit',async e=>{
-      e.preventDefault();const form=e.currentTarget,button=form.querySelector('button');button.disabled=true;setStatus('Signing in…');
-      try{await state.lib.signInWithEmailAndPassword(state.auth,form.elements.namedItem('email').value.trim(),form.elements.namedItem('password').value);}catch(err){setStatus('Unable to sign in. Check your account or ask the administrator.');button.disabled=false;}
-    });
+  async function connectFromFSM(){
+    // This must never trust display names or requested UIDs from the browser.
+    // apiPost uses the existing FSM session token, which the Apps Script server validates.
+    const fsmUser=(typeof currentUser!=='undefined')?currentUser:null;
+    if(!fsmUser?.username)throw new Error('Sign in to FSM first.');
+    const result=await apiPost('chatSSO',{});
+    if(!result?.customToken)throw new Error('FSM server did not return a Team Chat identity. Update the Apps Script deployment.');
+    await state.lib.signInWithCustomToken(state.auth,result.customToken);
+    const firebaseUser=state.auth.currentUser;
+    const expectedUid='fsm_'+String(fsmUser.username||'').trim().toLowerCase();
+    if(!firebaseUser || firebaseUser.uid!==expectedUid)throw new Error('Chat identity mismatch. Contact the administrator.');
+    await startChat(firebaseUser);
   }
   function stopListeners(){state.unsubMessages?.();state.unsubMembers?.();state.unsubActivity?.();state.unsubMessages=state.unsubMembers=state.unsubActivity=null;}
   function renderContacts(){
@@ -104,9 +109,23 @@
     finally{state.loading=false;el('fsm-chat-send').disabled=false;input.focus();}
   }
   async function startChat(user){
-    const {doc,getDoc,collection,onSnapshot,query,limit,orderBy}=state.lib;
-    const self=await getDoc(doc(state.db,'chatMembers',user.uid));
-    if(!self.exists()||self.data().active!==true){gate('Access pending','Your chat account has not been approved. Ask the administrator to add your Firebase User UID to chatMembers.');el('fsm-chat-signout').hidden=false;return;}
+    const {doc,getDoc,setDoc,getIdTokenResult,collection,onSnapshot,query,limit,orderBy}=state.lib;
+    const claims=(await getIdTokenResult(user)).claims;
+    if(claims.fsm!==true)throw new Error('Team Chat requires a verified FSM login.');
+    const profileRef=doc(state.db,'chatMembers',user.uid);
+    let self=await getDoc(profileRef);
+    if(!self.exists()){
+      const name=String(claims.fsm_name||'').trim();
+      const username=String(claims.fsm_username||'').trim();
+      if(!name||!username)throw new Error('Your FSM identity is missing required fields.');
+      await setDoc(profileRef,{name,username,active:true});
+      self=await getDoc(profileRef);
+    }
+    if(!self.exists()||self.data().active!==true){
+      gate('Access disabled','Your Team Chat access is disabled. Contact your FSM administrator.');
+      el('fsm-chat-signout').hidden=false;
+      return;
+    }
     state.user=user;state.member=self.data();el('fsm-chat-signout').hidden=false;
     content.innerHTML=`<aside class="fsm-chat-contacts" id="fsm-chat-contacts"></aside><div class="fsm-chat-thread"><div class="fsm-chat-thread-head" id="fsm-chat-thread-head"></div><div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div><form class="fsm-chat-compose" id="fsm-chat-compose"><input id="fsm-chat-input" maxlength="2000" placeholder="Write a message…" aria-label="Message" autocomplete="off" required><button id="fsm-chat-send" class="fsm-chat-send" type="submit">Send</button></form><div id="fsm-chat-error" role="status" style="padding:0 12px;color:#ffb3a4;font-size:11px"></div></div>`;
     el('fsm-chat-compose').addEventListener('submit',sendMessage);
@@ -130,14 +149,18 @@
   el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   launcher.addEventListener('click',async()=>{
-    if(state.auth||state.booting)return;state.booting=true;
+    if(state.user||state.booting)return;
+    state.booting=true;
     try{
-      gate('Connecting','Loading secure chat…');await loadSdk();
-      state.lib.onAuthStateChanged(state.auth,async user=>{
-        stopListeners();if(!user){state.user=null;showLogin();return;}
-        try{await startChat(user);}catch(err){gate('Chat unavailable','Unable to load the team directory. Check connection and Firestore rules.');el('fsm-chat-signout').hidden=false;}
-      });
-    }catch(err){gate('Setup needed',err.message||'Unable to initialize chat.');}
-    finally{state.booting=false;}
+      gate('Connecting to Team Chat','Verifying your existing FSM session…');
+      await loadSdk();
+      await connectFromFSM();
+    }catch(err){
+      const message=err?.message||'Check your connection, backend deployment, or chat permissions.';
+      gate('Team Chat connection failed',message);
+    }finally{
+      state.booting=false;
+    }
   });
+
 })();
