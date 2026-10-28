@@ -48,7 +48,7 @@ jobs:
           assert(css.includes('overflow-x:hidden;overflow-y:auto'), 'Mobile inbox should be a vertically scrolling list');
           assert(js.includes("name:'Saved Messages'"), 'Private self-chat lost');
           assert(js.includes('isRecentlyActive'), 'Active indicators lost');
-          assert(html.includes('live-chat.js?v=fsm-incident-discuss-v1-20261028'), 'Stale chat script URL');
+          assert(html.includes('live-chat.js?v=fsm-auto-visit-20261028'), 'Stale chat script URL');
           assert(!js.includes('OPEXA / MESSAGES'), 'Redundant inbox eyebrow is still present');
           assert(!js.includes('<h3>Inbox</h3>'), 'Redundant inbox header is still present');
           assert(js.includes("name:'FSE Team'"), 'FSE group name not updated');
@@ -87,6 +87,17 @@ jobs:
           assert(js.includes("url.searchParams.get('fieldlog')"), 'Chat not opening Field Log links');
           assert(fs.existsSync('fieldlog-chat.css'), 'Discussion stylesheet missing');
           assert(sw.includes("'./fieldlog-chat.css'"), 'Missing cached discussion stylesheet');
+          // Automatic announcements are strictly tied to a confirmed new visit.
+          const committedAt=html.indexOf("window.dispatchEvent(new CustomEvent('visit-committed'");
+          const saveAt=html.indexOf("const visitSaveResult=await apiPost(isEdit?'updateEntry':'addEntry'");
+          assert(saveAt>=0&&committedAt>saveAt,'Auto-notification event must follow confirmed Apps Script save');
+          assert(js.includes("window.addEventListener('visit-committed'"),'Chat listener for confirmed visits missing');
+          assert(js.includes('if(event.detail?.isEdit)return;'),'Edits must not trigger visit announcements');
+          assert(js.includes("const ref=doc(state.db,'chatRooms','engineering','messages','visit_'+item.id)"),'Stable message ID to prevent duplicate visit updates missing');
+          assert(js.includes('runTransaction(state.db,async tx=>'),'Visit announcements must use idempotent Firestore transaction');
+          assert(js.includes("localStorage.setItem(visitAnnounceKey(username)"),'Failed notifications must be kept in retry queue');
+          assert(js.includes('renderVisitNotice(body,msg)'),'Dedicated field-visit notification card missing');
+          assert(js.includes("window.addEventListener('online'"),'Missing reconnect handler for pending announcements');
           console.log('Validated '+parsed+' inline scripts and incident/chat integration.');
           NODE
       - name: Check chat rule sections are present
