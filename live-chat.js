@@ -429,10 +429,9 @@
     }
     if(!self.exists()||self.data().active!==true){
       gate('Access disabled','Your Team Chat access is disabled. Contact your FSM administrator.');
-      el('fsm-chat-signout').hidden=false;
       return;
     }
-    state.user=user;state.member=self.data();el('fsm-chat-signout').hidden=false;
+    state.user=user;state.member=self.data();
     // A notification click can open the matching conversation directly.
     const requestedRoom=new URL(location.href).searchParams.get('chat');
     if(requestedRoom&&conversations().some(c=>c.id===requestedRoom)){
@@ -527,7 +526,7 @@
 
   }
   window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
-  el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
+  // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
   navigator.serviceWorker?.addEventListener('message',event=>{
