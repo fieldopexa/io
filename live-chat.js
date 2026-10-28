@@ -4,37 +4,39 @@
   const cfg=window.FSM_CHAT_FIREBASE_CONFIG;
   const app=document.getElementById('app-shell');
   if(!app) return;
-  const host=document.createElement('section');
-  host.id='fsm-live-chat'; host.hidden=true;
+  const host=document.getElementById('fsm-live-chat');
+  if(!host)return;
+  host.hidden=true;
   host.innerHTML=`<button type="button" id="fsm-chat-launcher" aria-expanded="false" aria-controls="fsm-chat-panel">💬 Team Chat <span id="fsm-chat-badge" hidden></span></button>
     <div id="fsm-chat-panel" hidden role="dialog" aria-label="FSM live chat">
       <div class="fsm-chat-top"><div><strong>Team Chat</strong><small id="fsm-chat-subtitle">Engineering communications</small></div>
         <div class="fsm-chat-actions"><button type="button" class="fsm-chat-icon-button" id="fsm-chat-signout" title="Sign out of chat" hidden>↪</button><button type="button" class="fsm-chat-icon-button" id="fsm-chat-close" aria-label="Close chat">✕</button></div></div>
       <div class="fsm-chat-body" id="fsm-chat-content"><div class="fsm-chat-gate"><h3>Team Chat</h3><p>Loading chat…</p></div></div>
     </div>`;
-  document.body.append(host);
   const el=id=>document.getElementById(id);
+  el('fsm-chat-panel').hidden=false; // Embedded panel is controlled by FSM's existing tab navigation.
   const launcher=el('fsm-chat-launcher'),panel=el('fsm-chat-panel'),content=el('fsm-chat-content');
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unread:{},lastSeen:{},messages:[],loading:false};
   const STATUS='fsm-chat-seen-v1';
   try{state.lastSeen=JSON.parse(localStorage.getItem(STATUS)||'{}');}catch{}
-  const isOpen=()=>!panel.hidden;
+  const isOpen=()=>!!document.getElementById('panel-chat')?.classList.contains('active');
   const roomId=(a,b)=>'dm_'+[a,b].sort().join('_');
-  function openToggle(force){const open=typeof force==='boolean'?force:panel.hidden;panel.hidden=!open;launcher.setAttribute('aria-expanded',String(open));if(open){launcher.focus();if(state.user)markRead();}else launcher.focus();}
-  launcher.addEventListener('click',()=>openToggle());el('fsm-chat-close').addEventListener('click',()=>openToggle(false));
+  function openToggle(force){if(force===false&&isOpen())document.querySelector('.tab[data-tab="dashboard"]')?.click();}
+  el('fsm-chat-close').addEventListener('click',()=>openToggle(false));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())openToggle(false);});
   function gate(title,description,form=''){
     content.innerHTML=`<div class="fsm-chat-gate"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(description)}</p>${form}<div id="fsm-chat-status" role="status"></div></div>`;
   }
   function setStatus(s){const n=el('fsm-chat-status');if(n)n.textContent=s;}
-  function syncVisible(){const visible=app.style.display!=='none'&&!!document.getElementById('logged-user')?.textContent?.trim()&&document.getElementById('logged-user')?.textContent!=='—';host.hidden=!visible; if(!visible)openToggle(false);}
+  function syncVisible(){const visible=app.style.display!=='none'&&!!document.getElementById('logged-user')?.textContent?.trim()&&document.getElementById('logged-user')?.textContent!=='—';host.hidden=!visible;}
   new MutationObserver(syncVisible).observe(app,{attributes:true,attributeFilter:['style']});
   syncVisible();
   function persistSeen(){try{localStorage.setItem(STATUS,JSON.stringify(state.lastSeen));}catch{}}
   function updateUnread(){
     const total=Object.values(state.unread).reduce((a,b)=>a+b,0),badge=el('fsm-chat-badge');
     badge.hidden=!total;badge.textContent=total>99?'99+':String(total);
+    for(const id of ['fsm-chat-nav-badge','fsm-chat-mobile-badge']){const n=el(id);if(n){n.hidden=!total;n.textContent=total>99?'99+':String(total);}}
     launcher.title=total?`${total} unread chat messages`:'Team Chat';
   }
   function roomName(){if(state.room==='engineering')return'Engineering Team';return state.profiles.find(p=>roomId(p.uid,state.user.uid)===state.room)?.name||'Direct message';}
@@ -125,6 +127,7 @@
     },()=>{});
   }
   el('fsm-chat-signout').addEventListener('click',async()=>{stopListeners();state.user=null;await state.lib.signOut(state.auth);});
+  document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   launcher.addEventListener('click',async()=>{
     if(state.auth||state.booting)return;state.booting=true;
     try{
