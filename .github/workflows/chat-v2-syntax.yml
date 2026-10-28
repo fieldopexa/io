@@ -66,12 +66,12 @@ jobs:
           const html = fs.readFileSync('index.html','utf8');
           const js = fs.readFileSync('live-chat.js','utf8');
           const sw = fs.readFileSync('sw.js','utf8');
-          const matches = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script>/gi)];
+          const matches = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
           let parsed=0;
           for(const match of matches){
             const attrs=match[1];
-            if(/\\bsrc\\s*=/.test(attrs))continue;
-            if(/\\btype\\s*=\\s*['"]?(?:application\\/json|text\\/template|module)/i.test(attrs))continue;
+            if(/\bsrc\s*=/.test(attrs))continue;
+            if(/\btype\s*=\s*['"]?(?:application\/json|text\/template|module)/i.test(attrs))continue;
             if(!match[2].trim())continue;
             new vm.Script(match[2], {filename:'index.html inline script '+(++parsed)});
           }
