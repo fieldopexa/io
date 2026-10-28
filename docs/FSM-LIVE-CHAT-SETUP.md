@@ -29,10 +29,23 @@ Development only: `feature/fsm-live-chat-v1`. **Not deployed to the live FSM or 
 
 ### 3. Update and deploy the Apps Script backend
 
-1. In the actual FSM Apps Script editor, update `api.gs` from this **development branch** (merge the small SSO route/function if the script has newer unpublished work; do not overwrite other live backend changes blindly).
-2. The new **`chatSSO`** POST action must be placed **after** `requireSession_(body.token)`: only existing authenticated FSM sessions can request Firebase tokens.
-3. Deploy a **new version** of the Apps Script web app using the current execution identity and allowed access settings. You may need to update the `API_URL` in `index.html` if using a new deployment rather than updating the existing one.
-4. The server returns only `customToken`, never the service-account key or raw FSM password. The token is valid for at most an hour, and Firebase signs the user in using that token. Firebase refresh tokens persist until revoked or sign-out, so **when an employee loses FSM access, also disable their matching `chatMembers` document** and revoke their Firebase refresh tokens when appropriate.
+1. Open the **existing** FSM Google Apps Script editor connected to the live FSM. **Do not replace or delete the existing backend files.**
+2. Add a new **Script** file named `FirebaseChatSSO.gs`; copy the contents of this branch's `FirebaseChatSSO.gs` into it.
+3. Locate the existing backend's `doPost(e)` function. In the action dispatch, immediately **after**:
+   ```javascript
+   var user = requireSession_(body.token);
+   ```
+   add this **one** handler:
+   ```javascript
+   if (action === 'chatSSO') {
+     return json_({ok:true, customToken:firebaseChatCustomToken_(user)});
+   }
+   ```
+   The handler must appear after `requireSession_` to prevent identity impersonation. Never add a second `doPost(e)` function.
+4. Save, then **Deploy → Manage deployments → Edit existing web app deployment → New version → Deploy**. Preserve existing execution identity and access settings. If using a different web-app URL, update `API_URL` in `index.html`.
+5. The backend returns only the short-lived custom token. The browser never receives the service account private key.
+6. When removing a user from FSM, also disable their Firestore `chatMembers` document and revoke their Firebase refresh tokens, as previously issued Firebase sessions may persist.
+
 
 ### 4. Local test
 
