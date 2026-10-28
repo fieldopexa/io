@@ -5087,6 +5087,7 @@ async function doLogout(){
   authToken='';
   authExpiresAt=0;
   currentUser=null;
+  try{await window.fsmChatSignOut?.();}catch(e){console.warn('Chat sign-out failed:',e);}
   try{
     if(logoutToken) await apiPost('logout',{token:logoutToken},{skipToken:true,authRequest:true});
   }catch(e){
