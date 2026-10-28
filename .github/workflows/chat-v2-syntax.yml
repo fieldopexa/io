@@ -48,7 +48,7 @@ jobs:
           assert(css.includes('overflow-x:hidden;overflow-y:auto'), 'Mobile inbox should be a vertically scrolling list');
           assert(js.includes("name:'Saved Messages'"), 'Private self-chat lost');
           assert(js.includes('isRecentlyActive'), 'Active indicators lost');
-          assert(html.includes('live-chat.js?v=fsm-auto-visit-feedback-retry-20261028'), 'Stale chat script URL');
+          assert(html.includes('live-chat.js?v=fsm-auto-visit-feedback-manual-20261028'), 'Stale chat script URL');
           assert(!js.includes('OPEXA / MESSAGES'), 'Redundant inbox eyebrow is still present');
           assert(!js.includes('<h3>Inbox</h3>'), 'Redundant inbox header is still present');
           assert(js.includes("name:'FSE Team'"), 'FSE group name not updated');
@@ -103,6 +103,10 @@ jobs:
           assert(js.includes("visitAnnouncementStatus(item.id,'posted')"), 'No successful notification status');
           assert(js.includes("visitAnnouncementStatus(item.id,'pending')"), 'No pending notification status');
           assert(js.includes('scheduleVisitAnnouncementRetry();'), 'Transient errors will not be retried');
+          assert(html.includes('function announceExistingFieldLog(id)'), 'Existing visit manual notify fallback missing');
+          assert(html.includes('>Notify FSE Team</button>'), 'Existing visit notification menu action missing');
+          assert(js.includes('window.fsmChatAnnounceExistingVisit=entry=>queueVisitAnnouncement(entry)'), 'Manual notification must reuse idempotent queue');
+
           assert(html.includes("if(!isEdit&&chatStatus)"), 'Visit notifications must only be prepared for new logs');
 
           console.log('Validated '+parsed+' inline scripts and incident/chat integration.');
