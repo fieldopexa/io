@@ -567,7 +567,7 @@
     }
 
   }
-  window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
