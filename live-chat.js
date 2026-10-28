@@ -265,7 +265,7 @@
   // creation. The ID is stable, so refreshes or retry cannot create duplicates.
   function announcementFsmUsername(){
     const fsm=(typeof currentUser!=='undefined')?currentUser:null;
-    return fsm?.role==='fse'?String(fsm.username||'').trim().toLowerCase():'';
+    return fsm?.username&&['fse','management'].includes(String(fsm.role||'').toLowerCase())?String(fsm.username||'').trim().toLowerCase():'';
   }
   function loadPendingVisitAnnouncements(username){
     if(!username)return [];
