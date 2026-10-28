@@ -40,11 +40,8 @@ function doGet(e) {
           return obj;
         });
 
-      // FSE accounts receive visits where they are either the Primary FSE
-      // or one of the Supporting FSEs.
-      if (user.role === 'fse') {
-        rows = rows.filter(function(row) { return fseOwnsVisit_(user, row); });
-      }
+      // Shared Field Logs: all authenticated FSEs and Management can review
+      // the whole Engineering visit history. Write authorization is separate.
 
       rows.forEach(function(row) {
         row.hasServiceForm = !!row.serviceFormFileId;
@@ -415,7 +412,7 @@ function doPost(e) {
 
     if (action === 'beginSeamlessDriveUpload') {
       var visitIdForSession = String(body.visitId || '').trim();
-      requireVisitAttachmentAccess_(user, visitIdForSession);
+      requireVisitAttachmentAccess_(user, visitIdForSession, true);
 
       var browserOrigin = String(body.origin || '').trim();
       var allowedUploadOrigin = 'https://fieldopexa.github.io';
@@ -470,7 +467,7 @@ function doPost(e) {
 
     if (action === 'registerDirectDriveVisitAttachment') {
       var directVisitId = String(body.visitId || '').trim();
-      var directVisit = requireVisitAttachmentAccess_(user, directVisitId);
+      var directVisit = requireVisitAttachmentAccess_(user, directVisitId, true);
       var direct = body.attachment || {};
       var directFileId = String(direct.fileId || '').trim();
       var directName = sanitizeAttachmentFileName_(direct.fileName);
@@ -567,7 +564,7 @@ function doPost(e) {
 
     if (action === 'uploadVisitAttachment') {
       var uploadVisitId = String(body.visitId || '').trim();
-      var uploadVisit = requireVisitAttachmentAccess_(user, uploadVisitId);
+      var uploadVisit = requireVisitAttachmentAccess_(user, uploadVisitId, true);
       var uploadFile = body.file || {};
       var uploadName = sanitizeAttachmentFileName_(uploadFile.name);
       var uploadMime = String(uploadFile.mimeType || '').trim().toLowerCase();
@@ -735,10 +732,10 @@ function doPost(e) {
 
       var entry = body.entry || {};
 
-      // An FSE login cannot submit a visit under somebody else's name.
-      if (user.role === 'fse' && user.fse) {
-        entry.tech = user.fse;
-      }
+      requireFseFieldLogWrite_(user);
+      // The backend, not the browser, sets the Primary FSE for new visits.
+      entry.tech = String(user.fse || user.username || '').trim();
+      if (!entry.tech) throw new Error('Your FSM account has no assigned FSE identity.');
       var primaryTech = String(entry.tech || '').trim().toLowerCase();
       var supporting = String(entry.supportingFses || '')
         .split(',')
@@ -771,12 +768,16 @@ function doPost(e) {
       var updatedEntry = body.entry || {};
       var updateId = String(body.id || updatedEntry.id || '').trim();
       if (!updateId) throw new Error('Field log ID is required.');
-      if (user.role === 'fse' && user.fse) updatedEntry.tech = user.fse;
+      requireFseFieldLogWrite_(user);
+      var beforeEntry = getRowObjectById_(updateSheet, updateId);
+      if (!beforeEntry) throw new Error('Entry not found.');
+      requirePrimaryFseFieldLogOwner_(user, beforeEntry);
+      // Preserve the original record identity and Primary FSE.
+      updatedEntry.id = updateId;
+      updatedEntry.tech = beforeEntry.tech;
       var updatePrimary = String(updatedEntry.tech || '').trim().toLowerCase();
       updatedEntry.supportingFses = String(updatedEntry.supportingFses || '').split(',').map(function(v){return String(v||'').trim();}).filter(function(v,i,arr){if(!v||v.toLowerCase()===updatePrimary)return false;return arr.map(function(x){return String(x||'').trim().toLowerCase();}).indexOf(v.toLowerCase())===i;}).join(', ');
       if (updatedEntry.site) updatedEntry.site = canonicalSiteNameV2_(updatedEntry.site);
-      var beforeEntry = getRowObjectById_(updateSheet, updateId);
-      if (!beforeEntry) throw new Error('Entry not found.');
       prepareVisitServiceForm_(updatedEntry, beforeEntry);
       updateRowById_(updateSheet, updateId, updatedEntry);
       var afterEntry = getRowObjectById_(updateSheet, updateId);
@@ -785,9 +786,16 @@ function doPost(e) {
     }
 
     if (action === 'archiveEntry') {
+      requireFseFieldLogWrite_(user);
       var archiveSheet = ss.getSheetByName('Entries');
       var beforeArchive = getRowObjectById_(archiveSheet, body.id);
-      updateRowById_(archiveSheet, body.id, body.entry || {});
+      if (!beforeArchive) throw new Error('Entry not found.');
+      requirePrimaryFseFieldLogOwner_(user, beforeArchive);
+      // Void only the allowed fields; never accept arbitrary record replacements.
+      updateRowById_(archiveSheet, body.id, {
+        status:'Voided', voided:true, voidedAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString()
+      });
       var afterArchive = getRowObjectById_(archiveSheet, body.id);
       appendAudit_(user, 'VOID', 'Field Log', body.id, afterArchive ? String(afterArchive.site || '') : '', beforeArchive, afterArchive, 'Field visit voided / archived');
       return json_({status: 'ok'});
@@ -1534,15 +1542,15 @@ function sanitizeAttachmentFileName_(name) {
   return name;
 }
 
-function requireVisitAttachmentAccess_(user, visitId) {
+function requireVisitAttachmentAccess_(user, visitId, forWrite) {
   visitId = String(visitId || '').trim();
   if (!visitId) throw new Error('Visit ID is required.');
   var entrySheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Entries');
   var entry = getRowObjectById_(entrySheet, visitId);
   if (!entry) throw new Error('Field visit not found.');
-  if (user.role === 'fse' && !fseOwnsVisit_(user, entry)) {
-    throw new Error('You do not have access to attachments for this visit.');
-  }
+  // Viewing an attachment follows the same team-wide read rules as Field Logs.
+  // Only the Primary FSE may upload or modify attachments for this visit.
+  if (forWrite) requirePrimaryFseFieldLogOwner_(user, entry);
   return entry;
 }
 
@@ -2448,6 +2456,21 @@ function ensureEntriesSupportingFsesColumn_() {
 
 // Exact assignment matching after Unicode/case/whitespace normalization.
 // Never falls back to username or grants access to all visits.
+// Field Logs are shared for reading, but Primary FSE ownership is enforced
+// server-side for all edits. Supporting engineers can review and discuss.
+function requireFseFieldLogWrite_(user) {
+  if (!user || user.role !== 'fse') {
+    throw new Error('Only an authenticated Field Support Engineer may modify Field Logs.');
+  }
+}
+function requirePrimaryFseFieldLogOwner_(user, entry) {
+  requireFseFieldLogWrite_(user);
+  var own = fseNameKey_(user.fse || user.username);
+  var primary = fseNameKey_(entry && (entry.tech || entry.technician || entry.Technician || entry.fse || entry.FSE));
+  if (!own || !primary || own !== primary) {
+    throw new Error('This Field Log belongs to another FSE. You may view it but cannot change it.');
+  }
+}
 function fseNameKey_(value){return String(value||'').normalize('NFKC').trim().replace(/\s+/g,' ').toLowerCase();}
 function fseOwnsVisit_(user,row){
  var assigned=fseNameKey_(user.fse||user.displayName||user.username);if(!assigned)return false;
