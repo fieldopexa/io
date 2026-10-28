@@ -40,6 +40,27 @@
 
 **Important access rule:** FSM currently restricts Field Log lists by account/assigned FSE. Sharing a record in FSE Team does **not** grant teammates permission to open it. Unauthorized teammates still see the short summary posted in Chat but receive **Field Log unavailable** if the full record is outside their accessible records. This is intentional and should be reviewed before wider rollout.
 
-**No automatic posts.** Engineers may edit or cancel the draft before sending. No Apps Script handler, new Firebase collection, or Firestore rule change is needed for this feature.
+**Manual Discuss in Chat:** Engineers may edit or cancel the incident draft before sending. That button still does **not** auto-send.
+
+## Automatic FSE Team updates for newly saved Field Visits
+- When an **FSE account creates a new visit** and Google Apps Script confirms `addEntry`, the chat client automatically posts a compact **New Field Visit Logged** card to **FSE Team**.
+- Includes site, visit type, reporting engineer, visit date, optional ticket/machine/incident priority, status and **View Field Log** (stable record ID).
+- This applies to **routine visits as well as incidents**. It does not auto-post on edits, voided records, management-originated saves, or failed/unconfirmed saves.
+- The group chat remains `engineering`; no second group or Firebase collection is needed. Existing Firebase authentication and Firestore create permissions are reused.
+- The visitor is not forced into Messages. Other FSEs see the group update in their inbox and can receive in-app/browser alerts **while FSM is open**. Closed-app push still requires separate Firebase Cloud Messaging setup.
+- A per-FSM-user browser queue holds pending announcements if chat has not finished connecting or Firebase temporarily fails. It retries on chat sign-in, online reconnection or returning to the tab, for up to **14 days**. Announcements use the stable ID `visit_<entry.id>` and a Firestore transaction to prevent duplicate posting.
+- **Important:** this is a browser-triggered notification after the server confirms the Field Visit, **not guaranteed server-side delivery**. If the FSE closes the app before the write reaches Firebase, the notification remains queued only on that browser. A fully server-generated event would require Google Apps Script/Firebase backend work.
+- **Access restriction:** the summary is visible in FSE Team, but the link only opens a Field Log that the recipient's existing FSM account is authorized to read.
+- **No additional Apps Script deployment or Firestore rules publish is required** for this feature, assuming FSE Team messaging already works.
+
+### Suggested two-device test
+1. On Ian's local FSM test build, sign in as Ian; on another browser/device, sign in as Kenneth and leave FSM open.
+2. Create a **new routine visit** for an appropriate test site. Save and confirm the shared-sheet success message.
+3. Open **Messages → FSE Team** on both devices. Confirm exactly **one** automatic visit card appears, showing the correct site, visit type and link.
+4. Edit the same Field Log, save, and confirm **no second automatic card** is posted.
+5. Test the manual **Discuss in Chat** action on an incident. It should still prepare an editable draft, not send automatically.
+6. Test notification badges from Kenneth's Dashboard when Ian saves a separate new visit.
+7. Note that the test uses **real FSM Google Sheets and Firebase**. Do not create fictitious production incidents. Use a legitimate test entry only where your team permits it, then void/clean up according to your site's testing procedure.
+
 
 **Test note:** Until the branch is merged into GitHub Pages, an externally opened production URL will run the older live FSM and may not process the new `fieldlog` query parameter. Test the link by clicking it inside this development build, where the URL is intercepted.
