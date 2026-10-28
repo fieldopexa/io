@@ -126,7 +126,8 @@
       updateUnread();renderContacts();
     },()=>{});
   }
-  el('fsm-chat-signout').addEventListener('click',async()=>{stopListeners();state.user=null;await state.lib.signOut(state.auth);});
+  window.fsmChatSignOut=async()=>{stopListeners();state.user=null;if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   launcher.addEventListener('click',async()=>{
     if(state.auth||state.booting)return;state.booting=true;
