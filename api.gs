@@ -702,7 +702,9 @@ function doPost(e) {
     }
 
     if (action === 'deleteVisitAttachment') {
-      requireSession_(body.token, 'management');
+      // Management is view-only; permanent attachment deletion is disabled
+      // until an explicit administrator-controlled retention policy exists.
+      throw new Error('Permanent deletion of visit attachments is disabled.');
       var deleteAttachmentId = String(body.attachmentId || '').trim();
       var attachmentSheetDelete = getVisitAttachmentsSheet_();
       var beforeAttachment = getRowObjectById_(attachmentSheetDelete, deleteAttachmentId);
@@ -802,7 +804,9 @@ function doPost(e) {
     }
 
     if (action === 'deleteEntry') {
-      requireSession_(body.token, 'management');
+      // Preserve Engineering visit history. Primary FSEs may void their own
+      // visits; Management cannot permanently delete Field Logs.
+      throw new Error('Permanent Field Log deletion is disabled. Use Void for your own visit.');
       var deleteEntrySheet = ss.getSheetByName('Entries');
       var beforeDeleteEntry = getRowObjectById_(deleteEntrySheet, body.id);
       deleteAllVisitAttachments_(String(body.id || ''));
