@@ -5200,6 +5200,7 @@ function bootstrapCachedCore(){
 
     renderSiteOptions();
     renderFseOptions();
+    refreshFieldLogFseFilter();
     // Paint the tab switch first; defer expensive charts/tables until the browser can draw.
     requestAnimationFrame(()=>renderActivePanel());
   }catch(e){
@@ -10799,7 +10800,19 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
 (function(){
  const notices=[];
  ['panel-dashboard','panel-fieldlogs'].forEach(id=>{const box=document.createElement('div');box.className='utility-strip fse-visit-notice';box.hidden=true;const message=document.createElement('span');box.append(message);document.getElementById(id).prepend(box);notices.push({box,message});});
- function update(){const fse=currentUser?.role==='fse';document.getElementById('work-toggle').hidden=fse;document.getElementById('my-fse').style.display=fse?'none':activeWork==='mine'?'block':'none';notices.forEach(({box,message})=>{box.hidden=!fse;if(!fse)return;message.textContent=!currentUser.fse?'Your account has no FSE assignment. Ask management to assign your technician name.':entries.length?'Showing visits assigned to '+currentUser.fse+' · '+entries.length+' loaded.':'No visits returned for '+currentUser.fse+'. Confirm that this account’s FSE assignment matches the technician name on the visits.';});}
+ function update(){
+   const fse=currentUser?.role==='fse';
+   document.getElementById('work-toggle').hidden=false;
+   document.getElementById('my-fse').style.display=fse?'none':activeWork==='mine'?'block':'none';
+   const all=document.querySelector('#work-toggle [data-work="all"]');
+   const mine=document.querySelector('#work-toggle [data-work="mine"]');
+   all?.classList.toggle('active',activeWork==='all');
+   mine?.classList.toggle('active',activeWork==='mine');
+   notices.forEach(({box,message})=>{
+     box.hidden=!fse;
+     if(fse)message.textContent='Shared Field Logs: '+entries.length+' team visits available · Use My Work to view your visits.';
+   });
+ }
  const oldRole=applyRoleUI;applyRoleUI=function(){oldRole();update();};
  const oldLoad=loadEntries;loadEntries=async function(){await oldLoad();update();};
  const oldShow=showApp;showApp=function(user){if(user?.role==='fse'){activeWork='all';activeCat='All';window.attentionFilter=null;managementPeriod='all';['global-search','date-from','date-to'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('[data-mgmt-period]').forEach(b=>b.classList.toggle('active',b.dataset.mgmtPeriod==='all'));}oldShow(user);update();};
