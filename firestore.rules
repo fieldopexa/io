@@ -4,16 +4,104 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function activeMember() {
       return signedIn()
+        && request.auth.token.fsm == true
         && exists(/databases/$(database)/documents/chatMembers/$(request.auth.uid))
         && get(/databases/$(database)/documents/chatMembers/$(request.auth.uid)).data.active == true;
     }
-    // Direct room IDs: dm_<uid1>_<uid2>, created by sorting both UIDs.
-    // Restrict access to only an involved UID. Firebase generated UIDs don't use _.
+    // Direct rooms use tilde, which is forbidden in FSM account IDs.
+    // This prevents ambiguous matches when usernames contain underscores.
     function canAccessRoom(roomId) {
       return activeMember()
         && (roomId == 'engineering'
-        || roomId.matches('^dm_' + request.auth.uid + '_[^_]+$')
-        || roomId.matches('^dm_[^_]+_' + request.auth.uid + '$'));
+        || roomId.matches('^dm~' + request.auth.uid + '~[^~]+);
+    }
+    match /chatMembers/{uid} {
+      // The FSM backend authenticates the user and signs Firebase custom claims.
+      // A signed-in FSM user may only create their own initial immutable profile.
+      allow get: if activeMember()
+        || (signedIn() && request.auth.uid == uid && request.auth.token.fsm == true);
+      allow list: if activeMember();
+      allow create: if signedIn()
+        && request.auth.token.fsm == true
+        && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/chatMembers/$(uid))
+        && request.resource.data.keys().hasOnly(['name','username','active'])
+        && request.resource.data.keys().hasAll(['name','username','active'])
+        && request.resource.data.active == true
+        && request.resource.data.username == request.auth.token.fsm_username
+        && request.resource.data.name == request.auth.token.fsm_name
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120;
+      // Admin disables users by setting active:false in Firestore Console.
+      // Disabled members cannot reset themselves to active.
+      allow update, delete: if false;
+    }
+    match /chatRooms/{roomId}/messages/{messageId} {
+      allow read: if canAccessRoom(roomId);
+      allow create: if canAccessRoom(roomId)
+        && request.resource.data.keys().hasOnly(['text','senderId','senderName','createdAt'])
+        && request.resource.data.keys().hasAll(['text','senderId','senderName','createdAt'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.senderName is string
+        && request.resource.data.senderName.size() <= 120
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+    match /chatActivity/{roomId} {
+      // Only metadata (senderId and time), never message text.
+      // Shared metadata is used for lightweight unread badges.
+      allow read: if activeMember();
+      allow create, update: if canAccessRoom(roomId)
+        && request.resource.data.keys().hasOnly(['senderId','updatedAt'])
+        && request.resource.data.keys().hasAll(['senderId','updatedAt'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+)
+        || roomId.matches('^dm~[^~]+~' + request.auth.uid + ');
+    }
+    match /chatMembers/{uid} {
+      // Directory is visible to approved staff. Profiles are provisioned by an admin in console.
+      allow read: if activeMember();
+      allow write: if false;
+    }
+    match /chatRooms/{roomId}/messages/{messageId} {
+      allow read: if canAccessRoom(roomId);
+      allow create: if canAccessRoom(roomId)
+        && request.resource.data.keys().hasOnly(['text','senderId','senderName','createdAt'])
+        && request.resource.data.keys().hasAll(['text','senderId','senderName','createdAt'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.senderName is string
+        && request.resource.data.senderName.size() <= 120
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+    match /chatActivity/{roomId} {
+      // Only metadata (senderId and time), never message text.
+      // Shared metadata is used for lightweight unread badges.
+      allow read: if activeMember();
+      allow create, update: if canAccessRoom(roomId)
+        && request.resource.data.keys().hasOnly(['senderId','updatedAt'])
+        && request.resource.data.keys().hasAll(['senderId','updatedAt'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+));
     }
     match /chatMembers/{uid} {
       // Directory is visible to approved staff. Profiles are provisioned by an admin in console.
