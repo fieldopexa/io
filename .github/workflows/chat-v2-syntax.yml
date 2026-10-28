@@ -1,4 +1,4 @@
-name: Validate FSM Chat V2
+name: Validate FSM Communications
 on:
   push:
     branches:
@@ -6,6 +6,8 @@ on:
   pull_request:
     paths:
       - 'live-chat.js'
+      - 'live-chat.css'
+      - 'index.html'
       - 'sw.js'
       - 'FirebaseChatSSO.gs'
       - 'FirebaseChatPush.gs'
@@ -26,6 +28,29 @@ jobs:
           cp FirebaseChatPush.gs /tmp/fsm-push.js
           node --check /tmp/fsm-sso.js
           node --check /tmp/fsm-push.js
+      - name: Check mobile inbox and conversation navigation wiring
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const js = fs.readFileSync('live-chat.js','utf8');
+          const css = fs.readFileSync('live-chat.css','utf8');
+          const html = fs.readFileSync('index.html','utf8');
+          for (const id of ['fsm-chat-back','fsm-chat-filter-unread','fsm-chat-filter-all','fsm-chat-contacts','fsm-chat-search']) {
+            assert(js.includes('id="'+id+'"'), 'Missing mobile control: '+id);
+          }
+          assert(js.includes("selectRoom(state.room,false)"), 'Must default to inbox on mobile');
+          assert(js.includes("showChatScreen('thread')"), 'Tap a conversation must open a thread');
+          assert(js.includes("el('fsm-chat-back').addEventListener('click',backToInbox)"), 'Mobile back control not wired');
+          assert(css.includes('#fsm-chat-panel.fsm-chat-mobile-thread .fsm-chat-sidebar{display:none!important}'), 'Inbox not hidden in thread mode');
+          assert(css.includes('#fsm-chat-panel.fsm-chat-mobile-thread .fsm-chat-thread{display:flex}'), 'Thread not visible when selected');
+          assert(css.includes('overflow-x:hidden;overflow-y:auto'), 'Mobile inbox should be a vertically scrolling list');
+          assert(js.includes("name:'Saved Messages'"), 'Private self-chat lost');
+          assert(js.includes('isRecentlyActive'), 'Active indicators lost');
+          assert(html.includes('live-chat.js?v=fsm-comms-v4-mobile-20261028'), 'Stale V3 chat script URL');
+          assert(!js.includes("el('fsm-chat-signout').addEventListener"), 'Old removed element reference remains');
+          console.log('FSM mobile chat navigation and UX wiring checks passed.');
+          NODE
       - name: Check chat rule sections are present
         run: |
           grep -Fq "match /chatRooms/{roomId}/messages/{messageId}" firestore.rules
