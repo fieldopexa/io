@@ -94,7 +94,7 @@
     if(!state.user)return [];
     return [
       {id:savedRoomId(),name:'Saved Messages',type:'saved',description:'Only you can see this'},
-      {id:'engineering',name:'Team Chat',type:'group',description:'Engineering group'},
+      {id:'engineering',name:'FSE Team',type:'group',description:'Engineering group'},
       ...chatPeople().map(person=>({id:roomId(state.user.uid,person.uid),name:person.name,type:'direct',uid:person.uid,description:'Private message'}))
     ];
   }
@@ -106,7 +106,7 @@
       const n=el(id);if(n){n.hidden=!total;n.textContent=total>99?'99+':String(total);}
     }
     document.title=total?'('+total+') '+defaultTitle:defaultTitle;
-    if(launcher)launcher.title=total?total+' unread conversations':'Team Chat';
+    if(launcher)launcher.title=total?total+' unread conversations':'Messages';
   }
   function renderTextWithLinks(node,text){
     const raw=String(text||'');
@@ -295,9 +295,6 @@
     const list=el('fsm-chat-contacts');if(!list||!state.user)return;
     const filter=state.filter.trim().toLowerCase();
     const all=conversations().filter(c=>!state.unreadOnly||!!state.unread[c.id]);
-    const totalConversations=conversations().length;
-    const counter=el('fsm-chat-conversation-count');
-    if(counter)counter.textContent=totalConversations+' conversations';
     const unreadCount=Object.values(state.unread).filter(Boolean).length;
     const unreadBadge=el('fsm-chat-unread-count');
     if(unreadBadge){unreadBadge.hidden=!unreadCount;unreadBadge.textContent=unreadCount;}
@@ -508,8 +505,7 @@
     state.unread={};updateUnread();
     showChatScreen(requestedRoom&&conversations().some(c=>c.id===requestedRoom)?'thread':'inbox');
     content.innerHTML='<aside class="fsm-chat-sidebar">'
-      +'<div class="fsm-chat-sidebar-heading"><div><span class="fsm-chat-sidebar-overline">OPEXA / MESSAGES</span><h3>Inbox</h3></div><span class="fsm-chat-count-rooms" id="fsm-chat-conversation-count">0 conversations</span></div>'
-      +'<label class="fsm-chat-search-wrap"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input type="search" id="fsm-chat-search" placeholder="Search conversations" autocomplete="off" aria-label="Search conversations"></label>'
+      +'<label class="global-search fsm-chat-search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="fsm-chat-search" placeholder="Search conversations…" autocomplete="off" aria-label="Search conversations"></label>'
       +'<div class="fsm-chat-filters" role="group" aria-label="Filter conversations"><button type="button" class="fsm-chat-filter active" id="fsm-chat-filter-all" aria-pressed="true">All chats</button><button type="button" class="fsm-chat-filter" id="fsm-chat-filter-unread" aria-pressed="false">Unread <span id="fsm-chat-unread-count" hidden>0</span></button></div>'
       +'<div class="fsm-chat-contacts" id="fsm-chat-contacts" role="navigation" aria-label="Conversations"></div>'
       +'<div class="fsm-chat-sidebar-foot"><span class="fsm-chat-sidebar-status"></span><span>Signed in as '+escapeHtml(state.member.name||state.member.username||'FSM user')+'</span></div>'
@@ -624,7 +620,7 @@
     if(state.user||state.booting)return;
     state.booting=true;
     try{
-      gate('Connecting to Team Chat','Verifying your existing FSM session…');
+      gate('Connecting to Messages','Verifying your existing FSM session…');
       await loadSdk();
       await connectFromFSM();
     }catch(err){
