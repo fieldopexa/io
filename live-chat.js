@@ -16,7 +16,7 @@
   el('fsm-chat-panel').hidden=false; // Embedded in FSM Operations navigation.
   const launcher=el('fsm-chat-launcher'),panel=el('fsm-chat-panel'),content=el('fsm-chat-content');
   const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unsubPresence:null,unsubPreviews:new Map(),previewReady:{},preview:{},unread:{},lastSeen:{},presence:{},messages:[],filter:'',editingId:null,loading:false,booting:false,presenceTimer:null};
+  const state={auth:null,db:null,lib:null,user:null,member:null,profiles:[],room:'engineering',unsubMessages:null,unsubMembers:null,unsubActivity:null,unsubPresence:null,unsubPreviews:new Map(),previewReady:{},preview:{},unread:{},lastSeen:{},presence:{},messages:[],filter:'',editingId:null,loading:false,booting:false,presenceTimer:null,firebaseApp:null,messaging:null,pushLib:null,pushEnabled:false,pushToken:null,pushTokenRef:null};
   const defaultTitle=document.title;
   const notifyMemory=new Map();
   // Directory entries are based on confirmed existing FSM usernames, not Firebase
@@ -128,7 +128,7 @@
       toast.onclick=()=>{document.querySelector('.tab[data-tab="chat"]')?.click();selectRoom(room);toast.hidden=true;};
       clearTimeout(state.toastTimer);
       state.toastTimer=setTimeout(()=>toast.hidden=true,5200);
-    }else if('Notification' in window&&Notification.permission==='granted'){
+    }else if(!state.pushEnabled&&'Notification' in window&&Notification.permission==='granted'){
       try{
         const notice=new Notification('New message · '+label,{
           body:'Open FSM to read your message',tag:'fsm-chat-'+room,
@@ -171,6 +171,33 @@
       await setDoc(doc(state.db,'chatPresence',state.user.uid),{uid:state.user.uid,lastSeen:serverTimestamp()});
     }catch(err){console.warn('Chat presence sync failed:',err.code);}
   }
+  // Firebase Cloud Messaging is optional and uses ONLY a public VAPID key.
+  // Service-account credentials never reach the browser.
+  async function registerPushDevice(){
+    const vapidKey=String(window.FSM_CHAT_WEB_PUSH_VAPID_KEY||'').trim();
+    if(!vapidKey||!state.user||!('serviceWorker' in navigator)||!window.isSecureContext)return false;
+    const module=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js');
+    if(!(await module.isSupported()))return false;
+    const registration=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+    await navigator.serviceWorker.ready;
+    const messaging=module.getMessaging(state.firebaseApp);
+    const token=await module.getToken(messaging,{vapidKey,serviceWorkerRegistration:registration});
+    if(!token)return false;
+    const bytes=new TextEncoder().encode(token);
+    const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
+    const id=Array.from(hash).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const {doc,setDoc,serverTimestamp}=state.lib;
+    const ref=doc(state.db,'chatDevices',state.user.uid,'tokens',id);
+    await setDoc(ref,{token,registeredAt:serverTimestamp(),userAgent:navigator.userAgent.slice(0,150)});
+    state.messaging=messaging;state.pushLib=module;state.pushToken=token;state.pushTokenRef=ref;state.pushEnabled=true;
+    return true;
+  }
+  async function unregisterPushDevice(){
+    if(!state.pushTokenRef||!state.lib)return;
+    try{await state.lib.deleteDoc(state.pushTokenRef);}catch(err){console.warn('Failed to revoke chat token document:',err.code);}
+    try{await state.pushLib?.deleteToken(state.messaging);}catch(err){console.warn('Failed to revoke browser push token:',err.code);}
+    state.pushEnabled=false;state.pushToken=null;state.pushTokenRef=null;
+  }
   function isRecentlyActive(uid){
     const seen=state.presence[uid]?.toMillis?.()||0;
     return !!seen&&Date.now()-seen<180000;
@@ -185,7 +212,7 @@
       import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js'),
       import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js')]);
     const fb=appMod.initializeApp(cfg,'fsm-team-chat');
-    state.auth=authMod.getAuth(fb);state.db=storeMod.getFirestore(fb);
+    state.firebaseApp=fb;state.auth=authMod.getAuth(fb);state.db=storeMod.getFirestore(fb);
     await authMod.setPersistence(state.auth,authMod.browserLocalPersistence);
     return state.lib={...authMod,...storeMod};
   }
@@ -371,6 +398,12 @@
         batch.set(ref,{text,senderId:state.user.uid,senderName:state.member.name||'Teammate',createdAt:serverTimestamp()});
         batch.set(doc(state.db,'chatActivity',state.room),{senderId:state.user.uid,updatedAt:serverTimestamp()});
         await batch.commit();
+        // The trusted Apps Script endpoint verifies the stored message, sender
+        // and recipients before sending push. This never blocks sending.
+        if(window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
+          apiPost('chatPush',{roomId:state.room,messageId:ref.id})
+            .catch(err=>console.warn('Background notification unavailable:',err.message));
+        }
         input.value='';markRead();
       }
       el('fsm-chat-error').textContent='';
@@ -400,6 +433,13 @@
       return;
     }
     state.user=user;state.member=self.data();el('fsm-chat-signout').hidden=false;
+    // A notification click can open the matching conversation directly.
+    const requestedRoom=new URL(location.href).searchParams.get('chat');
+    if(requestedRoom&&conversations().some(c=>c.id===requestedRoom)){
+      state.room=requestedRoom;
+      document.querySelector('.tab[data-tab="chat"]')?.click();
+      history.replaceState(null,'',location.pathname+location.hash);
+    }
     try{state.lastSeen=JSON.parse(localStorage.getItem(seenStorageKey())||'{}');}catch{state.lastSeen={};}
     state.unread={};updateUnread();
     content.innerHTML='<aside class="fsm-chat-sidebar">'
@@ -441,11 +481,20 @@
     const paintAlerts=()=>{
       const supported='Notification' in window&&window.isSecureContext;
       alerts.disabled=!supported;
-      alerts.querySelector('span').textContent=!supported?'Unavailable':Notification.permission==='granted'?'Alerts on':Notification.permission==='denied'?'Blocked in browser':'Enable alerts';
+      alerts.querySelector('span').textContent=!supported?'Unavailable':state.pushEnabled?'Push on':Notification.permission==='granted'?'Alerts on':Notification.permission==='denied'?'Blocked in browser':'Enable alerts';
     };
     alerts.addEventListener('click',async()=>{
       if(!('Notification' in window)||!window.isSecureContext)return;
-      try{await Notification.requestPermission();}catch(err){console.warn('Notification permission:',err);}
+      try{
+        const permission=await Notification.requestPermission();
+        if(permission==='granted'&&window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
+          const enabled=await registerPushDevice();
+          if(!enabled)el('fsm-chat-error').textContent='Web push is unavailable on this device. In-app alerts still work.';
+        }
+      }catch(err){
+        console.warn('Push registration failed:',err.code||err.message);
+        el('fsm-chat-error').textContent='Browser alerts enabled, but background push could not be registered.';
+      }
       paintAlerts();
     });
     paintAlerts();
@@ -468,10 +517,18 @@
     state.presenceTimer=setInterval(syncPresence,90000);
 
   }
-  window.fsmChatSignOut=async()=>{stopListeners();state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{stopListeners();await unregisterPushDevice();state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
+  navigator.serviceWorker?.addEventListener('message',event=>{
+    if(event.data?.type!=='FSM_CHAT_OPEN'||!state.user)return;
+    const room=event.data.roomId;
+    if(conversations().some(c=>c.id===room)){
+      document.querySelector('.tab[data-tab="chat"]')?.click();
+      selectRoom(room);
+    }
+  });
   document.addEventListener('click',event=>{
     if(!event.target.closest('.fsm-chat-message-actions')){
       document.querySelectorAll('.fsm-chat-message-menu').forEach(menu=>menu.hidden=true);
