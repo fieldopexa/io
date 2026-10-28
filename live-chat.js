@@ -402,27 +402,81 @@
     state.user=user;state.member=self.data();el('fsm-chat-signout').hidden=false;
     try{state.lastSeen=JSON.parse(localStorage.getItem(seenStorageKey())||'{}');}catch{state.lastSeen={};}
     state.unread={};updateUnread();
-    content.innerHTML=`<aside class="fsm-chat-contacts" id="fsm-chat-contacts"></aside><div class="fsm-chat-thread"><div class="fsm-chat-thread-head" id="fsm-chat-thread-head"></div><div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div><form class="fsm-chat-compose" id="fsm-chat-compose"><input id="fsm-chat-input" maxlength="2000" placeholder="Write a message…" aria-label="Message" autocomplete="off" required><button id="fsm-chat-send" class="fsm-chat-send" type="submit">Send</button></form><div id="fsm-chat-error" role="status" style="padding:0 12px;color:#ffb3a4;font-size:11px"></div></div>`;
+    content.innerHTML='<aside class="fsm-chat-sidebar">'
+      +'<div class="fsm-chat-sidebar-heading"><h3>Messages</h3><span>FSM Team</span></div>'
+      +'<div class="fsm-chat-search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="fsm-chat-search" placeholder="Search people…" autocomplete="off" aria-label="Search conversations"></div>'
+      +'<div class="fsm-chat-contacts" id="fsm-chat-contacts" role="navigation" aria-label="Conversations"></div>'
+      +'<div class="fsm-chat-sidebar-foot"><span class="fsm-chat-sidebar-status"></span>Connected with your FSM account</div>'
+      +'</aside>'
+      +'<section class="fsm-chat-thread">'
+      +'<header class="fsm-chat-thread-header"><span class="fsm-chat-thread-avatar" aria-hidden="true">✦</span><span class="fsm-chat-thread-title"><strong id="fsm-chat-thread-head"></strong><small id="fsm-chat-thread-subtitle"></small></span>'
+      +'<button class="fsm-chat-notify-button" id="fsm-chat-enable-alerts" type="button" title="Enable browser alerts">♧ <span>Enable alerts</span></button></header>'
+      +'<div class="fsm-chat-messages" id="fsm-chat-messages" aria-live="polite"></div>'
+      +'<div class="fsm-chat-edit-bar" id="fsm-chat-edit-bar" hidden><span>✎ Editing your message</span><button id="fsm-chat-edit-cancel" type="button">Cancel</button></div>'
+      +'<form class="fsm-chat-compose" id="fsm-chat-compose">'
+      +'<button id="fsm-chat-attach-link" class="fsm-chat-attach-link" type="button" title="Insert a shared link" aria-label="Insert a shared link">🔗</button>'
+      +'<textarea id="fsm-chat-input" maxlength="2000" rows="1" placeholder="Write a message…" aria-label="Message" autocomplete="off" required></textarea>'
+      +'<button id="fsm-chat-send" class="fsm-chat-send" type="submit">Send</button>'
+      +'</form><div id="fsm-chat-error" role="status" class="fsm-chat-error"></div>'
+      +'</section>';
+    const search=el('fsm-chat-search');
+    search.addEventListener('input',()=>{state.filter=search.value;renderContacts();});
+    el('fsm-chat-edit-cancel').addEventListener('click',stopEdit);
+    el('fsm-chat-attach-link').addEventListener('click',()=>{
+      const raw=window.prompt('Paste an HTTPS link to share (Drive, report, or document):');
+      if(raw===null)return;
+      let link;
+      try{link=new URL(raw.trim());if(!['https:','http:'].includes(link.protocol))throw Error('invalid');}
+      catch{el('fsm-chat-error').textContent='Only HTTP or HTTPS links are supported.';return;}
+      const input=el('fsm-chat-input');
+      input.value=(input.value.trim()?input.value.trim()+'\n':'')+link.href;
+      input.focus();
+    });
+    el('fsm-chat-input').addEventListener('keydown',event=>{
+      if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){
+        event.preventDefault();el('fsm-chat-compose').requestSubmit();
+      }
+    });
+    const alerts=el('fsm-chat-enable-alerts');
+    const paintAlerts=()=>{
+      const supported='Notification' in window&&window.isSecureContext;
+      alerts.disabled=!supported;
+      alerts.querySelector('span').textContent=!supported?'Unavailable':Notification.permission==='granted'?'Alerts on':Notification.permission==='denied'?'Blocked in browser':'Enable alerts';
+    };
+    alerts.addEventListener('click',async()=>{
+      if(!('Notification' in window)||!window.isSecureContext)return;
+      try{await Notification.requestPermission();}catch(err){console.warn('Notification permission:',err);}
+      paintAlerts();
+    });
+    paintAlerts();
     el('fsm-chat-compose').addEventListener('submit',sendMessage);
     state.unsubMembers=onSnapshot(collection(state.db,'chatMembers'),snap=>{
       state.profiles=snap.docs.map(d=>({uid:d.id,...d.data()})).filter(p=>/^fsm_[A-Za-z0-9_-]+$/.test(p.uid));
-      const me=state.profiles.find(p=>p.uid===user.uid);if(!me||me.active!==true){stopListeners();gate('Access disabled','Contact your FSM administrator.');return;}
-      state.member=me;renderContacts();
-    },()=>{});
-    selectRoom(state.room);
-    // Lightweight room activity badges while the app is open, even if chat is minimized.
-    state.unsubActivity=onSnapshot(query(collection(state.db,'chatActivity'),orderBy('updatedAt','desc'),limit(100)),snap=>{
-      for(const entry of snap.docs){const data=entry.data();const id=entry.id;
-        if(!conversations().some(c=>c.id===id))continue;
-        const millis=data.updatedAt?.toMillis?.()||0;
-        state.unread[id]=(data.senderId!==user.uid&&millis>(state.lastSeen[id]||0))?1:0;
+      const me=state.profiles.find(p=>p.uid===user.uid);
+      if(!me||me.active!==true){
+        stopListeners();gate('Chat access disabled','Contact your FSM administrator.');return;
       }
-      updateUnread();renderContacts();
-    },()=>{});
+      state.member=me;syncRoomPreviews();
+    },err=>console.warn('Team directory listener:',err.code));
+    selectRoom(state.room);
+    state.unsubPresence=onSnapshot(collection(state.db,'chatPresence'),snap=>{
+      state.presence={};
+      for(const entry of snap.docs)state.presence[entry.id]=entry.data().lastSeen;
+      renderContacts();
+    },err=>console.warn('Presence listener:',err.code));
+    syncPresence();
+    state.presenceTimer=setInterval(syncPresence,90000);
+
   }
-  window.fsmChatSignOut=async()=>{stopListeners();state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.unread={};if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{stopListeners();state.user=null;state.member=null;state.profiles=[];state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   el('fsm-chat-signout').addEventListener('click',async()=>{await window.fsmChatSignOut();});
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user)markRead();launcher.click();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncPresence();});
+  document.addEventListener('click',event=>{
+    if(!event.target.closest('.fsm-chat-message-actions')){
+      document.querySelectorAll('.fsm-chat-message-menu').forEach(menu=>menu.hidden=true);
+    }
+  });
   launcher.addEventListener('click',async()=>{
     if(state.user||state.booting)return;
     state.booting=true;
