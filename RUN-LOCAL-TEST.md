@@ -1,28 +1,21 @@
-# Opexa FSM with Integrated Team Chat (Test Build)
+# FSM Communications V2 — local test
 
-This branch adds **Team Chat as a page inside FSM**, not a separate app. Open it under **Operations → Team Chat** in the desktop sidebar or the mobile menu.
+**Development only.** Source: `feature/fsm-live-chat-v1`. Live GitHub Pages is unchanged.
 
-## Run locally on Windows
+1. Download the **latest ZIP** of this branch and extract it into a new folder.
+2. Double-click `START-FSM-LOCAL.bat` (Python required). Keep the command window open.
+3. Open `http://127.0.0.1:8765/` and log in with your **normal FSM account**.
+4. Open **Operations → Team Chat**. The page heading is now **Communications**.
+5. Switch between group **Team Chat** and private messages for Popoy, Erwin, Kenneth (your own account will not be in the contact list).
+6. Use the conversation search on desktop; mobile shows a compact sideways-scrolling conversation bar.
+7. Send a test group message, then private message. Open **⋯** next to a message to **Copy**, **Edit**, or **Unsend** your own message.
+8. **Publish the updated `firestore.rules` from this branch** before testing Edit / Unsend. V1 rules allowed messages to be created but not edited or unsent.
+9. To test notifications, stay signed into FSM (you can keep Dashboard open), grant **Enable alerts**, then ask Kenneth to send a new message. Unread indicators, in-app toast, tab-title count, and browser alerts should work while FSM remains open. The notification permission must be supported and approved by the browser.
 
-1. Download this development branch using GitHub **Code → Download ZIP** and extract the folder.
-2. Double-click `START-FSM-LOCAL.bat` (requires Python installed).
-3. Open `http://127.0.0.1:8765/` in the browser if not opened automatically.
-4. Sign in using your existing FSM username/password.
-5. Select **Operations → Team Chat**. The conversation list shows **Team Chat (Engineering group)** plus direct messages for **Popoy, Erwin, and Kenneth** (excluding your own account). Those direct-message choices are available even if a teammate has not opened Firebase chat yet.
-6. Team Chat should sign in **automatically using your existing FSM account**. There is no second email/password form. This only works **after** the FSM Apps Script backend and the updated Firestore rules are deployed as described in `docs/FSM-LIVE-CHAT-SETUP.md`.
-7. Switch to **Engineering Team** or a direct message. Test using Kenneth's **FSM** login on another browser or device.
+**Important:** The downloaded HTML uses your **real FSM Google Sheets and Firebase project**. Avoid modifying real visits, cabinets or inventory during chat testing.
 
-### Why it needs a local server
+**Optional push when the app is closed** needs an additional Firebase VAPID public key, `FirebaseChatPush.gs` added to the actual Apps Script backend, a server-side `chatPush` dispatcher handler, and a new backend deployment. These are prepared in the branch but **not yet enabled**. See [V2 setup and security instructions](docs/FSM-CHAT-V2.md). A public VAPID key is not the Firebase Admin JSON private key. Never commit or paste admin keys in the browser.
 
-Don't double-click `index.html` using `file://`. Browser modules, Firebase Auth persistence, and other web features often require HTTP. The local launcher serves all of FSM's existing JavaScript/CSS assets and uses Firebase over the Internet.
+**File attachment limitation:** This version supports link-sharing (🔗), not uploading binary files. An actual upload/storage feature requires additional configuration.
 
-### Scope and safety
-- This **test build** uses the same Google Apps Script backend as production FSM. Any edits to visits, inventory, or users may affect live data. Avoid changing real FSM records during chat testing.
-- Firebase chat sends actual messages to your `opexa-fsm-chat` project.
-- Firebase membership profiles are created automatically for authenticated FSM users using server-signed custom claims. Users disabled in Firestore are blocked.
-- All Firebase security rules must be published from this branch's `firestore.rules`.
-- Group and direct messages work through Firestore in real time while the app is open. Offline history pagination, background push notifications, typing indicators, message attachments, and automatic FSM single sign-on aren't included in v1.
-- Chat identity is derived from the existing FSM session. **Logging out explicitly from FSM also signs out of Firebase chat** on that device.
-- No changes have been merged into the live GitHub Pages main branch. This test cannot authenticate chat until the Google Apps Script server-side SSO setup is completed. Do not upload a service-account key or any private credentials to this repository.
-
-To report problems: include screenshot of the chat screen and browser Console error (F12) without sharing passwords or private credentials.
+**Security:** Only message senders can edit or unsend; unsend produces a tombstone and clears text in Firestore. Read status is local per browser/account; unread badge counts conversations, not individual messages.
