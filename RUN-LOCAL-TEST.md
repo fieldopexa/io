@@ -68,3 +68,8 @@
 
 ### If no automatic card appears
 Make sure every engineer uses the **latest development ZIP** (old local or live versions do not emit the confirmed-save event). If the Field Log saves but the FSE Team status remains Pending, keep FSM open while it retries; check that ordinary messages to FSE Team work. Note that new browser-side announcements will not retroactively process visits logged using older builds.
+
+### Notification status and previously saved visits
+After a newly confirmed save, the visit form shows **Posting notification**, **Notification posted to FSE Team**, or **Notification pending (will retry)**. If you saved a visit in an earlier test build, it is **not automatically backfilled**. To share that already-saved visit, open **Field Logs → the visit's ••• menu → Notify FSE Team**. This queues the existing record using its stable visit ID and will not create a duplicate group card if it was already posted. For detailed incident discussion, **Discuss in Chat** remains a separate manual, editable draft action.
+
+A successful Field Log save is independent of the Firebase message. The retry queue lives in this browser (per authenticated FSM username) for up to 14 days, so do not assume guaranteed delivery after the browser is closed. A system-wide guarantee for visits created from any older client would require a server-side Apps Script hook and deployment. As with other group messages, the **sender will not get an incoming-message alert for their own visit**; teammates should see the group update and unread indicator while FSM is open. True closed-app push requires the separate FCM setup.
