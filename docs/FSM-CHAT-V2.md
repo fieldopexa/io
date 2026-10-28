@@ -1,19 +1,19 @@
-# OPEXA FSM • Communications V2
+# OPEXA FSM • Communications V3
 Development branch: `feature/fsm-live-chat-v1`. The live GitHub Pages `main` branch is **unchanged**.
 
 ## In this build
 - **One FSM login**. Existing session-validated `chatSSO` in Google Apps Script signs you into Firebase.
-- Clean **Communications** page with a single active conversation heading; conversation search on desktop.
-- **Team Chat** group plus direct conversations with Ian, Kenneth, Erwin, and Popoy (the signed-in user is excluded), and any additional active members who've opened chat.
+- Dashboard-matched **Communications** page with a graphite palette, restrained accents, simpler heading, and compact conversation search.
+- **Saved Messages**, a private self-to-self conversation for your own notes, links, reminders, and message history, plus Engineering Team group chat and direct conversations with Ian, Kenneth, Erwin, and Popoy (the signed-in user is not duplicated). The Saved Messages room uses the existing private-DM access rules.
 - Live last-message previews and room unread indicators, with sidebar/mobile unread badges and browser-tab counts.
 - Automatically starts the chat listeners after normal FSM login, including when you stay on Dashboard.
 - In-app toast for new messages while FSM is open; opt-in browser notifications when the tab is hidden. Permission must be granted by clicking **Enable alerts**. Some mobile browsers do not allow normal browser notifications from a tab.
 - Improved timestamps, Today/Yesterday separators, responsive layout, link detection, a **🔗 Insert link** action.
 - **Copy**, **Edit** and **Unsend** on a message's `⋯` menu. Only the original sender may Edit or Unsend. Unsend is a soft delete: message text becomes blank for everyone, replaced by a neutral "Message unsent" placeholder.
-- Approximate recently-active indicator from lightweight Firestore heartbeats (not guaranteed online status).
+- Approximate **Active now / Last active / Not active yet** indicators based on lightweight Firestore heartbeats. Presence is not guaranteed online status, and it can go stale if the browser stops running.
 
-## Mandatory administrator action for V2 message editing
-**Publish the UPDATED** `firestore.rules` from this branch again, even if you published rules earlier for V1. Those old rules explicitly denied updating existing messages. New rules:
+## Mandatory administrator action for message editing
+**Publish the UPDATED** `firestore.rules` from this branch for Edit/Unsend, unless you already published V2 rules. Those old rules explicitly denied updating existing messages. New rules:
 - permit only the sender to edit/unsend; sender ID & creation time are immutable;
 - restrict private room activity metadata to participants;
 - add presence and optional FCM registration permissions.
