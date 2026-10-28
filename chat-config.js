@@ -9,3 +9,7 @@ window.FSM_CHAT_FIREBASE_CONFIG = {
   messagingSenderId: "559812878681",
   appId: "1:559812878681:web:90aa39609c026216f76c48"
 };
+
+// Optional: public Web Push (VAPID) key from Firebase Console > Project Settings > Cloud Messaging.
+// Leave blank until the administrator enables background push. This is NOT the private service-account key.
+window.FSM_CHAT_WEB_PUSH_VAPID_KEY = '';
