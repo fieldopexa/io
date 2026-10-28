@@ -56,7 +56,7 @@
   const roomId=(a,b)=>'dm~'+[a,b].sort().join('~');
   function openToggle(force){if(force===false&&isOpen())document.querySelector('.tab[data-tab="dashboard"]')?.click();}
   // Chat stays embedded in the FSM page. The normal sidebar navigates away.
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())openToggle(false);});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen()){if(isMobileChat()&&state.mobileThreadOpen)backToInbox();else if(!isMobileChat())openToggle(false);}});
   function gate(title,description,form=''){
     content.innerHTML=`<div class="fsm-chat-gate"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(description)}</p>${form}<div id="fsm-chat-status" role="status"></div></div>`;
   }
@@ -295,6 +295,12 @@
     const list=el('fsm-chat-contacts');if(!list||!state.user)return;
     const filter=state.filter.trim().toLowerCase();
     const all=conversations().filter(c=>!state.unreadOnly||!!state.unread[c.id]);
+    const totalConversations=conversations().length;
+    const counter=el('fsm-chat-conversation-count');
+    if(counter)counter.textContent=totalConversations+' conversations';
+    const unreadCount=Object.values(state.unread).filter(Boolean).length;
+    const unreadBadge=el('fsm-chat-unread-count');
+    if(unreadBadge){unreadBadge.hidden=!unreadCount;unreadBadge.textContent=unreadCount;}
     const entry=x=>{
       const active=state.room===x.id,preview=state.preview[x.id];
       const isOnline=x.type==='direct'&&isRecentlyActive(x.uid);
@@ -312,10 +318,10 @@
     const group=all.filter(c=>c.type==='group'&&c.name.toLowerCase().includes(filter));
     const saved=all.filter(c=>c.type==='saved'&&c.name.toLowerCase().includes(filter));
     const direct=all.filter(c=>c.type==='direct'&&c.name.toLowerCase().includes(filter));
-    list.innerHTML='<div class="fsm-chat-caption">Personal</div>'+saved.map(entry).join('')
-      +'<div class="fsm-chat-caption fsm-chat-direct-label">Group chat</div>'+group.map(entry).join('')
-      +'<div class="fsm-chat-caption fsm-chat-direct-label">Team members</div>'+direct.map(entry).join('')
-      +(!saved.length&&!group.length&&!direct.length?'<div class="fsm-chat-no-results">No conversations found</div>':'');
+    list.innerHTML=(saved.length?'<div class="fsm-chat-caption">Your space</div>'+saved.map(entry).join(''):'')
+      +(group.length?'<div class="fsm-chat-caption fsm-chat-direct-label">Groups</div>'+group.map(entry).join(''):'')
+      +(direct.length?'<div class="fsm-chat-caption fsm-chat-direct-label">People</div>'+direct.map(entry).join(''):'')
+      +(!saved.length&&!group.length&&!direct.length?'<div class="fsm-chat-no-results">'+(state.unreadOnly?'You’re all caught up. No unread messages.':'No conversations found')+'</div>':'');
     list.querySelectorAll('[data-chat-room]').forEach(btn=>btn.addEventListener('click',()=>selectRoom(btn.dataset.chatRoom)));
     refreshThreadHeader();
   }
@@ -419,10 +425,10 @@
       }
     }
   }
-  function selectRoom(id){
+  function selectRoom(id,openMobile=true){
     if(!state.user||!id||!conversations().some(c=>c.id===id))return;
     state.unsubMessages?.();state.room=id;state.messages=[];stopEdit();
-    if(isMobileChat())showChatScreen('thread');
+    if(isMobileChat()&&openMobile)showChatScreen('thread');
     renderContacts();
     const current=conversations().find(c=>c.id===id);
     refreshThreadHeader();
@@ -577,7 +583,7 @@
       }
       state.member=me;syncRoomPreviews();
     },err=>console.warn('Team directory listener:',err.code));
-    selectRoom(state.room);
+    selectRoom(state.room,false);
     state.unsubPresence=onSnapshot(collection(state.db,'chatPresence'),snap=>{
       state.presence={};
       for(const entry of snap.docs)state.presence[entry.id]=entry.data().lastSeen;
