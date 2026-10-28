@@ -1,0 +1,53 @@
+/* FSM Live Chat: completely namespaced to avoid changing existing FSM styles. */
+#fsm-live-chat[hidden], #fsm-live-chat [hidden] { display:none!important; }
+#fsm-live-chat { position:fixed; right:22px; bottom:22px; z-index:950; color:#e8edf6; font:13px/1.45 'Segoe UI',sans-serif; }
+#fsm-live-chat * { box-sizing:border-box; }
+#fsm-chat-launcher { display:flex; align-items:center; gap:8px; min-height:50px; padding:0 18px; background:#b8c5ff; color:#161c29; border:1px solid #b8c5ff; border-radius:999px; font-weight:750; cursor:pointer; box-shadow:0 10px 30px #0005; }
+#fsm-chat-launcher:focus-visible, #fsm-live-chat button:focus-visible, #fsm-live-chat input:focus-visible { outline:2px solid #b8c5ff; outline-offset:3px; }
+#fsm-chat-badge { display:inline-grid; min-width:20px; height:20px; place-items:center; border-radius:50%; padding:0 5px; background:#8f2339; color:#fff; font-size:11px; }
+#fsm-chat-panel { position:absolute; right:0; bottom:65px; width:min(750px,calc(100vw - 36px)); height:min(590px,calc(100dvh - 110px)); border:1px solid #394556; background:#161c26; border-radius:16px; box-shadow:0 18px 65px #0009; overflow:hidden; display:flex; flex-direction:column; }
+.fsm-chat-top { min-height:62px; padding:13px 15px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #354050; background:#1b2430; }
+.fsm-chat-top strong { font-size:15px; display:block; }
+.fsm-chat-top small { display:block; color:#a8b6c8; font-size:11px; margin-top:2px; }
+.fsm-chat-actions { display:flex; gap:7px; align-items:center; }
+#fsm-live-chat button { font:inherit; cursor:pointer; }
+.fsm-chat-icon-button { border:1px solid #445164; border-radius:8px; color:#d9e3f2; background:#232f3d; min-width:35px; min-height:35px; }
+.fsm-chat-body { flex:1; display:flex; min-height:0; }
+.fsm-chat-contacts { width:224px; flex:0 0 224px; padding:12px 9px; border-right:1px solid #354050; overflow:auto; }
+.fsm-chat-caption { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#91a2b9; margin:10px 8px 5px; font-weight:700; }
+.fsm-chat-contact { width:100%; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:8px; min-height:44px; padding:10px; border:0; border-radius:9px; background:transparent; color:#d7e2f2; }
+.fsm-chat-contact:hover { background:#253040; }
+.fsm-chat-contact.active { background:#33435a; color:#fff; }
+.fsm-chat-contact small { color:#91a5c1; font-size:10px; }
+.fsm-chat-count { min-width:18px; min-height:18px; display:grid; place-items:center; border-radius:50%; padding:2px 5px; background:#c7d1ff; color:#131a2b; font-size:10px; font-weight:800; }
+.fsm-chat-thread { display:flex; flex-direction:column; min-width:0; flex:1; }
+.fsm-chat-thread-head { border-bottom:1px solid #354050; padding:11px 15px; color:#dce6f4; font-weight:700; }
+.fsm-chat-messages { flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; padding:14px; overscroll-behavior:contain; }
+.fsm-chat-empty { margin:auto; padding:18px; text-align:center; color:#9eacc0; font-size:12px; max-width:320px; }
+.fsm-chat-message { align-self:flex-start; max-width:min(86%,460px); background:#273548; padding:9px 12px; border:1px solid #394d65; border-radius:12px 12px 12px 3px; overflow-wrap:anywhere; white-space:pre-wrap; }
+.fsm-chat-message.mine { align-self:flex-end; background:#b8c5ff; border-color:#b8c5ff; color:#151d2b; border-radius:12px 12px 3px 12px; }
+.fsm-chat-byline { margin-bottom:3px; font-size:10px; font-weight:700; opacity:.75; }
+.fsm-chat-text { font-size:13px; }
+.fsm-chat-stamp { font-size:10px; opacity:.65; margin-top:4px; text-align:right; }
+.fsm-chat-compose { display:flex; padding:12px; gap:8px; border-top:1px solid #354050; }
+.fsm-chat-compose input, .fsm-chat-gate input { background:#101722; color:#f4f6fb; border:1px solid #46556b; border-radius:8px; min-height:43px; padding:10px 12px; outline:none; }
+.fsm-chat-compose input { flex:1; min-width:0; }
+.fsm-chat-send, .fsm-chat-gate button { border:0; min-height:43px; background:#b8c5ff; color:#121a29; border-radius:8px; padding:0 16px; font-weight:750!important; }
+.fsm-chat-send:disabled { opacity:.55; cursor:wait!important; }
+.fsm-chat-gate { display:flex; flex:1; flex-direction:column; align-items:stretch; justify-content:center; padding:24px; max-width:420px; width:100%; margin:auto; gap:12px; }
+.fsm-chat-gate h3 { margin:0; font-size:18px; }
+.fsm-chat-gate p { color:#b6c3d6; margin:0 0 7px; font-size:12px; }
+.fsm-chat-gate input { width:100%; }
+.fsm-chat-error { color:#ffb3a4; font-size:12px; min-height:15px; }
+#fsm-chat-status { color:#a0afc5; font-size:11px; min-height:16px; }
+@media(max-width:700px) {
+ #fsm-live-chat { bottom:86px; right:12px; z-index:990; }
+ #fsm-chat-panel { position:fixed; inset:0; width:100vw; height:100dvh; max-height:none; border:0; border-radius:0; }
+ .fsm-chat-body { flex-direction:column; }
+ .fsm-chat-contacts { width:100%; flex:0 0 auto; max-height:112px; display:flex; flex-wrap:nowrap; gap:6px; border-right:0; border-bottom:1px solid #354050; overflow:auto; padding:8px; }
+ .fsm-chat-caption { display:none; }
+ .fsm-chat-contact { flex:0 0 auto; width:auto; min-width:108px; max-width:150px; min-height:46px; }
+ .fsm-chat-message { max-width:85%; }
+ .fsm-chat-thread-head { padding:9px 14px; }
+}
+@media(prefers-reduced-motion:reduce) { #fsm-live-chat * { scroll-behavior:auto!important; } }
