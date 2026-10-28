@@ -7039,12 +7039,21 @@ function editFieldLog(id){
 document.getElementById('cancel-visit-edit')?.addEventListener('click',()=>{cancelVisitEdit(); showToast('Edit cancelled','No changes were saved.');});
 
 async function archiveEntry(id){
-  const e=entries.find(x=>x.id===id); if(!e) return;
+  const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
   if(!canEditFieldLog(e)){fieldLogEditDenied();return;}
-  e.voided=true; e.status='Voided'; e.voidedAt=new Date().toISOString(); e.updatedAt=e.voidedAt; e.audit=[...(e.audit||[]),{at:e.voidedAt,by:document.getElementById('f-tech')?.value||'System',action:'Visit archived / voided'}];
-  storageSet(STORAGE_KEY, entries); renderActivePanel();
-  try{ await apiPost('archiveEntry',{id, entry:e}); hideSyncError(); }
-  catch(err){ console.error(err); showSyncError("Archived locally. Update the Apps Script backend to persist archive status to the shared sheet."); }
+  if(!confirm('Void this Field Log? The original record will be retained.'))return;
+  const before={voided:e.voided,status:e.status,voidedAt:e.voidedAt,updatedAt:e.updatedAt,audit:e.audit};
+  e.voided=true;e.status='Voided';e.voidedAt=new Date().toISOString();e.updatedAt=e.voidedAt;
+  e.audit=[...(e.audit||[]),{at:e.voidedAt,by:currentUser?.name||currentUser?.username||'FSE',action:'Visit archived / voided'}];
+  storageSet(STORAGE_KEY,entries);renderActivePanel();
+  try{
+    await apiPost('archiveEntry',{id,entry:e});
+    hideSyncError();showToast('Visit voided','The original Field Log was retained.','ok');
+  }catch(err){
+    Object.assign(e,before);
+    storageSet(STORAGE_KEY,entries);renderActivePanel();
+    showToast('Unable to void Field Log',err.message||'The original visit was restored.','bad');
+  }
 }
 
 function escapeHtml(s){
