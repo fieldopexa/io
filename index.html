@@ -5075,7 +5075,20 @@ document.querySelectorAll('.tab[data-tab="dashboard"],.tab[data-tab="fieldlogs"]
 document.querySelectorAll('[data-mobile-tab="dashboard"],[data-mobile-tab="fieldlogs"]').forEach(el=>el.style.setProperty('display','flex','important'));
 if(window.applyExactRolePolicy)window.applyExactRolePolicy();
 renderUsers();}
-function showApp(user){currentUser=user;document.getElementById('logged-user').textContent=user.name||user.username;document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='block';document.body.classList.add('app-fullscreen');startApp();setTimeout(applyRoleUI,0);}
+// FSE View deep links never carry credentials. The main FSM authenticates
+// normally, then opens the requested feature after login or session restore.
+function openFsmRequestedFeature(){
+  const url=new URL(location.href);
+  const request=url.searchParams.get('intent');
+  if(!['messages','newvisit'].includes(request))return;
+  if(!currentUser||!authToken)return;
+  const tab=request==='messages'?'chat':'log';
+  const target=document.querySelector('.tab[data-tab="'+tab+'"]');
+  if(target)target.click();
+  url.searchParams.delete('intent');
+  history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+}
+function showApp(user){currentUser=user;document.getElementById('logged-user').textContent=user.name||user.username;document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='block';document.body.classList.add('app-fullscreen');startApp();setTimeout(applyRoleUI,0);requestAnimationFrame(()=>setTimeout(openFsmRequestedFeature,50));}
 let logoutInProgress=false;
 async function doLogout(){
   if(logoutInProgress)return;
