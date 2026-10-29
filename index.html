@@ -4052,7 +4052,7 @@ body:has(#spare-modal[style*="display:flex"]){
       <div class="tab" data-tab="audit" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg></span><span>Audit Trail</span></div>
       <div class="tab" data-tab="users" data-role="management"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 4 5v1"/></svg></span><span>Users</span></div>
     </div>
-    <div class="app-actions"><button type="button" class="fsm-notif-bell fsm-notif-bell-desktop" id="fsm-notif-bell-desktop" aria-label="Notifications" aria-haspopup="dialog" aria-expanded="false" aria-controls="fsm-notif-popover" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="fsm-notif-badge" id="fsm-notif-desktop-badge" hidden></span></button><div class="user-badge"><span class="user-dot"></span><span><b id="logged-user">—</b><small id="logged-role" style="display:block;color:var(--ink-soft);font-size:9px;margin-top:1px">—</small></span></div><button type="button" class="fullscreen-btn" id="fullscreen-btn" title="Toggle fullscreen" aria-label="Toggle fullscreen"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button><button class="logout-btn" id="logout-btn">Log out</button></div>
+    <div class="app-actions"><div class="user-badge"><span class="user-dot"></span><span><b id="logged-user">—</b><small id="logged-role" style="display:block;color:var(--ink-soft);font-size:9px;margin-top:1px">—</small></span></div><button type="button" class="fullscreen-btn" id="fullscreen-btn" title="Toggle fullscreen" aria-label="Toggle fullscreen"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button><button class="logout-btn" id="logout-btn">Log out</button></div>
   </div>
   <div id="fsm-notif-popover" class="fsm-notif-popover" role="dialog" aria-modal="false" aria-label="Notifications" tabindex="-1" hidden>
   <div class="fsm-notif-header"><div><h2>Notifications</h2><p>Latest FSE field visits</p></div><button id="fsm-notif-mark-all" type="button" class="fsm-notif-mark-read">Mark all as read</button></div>
@@ -4062,6 +4062,7 @@ body:has(#spare-modal[style*="display:flex"]){
 </div>
 
   <div class="app-content">
+  <div class="fsm-workspace-tools" role="group" aria-label="Workspace notifications"><button type="button" class="fsm-notif-bell fsm-notif-bell-desktop" id="fsm-notif-bell-desktop" aria-label="Notifications" aria-haspopup="dialog" aria-expanded="false" aria-controls="fsm-notif-popover" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="fsm-notif-badge" id="fsm-notif-desktop-badge" hidden></span></button></div>
   <h1 style="display:none">Field Operations</h1>
   <p class="sub" style="display:none">Field service activity, visit records, and operational performance.</p>
   <div class="mobile-page-head is-new-visit">
@@ -12726,5 +12727,5 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 <link rel="stylesheet" href="./fieldlog-chat.css?v=20261028-visit-notify-status">
 <script src="./chat-config.js"></script>
 <script defer src="./live-chat.js?v=fsm-notif-center-no-autopost-20261029"></script>
-<link rel="stylesheet" href="./visit-notifications.css?v=fsm-notif-20261029">
-<script defer src="./visit-notifications.js?v=fsm-notif-20261029"></script>
+<link rel="stylesheet" href="./visit-notifications.css?v=fsm-notif-bell-20261029">
+<script defer src="./visit-notifications.js?v=fsm-notif-bell-20261029"></script>
