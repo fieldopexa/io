@@ -115,6 +115,11 @@
       const item=document.getElementById(id);
       if(item){item.hidden=count===0;item.textContent=count>99?'99+':String(count);}
     }
+    bells.forEach(bell=>{
+      const label=count?count+' unread field visit notification'+(count===1?'':'s'):'Notifications';
+      bell.setAttribute('aria-label',label);
+      bell.title=label;
+    });
     if(markAll)markAll.disabled=count===0;
   }
   function el(tag,cls,text){
