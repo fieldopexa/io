@@ -5817,6 +5817,18 @@ async function loadEntries(){
   openRequestedFSMFieldLog();
 }
 
+window.fsmNotificationsFetch=async()=>{
+  if(!currentUser||!['fse','management'].includes(currentUser.role))return [];
+  const raw=await apiGet('entries');
+  // Shared Field Logs are the source of truth. Never create a second visit
+  // record just to generate a notification.
+  const next=scopeVisitEntries(raw.map(normalizeEntry));
+  entries=next;
+  storageSet(STORAGE_KEY,entries);
+  if(activeTab==='fieldlogs')render();
+  return next;
+};
+
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
     if(t.dataset.role==='management' && currentUser?.role!=='management') return;
