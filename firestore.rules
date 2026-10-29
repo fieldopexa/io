@@ -1,0 +1,128 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function fsmAuth() {
+      return signedIn() && request.auth.token.fsm == true;
+    }
+    function activeMember() {
+      return fsmAuth()
+        && exists(/databases/$(database)/documents/chatMembers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/chatMembers/$(request.auth.uid)).data.active == true;
+    }
+    // FSM Firebase UIDs contain only alphanumerics, underscore and hyphen,
+    // so they are safe to interpolate into these regex strings.
+    // The delimiter '~' never appears in a generated Firebase UID.
+    function canAccessRoom(roomId) {
+      return activeMember() && (
+        roomId == 'engineering'
+        || roomId.matches('^dm~' + request.auth.uid + '~[^~]+$')
+        || roomId.matches('^dm~[^~]+~' + request.auth.uid + '$')
+      );
+    }
+    match /chatMembers/{uid} {
+      // New members can inspect and create only their own profile, based on
+      // custom claims signed by the FSM Google Apps Script backend.
+      allow get: if activeMember() || (fsmAuth() && request.auth.uid == uid);
+      allow list: if activeMember();
+      allow create: if fsmAuth()
+        && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/chatMembers/$(uid))
+        && request.resource.data.keys().hasOnly(['name','username','active'])
+        && request.resource.data.keys().hasAll(['name','username','active'])
+        && request.resource.data.active == true
+        && request.resource.data.username == request.auth.token.fsm_username
+        && request.resource.data.name == request.auth.token.fsm_name
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120;
+      // Disable a staff account by setting active:false through Firebase Console.
+      // A disabled user cannot reactivate their profile from the browser.
+      allow update, delete: if false;
+    }
+    match /chatRooms/{roomId}/messages/{messageId} {
+      allow read: if canAccessRoom(roomId);
+      allow create: if canAccessRoom(roomId)
+        && request.resource.data.keys().hasOnly(['text','senderId','senderName','createdAt'])
+        && request.resource.data.keys().hasAll(['text','senderId','senderName','createdAt'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.senderName is string
+        && request.resource.data.senderName.size() <= 120
+        && request.resource.data.createdAt == request.time;
+      // A sender can edit text or unsend. Original sender and timestamp are
+      // immutable; deleted text becomes empty for everyone in real time.
+      allow update: if canAccessRoom(roomId)
+        && resource.data.senderId == request.auth.uid
+        && (
+          (
+            resource.data.get('deleted', false) == false
+            && request.resource.data.get('deleted', false) == false
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','editedAt'])
+            && request.resource.data.diff(resource.data).affectedKeys().hasAll(['text','editedAt'])
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 2000
+            && request.resource.data.editedAt == request.time
+          )
+          ||
+          (
+            resource.data.get('deleted', false) == false
+            && request.resource.data.deleted == true
+            && request.resource.data.text == ''
+            && request.resource.data.deletedBy == request.auth.uid
+            && request.resource.data.deletedAt == request.time
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['text','deleted','deletedAt','deletedBy'])
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasAll(['text','deleted','deletedAt','deletedBy'])
+          )
+        );
+      allow delete: if false;
+    }
+    match /chatActivity/{roomId} {
+      // Metadata is visible only to participants in this room.
+      allow read: if canAccessRoom(roomId);
+      allow create, update: if canAccessRoom(roomId)
+        && request.resource.data.keys().hasOnly(['senderId','updatedAt'])
+        && request.resource.data.keys().hasAll(['senderId','updatedAt'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    match /chatPresence/{uid} {
+      // Presence is approximate and only written by the authenticated user.
+      allow read: if activeMember();
+      allow create, update: if activeMember()
+        && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid','lastSeen'])
+        && request.resource.data.keys().hasAll(['uid','lastSeen'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.lastSeen == request.time;
+      allow delete: if false;
+    }
+    // Web-push device tokens are private to their signed-in FSM owner.
+    // Only the trusted Apps Script service account may read them for delivery.
+    match /chatDevices/{uid}/tokens/{deviceId} {
+      allow read: if activeMember() && uid == request.auth.uid;
+      allow create, update: if activeMember()
+        && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['token','registeredAt','userAgent'])
+        && request.resource.data.keys().hasAll(['token','registeredAt','userAgent'])
+        && request.resource.data.token is string
+        && request.resource.data.token.size() > 10
+        && request.resource.data.token.size() <= 1024
+        && request.resource.data.userAgent is string
+        && request.resource.data.userAgent.size() <= 150
+        && request.resource.data.registeredAt == request.time;
+      allow delete: if activeMember() && uid == request.auth.uid;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

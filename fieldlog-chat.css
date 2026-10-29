@@ -1,0 +1,147 @@
+/* Field Log / FSE Team handoff, visually matched to FSM's field-log controls. */
+#panel-fieldlogs .readable-log-actions {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  min-width:0;
+}
+#panel-fieldlogs .readable-log-actions .readable-log-view {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  white-space:nowrap;
+  height:34px;
+  min-height:34px!important;
+  padding:0 10px!important;
+  line-height:1.25!important;
+}
+#panel-fieldlogs .fsm-discuss-chat-btn,
+#detail-overlay .fsm-discuss-chat-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  flex:0 0 auto;
+  white-space:nowrap;
+  min-height:36px;
+  padding:0 11px;
+  border-radius:8px;
+  border:1px solid #3a404a;
+  color:#bdc5d3;
+  background:#20242b;
+  font:600 11px/1.2 'Segoe UI',Arial,sans-serif;
+  letter-spacing:0;
+  cursor:pointer;
+  transition:color .16s ease,background-color .16s ease,border-color .16s ease;
+}
+#panel-fieldlogs .fsm-discuss-chat-btn:hover,
+#detail-overlay .fsm-discuss-chat-btn:hover {
+  color:#edf0f7;
+  border-color:#525e71;
+  background:#2a303a;
+}
+#panel-fieldlogs .fsm-discuss-chat-btn:focus-visible,
+#detail-overlay .fsm-discuss-chat-btn:focus-visible {
+  outline:2px solid var(--accent,#6d8cff);
+  outline-offset:2px;
+}
+#panel-fieldlogs .fsm-discuss-chat-btn .fsm-discuss-icon,
+#detail-overlay .fsm-discuss-chat-btn .fsm-discuss-icon {
+  display:block;
+  flex:0 0 15px;
+  width:15px;
+  height:15px;
+  opacity:.85;
+}
+#panel-fieldlogs .readable-log-actions .fsm-discuss-chat-inline {
+  height:34px;
+  min-height:34px!important;
+  padding:0 7px;
+  color:#a4afbf;
+  background:transparent;
+  border-color:transparent;
+  font-size:10.5px;
+  font-weight:600;
+}
+#panel-fieldlogs .readable-log-actions .fsm-discuss-chat-inline:hover {
+  color:#d9e3f4;
+  background:#ffffff09;
+  border-color:#ffffff12;
+}
+#detail-overlay .vd-footer .drawer-actions .fsm-discuss-chat-btn {
+  min-height:36px;
+  padding:0 12px;
+  font-size:11px;
+}
+#panel-chat .fsm-chat-draft-note {
+  display:block;
+  margin:0;
+  padding:10px 16px;
+  color:#d6e0fa;
+  background:#232d42;
+  border-top:1px solid #425478;
+  font-size:11.5px;
+}
+#panel-chat .fsm-chat-draft-note[hidden] {display:none!important}
+@media (max-width:900px) {
+  #panel-fieldlogs .readable-log-actions {
+    gap:3px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  #panel-fieldlogs .readable-log-actions .fsm-discuss-chat-inline,
+  #panel-fieldlogs .readable-log-actions .readable-log-view {
+    min-height:40px!important;
+    height:40px;
+  }
+  #panel-fieldlogs .readable-log-actions .fsm-discuss-chat-inline {
+    padding:0 6px;
+  }
+  #detail-overlay .vd-footer .drawer-actions {flex-wrap:wrap}
+  #detail-overlay .vd-footer .drawer-actions .fsm-discuss-chat-btn {
+    min-height:44px;
+  }
+  #panel-chat .fsm-chat-draft-note {
+    padding:9px 12px;
+    line-height:1.45;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  #panel-fieldlogs .fsm-discuss-chat-btn,
+  #detail-overlay .fsm-discuss-chat-btn {transition:none}
+}
+
+/* A saved visit and its group announcement have independent outcomes. */
+#fsm-visit-chat-status{
+  display:flex;align-items:center;gap:7px;
+  width:fit-content;max-width:100%;margin:6px 0 0;
+  padding:8px 11px;border-radius:8px;
+  border:1px solid #374353;background:#202834;
+  color:#c8d6e9;font-size:11px;line-height:1.45;
+}
+#fsm-visit-chat-status[hidden]{display:none!important}
+#fsm-visit-chat-status[data-state="posted"]{
+  background:#1b2d28;border-color:#305847;color:#a6ddc2;
+}
+#fsm-visit-chat-status[data-state="pending"],
+#fsm-visit-chat-status[data-state="queued"]{
+  background:#2b2923;border-color:#57503a;color:#e3ce96;
+}
+
+/* Keep the optional one-time notification action within the Field Log menu. */
+#panel-fieldlogs .readable-log-menu>div{width:165px}
+
+/* Shared Field Logs: fast, readable technician selector in both layouts. */
+#panel-fieldlogs #log-fse-filter{
+  min-height:40px;min-width:170px;max-width:230px;padding:8px 12px;
+  border:1px solid var(--line,#30343b);border-radius:9px;
+  background:var(--input-bg,#151719);color:var(--ink,#f1f3f5);
+  font:12px/1.4 'Segoe UI',sans-serif;
+}
+#panel-fieldlogs #log-fse-filter:focus-visible{outline:2px solid var(--accent,#6d8cff);outline-offset:2px}
+#panel-fieldlogs #fieldlogs-new-btn[hidden]{display:none!important}
+@media(max-width:900px){
+  #panel-fieldlogs #log-fse-filter{width:100%;min-width:0;max-width:none;min-height:44px}
+}

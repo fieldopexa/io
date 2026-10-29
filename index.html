@@ -4019,6 +4019,7 @@ body:has(#spare-modal[style*="display:flex"]){
       <button type="button" data-mobile-tab="log" class="active"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span><b>New Visit</b></button>
       <button type="button" class="fse-shared-mobile" data-mobile-tab="fieldlogs"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><b>Field Logs</b></button>
       <button type="button" class="fse-shared-mobile" data-mobile-tab="dashboard"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><b>Dashboard</b></button>
+      <button type="button" class="fse-shared-mobile" data-mobile-tab="chat"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.3a7.8 7.8 0 0 1-8 7.5 9.3 9.3 0 0 1-3.2-.6L4 20l1.2-4A7.5 7.5 0 0 1 4 11.3C4 7.3 7.6 4 12 4s8 3.3 8 7.3Z"/><path d="M8.7 11.3h.1m3.2 0h.1m3.2 0h.1"/></svg></span><b>Messages</b><span class="fsm-chat-nav-badge" id="fsm-chat-mobile-badge" hidden></span></button>
       <button type="button" data-mobile-tab="report"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><b>Reports</b></button>
       <button type="button" data-mobile-tab="inventory"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><b>Asset Operations</b></button>
       <button type="button" data-mobile-tab="audit" data-mobile-role="management"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7M12 7v5l3 2"/></svg></span><b>Audit Trail</b></button>
@@ -4041,6 +4042,7 @@ body:has(#spare-modal[style*="display:flex"]){
       <div class="nav-section-label">Operations</div>
       <div class="tab fse-shared-tab" data-tab="dashboard"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span>Dashboard</span></div>
       <div class="tab fse-shared-tab" data-tab="fieldlogs"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span>Field Logs</span></div>
+      <div class="tab fse-shared-tab" data-tab="chat"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.3a7.8 7.8 0 0 1-8 7.5 9.3 9.3 0 0 1-3.2-.6L4 20l1.2-4A7.5 7.5 0 0 1 4 11.3C4 7.3 7.6 4 12 4s8 3.3 8 7.3Z"/><path d="M8.7 11.3h.1m3.2 0h.1m3.2 0h.1"/></svg></span><span>Messages</span><span class="fsm-chat-nav-badge" id="fsm-chat-nav-badge" hidden></span></div>
       <div class="tab" data-tab="report"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><span>Reports</span></div>
 
       <div class="nav-section-label">Assets</div>
@@ -4075,6 +4077,11 @@ body:has(#spare-modal[style*="display:flex"]){
     </span>
   </div>
   <div class="banner" id="storage-banner">Couldn't reach the shared sheet. Check your internet connection and reload.</div>
+
+  <div class="panel" id="panel-chat" aria-label="FSM Communications">
+    <div class="fsm-chat-page-heading"><h2>Communications</h2></div>
+    <section id="fsm-live-chat" aria-label="Team chat"></section>
+  </div>
 
   <div class="panel active" id="panel-log">
     <div class="ticket smart-visit-form">
@@ -4333,6 +4340,7 @@ body:has(#spare-modal[style*="display:flex"]){
 <button type="button" class="mobile-save-fab" id="mobile-save-fab"><span>Save Field Visit</span><b>→</b></button>
       <div class="err" id="err-msg" role="alert" aria-live="polite">Fill in the site and category before logging.</div>
       <div id="visit-save-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.6;margin-top:10px"></div>
+      <div id="fsm-visit-chat-status" role="status" aria-live="polite" hidden></div>
       </div>
       </div>
       <div class="visit-step-error" id="visit-step-error" role="alert" aria-live="polite"></div>
@@ -4346,7 +4354,7 @@ body:has(#spare-modal[style*="display:flex"]){
   <div class="panel" id="panel-fieldlogs">
     <div class="section-head compact-head fieldlogs-create-action"><button class="btn-secondary" id="fieldlogs-new-btn">＋ New Visit</button></div>
     <div class="global-search"><span>⌕</span><input id="global-search" type="search" placeholder="Search tracking #, ticket #, site, FSE, notes, resolution…"></div>
-    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="my-fse" style="display:none;max-width:180px;"></select></div>
+    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
     <div class="filters" id="filters">
       <span class="chip active" data-cat="All">All</span><span class="chip" data-cat="Backoffice">Back Office</span><span class="chip" data-cat="Software">Software</span><span class="chip" data-cat="Hardware">Hardware</span><span class="chip" data-cat="Network">Network</span><span class="chip" data-cat="General">General</span>
       <input type="date" id="date-from" title="From"><input type="date" id="date-to" title="To">
@@ -5049,7 +5057,7 @@ let movementRows=[];
 let sparePartRows=[];
 let cabinetPartRows=[];
 let removedPartRows=[];
-function applyRoleUI(){const isMgmt=currentUser?.role==='management';const primarySelect=document.getElementById('f-tech');if(primarySelect)primarySelect.disabled=!isMgmt;document.querySelectorAll('[data-role="management"]').forEach(el=>{if(isMgmt){el.style.removeProperty('display');}else{el.style.setProperty('display','none','important');}});const role=document.getElementById('logged-role');if(role)role.textContent=isMgmt?'Management':'FSE';if(!isMgmt){activeWork='all';const mineBtn=document.querySelector('#work-toggle [data-work="mine"]');const allBtn=document.querySelector('#work-toggle [data-work="all"]');if(mineBtn&&allBtn){allBtn.classList.add('active');mineBtn.classList.remove('active');}const sel=document.getElementById('my-fse');if(sel){sel.style.display='none';if(currentUser?.fse)sel.value=currentUser.fse;}const tech=document.getElementById('f-tech');if(tech&&currentUser?.fse){tech.value=currentUser.fse;tech.disabled=true;}}const mgmtInventoryIds=['inventory-add-btn','cabinet-add-btn','movement-add-btn','spare-add-btn'];
+function applyRoleUI(){const isMgmt=currentUser?.role==='management';const newVisitButton=document.getElementById('fieldlogs-new-btn');if(newVisitButton)newVisitButton.hidden=isMgmt;const primarySelect=document.getElementById('f-tech');if(primarySelect)primarySelect.disabled=!isMgmt;document.querySelectorAll('[data-role="management"]').forEach(el=>{if(isMgmt){el.style.removeProperty('display');}else{el.style.setProperty('display','none','important');}});const role=document.getElementById('logged-role');if(role)role.textContent=isMgmt?'Management':'FSE';if(!isMgmt){activeWork='all';const mineBtn=document.querySelector('#work-toggle [data-work="mine"]');const allBtn=document.querySelector('#work-toggle [data-work="all"]');if(mineBtn&&allBtn){allBtn.classList.add('active');mineBtn.classList.remove('active');}const sel=document.getElementById('my-fse');if(sel){sel.style.display='none';if(currentUser?.fse)sel.value=currentUser.fse;}const tech=document.getElementById('f-tech');if(tech&&currentUser?.fse){tech.value=currentUser.fse;tech.disabled=true;}}const mgmtInventoryIds=['inventory-add-btn','cabinet-add-btn','movement-add-btn','spare-add-btn'];
 mgmtInventoryIds.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isMgmt?'':'none';});
 if(!isMgmt){
   document.getElementById('inventory-form')?.classList.remove('open');
@@ -5067,7 +5075,20 @@ document.querySelectorAll('.tab[data-tab="dashboard"],.tab[data-tab="fieldlogs"]
 document.querySelectorAll('[data-mobile-tab="dashboard"],[data-mobile-tab="fieldlogs"]').forEach(el=>el.style.setProperty('display','flex','important'));
 if(window.applyExactRolePolicy)window.applyExactRolePolicy();
 renderUsers();}
-function showApp(user){currentUser=user;document.getElementById('logged-user').textContent=user.name||user.username;document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='block';document.body.classList.add('app-fullscreen');startApp();setTimeout(applyRoleUI,0);}
+// FSE View deep links never carry credentials. The main FSM authenticates
+// normally, then opens the requested feature after login or session restore.
+function openFsmRequestedFeature(){
+  const url=new URL(location.href);
+  const request=url.searchParams.get('intent');
+  if(!['messages','newvisit'].includes(request))return;
+  if(!currentUser||!authToken)return;
+  const tab=request==='messages'?'chat':'log';
+  const target=document.querySelector('.tab[data-tab="'+tab+'"]');
+  if(target)target.click();
+  url.searchParams.delete('intent');
+  history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+}
+function showApp(user){currentUser=user;document.getElementById('logged-user').textContent=user.name||user.username;document.getElementById('login-screen').style.display='none';document.getElementById('app-shell').style.display='block';document.body.classList.add('app-fullscreen');startApp();setTimeout(applyRoleUI,0);requestAnimationFrame(()=>setTimeout(openFsmRequestedFeature,50));}
 let logoutInProgress=false;
 async function doLogout(){
   if(logoutInProgress)return;
@@ -5080,6 +5101,7 @@ async function doLogout(){
   authToken='';
   authExpiresAt=0;
   currentUser=null;
+  try{await window.fsmChatSignOut?.();}catch(e){console.warn('Chat sign-out failed:',e);}
   try{
     if(logoutToken) await apiPost('logout',{token:logoutToken},{skipToken:true,authRequest:true});
   }catch(e){
@@ -5191,6 +5213,7 @@ function bootstrapCachedCore(){
 
     renderSiteOptions();
     renderFseOptions();
+    refreshFieldLogFseFilter();
     // Paint the tab switch first; defer expensive charts/tables until the browser can draw.
     requestAnimationFrame(()=>renderActivePanel());
   }catch(e){
@@ -5510,12 +5533,39 @@ function normalizeTimeOrDate(val, isTime){
   return m?(isTime?m[2]:m[1]):raw;
 }
 function scopeVisitEntries(rows,user=currentUser){
-  if(!user)return [];
-  if(user.role==='management')return rows;
-  if(user.role!=='fse')return [];
-  const key=value=>String(value||'').normalize('NFKC').trim().replace(/\s+/g,' ').toLowerCase();
-  const assigned=key(user.fse||user.displayName||user.username);
-  return assigned?rows.filter(entry=>entryParticipants(entry).some(name=>key(name)===assigned)):[];
+  // FSE and Management share the team Field Log history. Write permission
+  // is checked independently in the browser and enforced in Apps Script.
+  if(!user || (user.role!=='fse'&&user.role!=='management'))return [];
+  return Array.isArray(rows)?rows:[];
+}
+function fieldLogIdentity(value){
+  return String(value||'').normalize('NFKC').trim().replace(/\s+/g,' ').toLowerCase();
+}
+function isMyFieldLogWork(entry){
+  if(currentUser?.role!=='fse')return false;
+  const name=fieldLogIdentity(currentUser.fse||currentUser.username);
+  return !!name&&entryParticipants(entry).some(person=>fieldLogIdentity(person)===name);
+}
+function canEditFieldLog(entry){
+  // Management and supporting FSEs may read; only the Primary FSE may write.
+  return currentUser?.role==='fse'&&!!entry&&entry.status!=='Voided'
+    &&!!fieldLogIdentity(currentUser.fse||currentUser.username)
+    &&fieldLogIdentity(entry.tech)===fieldLogIdentity(currentUser.fse||currentUser.username);
+}
+function fieldLogEditDenied(){
+  showToast('View-only Field Log','You can read and discuss this visit, but only the Primary FSE can modify it.','bad');
+}
+function refreshFieldLogFseFilter(){
+  const sel=document.getElementById('log-fse-filter');
+  if(!sel)return;
+  const current=sel.value;
+  const keys=new Map();
+  const add=value=>{value=String(value||'').trim();if(value&&!keys.has(fieldLogIdentity(value)))keys.set(fieldLogIdentity(value),value);};
+  fses.forEach(add);
+  entries.forEach(e=>{add(e.tech);entryParticipants(e).forEach(add);});
+  sel.innerHTML='<option value="">All technicians</option>'+
+    [...keys.values()].sort((a,b)=>a.localeCompare(b)).map(value=>'<option value="'+escapeHtml(value)+'">'+escapeHtml(value)+'</option>').join('');
+  if(current)sel.value=[...keys.values()].some(n=>fieldLogIdentity(n)===fieldLogIdentity(current))?current:'';
 }
 function parseVisitAudit(value){
   if(typeof value==='string'){try{value=JSON.parse(value);}catch{return [];}}
@@ -5752,8 +5802,23 @@ async function loadEntries(){
     entries = scopeVisitEntries(storageGet(STORAGE_KEY, []).map(normalizeEntry));
     showSyncError("Couldn't reach the shared sheet, showing your last known data. Check your internet connection and reload.");
   }
+  refreshFieldLogFseFilter();
   renderActivePanel();
+  openRequestedFSMFieldLog();
 }
+window.addEventListener('fsm-visit-announcement-status',event=>{
+  const node=document.getElementById('fsm-visit-chat-status');
+  const id=String(event.detail?.id||'');
+  if(!node||!id||node.dataset.visitId!==id)return;
+  const status=event.detail.status;
+  node.dataset.state=status;
+  node.hidden=false;
+  node.textContent=status==='posted'
+    ?'✓ Notification posted to FSE Team'
+    :status==='pending'
+      ?'◷ FSE Team notification pending. FSM will retry when connected.'
+      :'◷ Posting notification to FSE Team…';
+});
 
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=>{
@@ -5768,7 +5833,7 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-document.getElementById('fieldlogs-new-btn')?.addEventListener('click',()=>{ cancelVisitEdit(); if(typeof clearPendingVisitAttachments==='function')clearPendingVisitAttachments(); document.querySelector('.tab[data-tab="log"]')?.click(); });
+document.getElementById('fieldlogs-new-btn')?.addEventListener('click',()=>{ if(currentUser?.role!=='fse'){fieldLogEditDenied();return;}cancelVisitEdit(); if(typeof clearPendingVisitAttachments==='function')clearPendingVisitAttachments(); document.querySelector('.tab[data-tab="log"]')?.click(); });
 let editingEntryId='';
 let toastTimer=null;
 function showToast(title,message,type='ok'){
@@ -6376,6 +6441,8 @@ async function loadVisitAttachmentsPanel(visitId){
   }
 }
 async function addAttachmentToExistingVisit(visitId){
+  const entry=entries.find(e=>String(e.id)===String(visitId));
+  if(!canEditFieldLog(entry)){fieldLogEditDenied();return;}
   const input=document.createElement('input');input.type='file';input.multiple=true;input.accept='image/jpeg,image/png,image/webp,application/pdf';
   input.onchange=()=>{
     const files=Array.from(input.files||[]).slice(0,VISIT_ATTACHMENT_MAX_FILES);
@@ -6420,8 +6487,92 @@ function visitDetailLayout(e,fields,tracking){
  (e.status==='Follow-up'||filled(e.followupDate)||filled(e.followupReason)?'<section class="vd-followup"><h3 class="vd-title">Next step</h3>'+facts(['Follow-up Date'])+paragraph('Follow-up reason',e.followupReason,'No follow-up reason recorded.')+'</section>':'')+
  '<details class="vd-details"><summary>Equipment & parts'+(equipment.length?' · '+equipment.length:'')+'</summary>'+(equipment.length?facts(equipment):'<p class="vd-empty">No equipment or parts recorded for this visit.</p>')+'</details>'+
  '<details class="vd-details"><summary>Timing & record details</summary>'+facts(more)+'</details>'+
- '<section class="vd-section vd-attachments" id="visit-attachments-panel" data-visit-id="'+esc(e.id)+'"><div class="section-title-row"><div><h3 class="vd-title">Attachments</h3><span class="muted" data-attachment-count>'+(Number(e.attachmentCount||0))+' file'+(Number(e.attachmentCount||0)===1?'':'s')+'</span></div><button class="btn-secondary" type="button" onclick="addAttachmentToExistingVisit('+esc(JSON.stringify(String(e.id)))+')">＋ Add attachment</button></div><div class="vd-attachment-list"><div class="vd-attachment-loading" role="status" aria-live="polite"><span class="mini-spin" aria-hidden="true"></span><span>Loading attachments…</span></div></div><div class="vd-attachment-upload-status"></div></section>'+ 
- '<div class="vd-footer"><span>Visit #'+esc(tracking)+'</span><div class="drawer-actions"><button class="btn-primary" type="button" onclick="editFieldLog('+esc(JSON.stringify(String(e.id)))+')">Edit visit</button><button class="btn-secondary" type="button" onclick="duplicateEntry('+esc(JSON.stringify(String(e.id)))+')">Duplicate</button></div></div>';
+ '<section class="vd-section vd-attachments" id="visit-attachments-panel" data-visit-id="'+esc(e.id)+'"><div class="section-title-row"><div><h3 class="vd-title">Attachments</h3><span class="muted" data-attachment-count>'+(Number(e.attachmentCount||0))+' file'+(Number(e.attachmentCount||0)===1?'':'s')+'</span></div>'+(canEditFieldLog(e)?'<button class="btn-secondary" type="button" onclick="addAttachmentToExistingVisit('+esc(JSON.stringify(String(e.id)))+')">＋ Add attachment</button>':'')+'</div><div class="vd-attachment-list"><div class="vd-attachment-loading" role="status" aria-live="polite"><span class="mini-spin" aria-hidden="true"></span><span>Loading attachments…</span></div></div><div class="vd-attachment-upload-status"></div></section>'+ 
+ '<div class="vd-footer"><span>Visit #'+esc(tracking)+'</span><div class="drawer-actions">'+(canEditFieldLog(e)?'<button class="btn-primary" type="button" onclick="editFieldLog('+esc(JSON.stringify(String(e.id)))+')">Edit visit</button><button class="btn-secondary" type="button" onclick="duplicateEntry('+esc(JSON.stringify(String(e.id)))+')">Duplicate</button>':'<span class="muted">View-only · Owned by '+esc(e.tech||'another FSE')+'</span>')+'</div></div>';
+}
+
+
+/* Link incidents to FSE Team without changing any Field Log data or automatically
+   sending a message. Only records visible to the signed-in FSM user can be opened. */
+const FIELDLOG_CHAT_ICON='<svg class="fsm-discuss-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 8.6 8.6 0 0 1-3.1-.6L4 20l1.6-5.1A7.5 7.5 0 1 1 20 11.5Z"/><path d="M8.5 11.5h7"/></svg>';
+function isChatDiscussableVisit(entry){
+  return /incident|breakdown/i.test(String(entry?.visitType||''))
+    && entry.status!=='Voided';
+}
+function fieldLogShareUrl(id){
+  // Production URL remains stable across devices; local testing intercepts this
+  // link to open the same record without jumping out of the development build.
+  const url=new URL('https://fieldopexa.github.io/io/');
+  url.searchParams.set('fieldlog',String(id));
+  return url.href;
+}
+function discussFieldLog(id){
+  const e=entries.find(row=>String(row.id)===String(id));
+  if(!e||!isChatDiscussableVisit(e)){
+    showToast('Cannot discuss this visit','Incident record is unavailable or outside your Field Logs.','bad');
+    return false;
+  }
+  const clean=(value,max=170)=>String(value||'').replace(/\s+/g,' ').trim().slice(0,max);
+  const lines=[
+    '🚨 FIELD INCIDENT · FSE TEAM',
+    'Site: '+clean(e.site,130),
+    'Visit date: '+clean(e.date,30),
+    e.ticketNo?'Ticket / IR: '+clean(e.ticketNo,80):'Visit reference: '+clean(e.id,80),
+    e.machineNo?'Cabinet / Machine: '+clean(e.machineNo,80):'',
+    'Concern: '+clean(e.issueType||e.category||'Incident',100),
+    e.notes?'Details: '+clean(e.notes,240):'',
+    'Priority: '+clean(e.priority||'Not specified',40),
+    'Status: '+clean(e.status||'Unspecified',40),
+    'Reported by: '+clean(e.tech||'FSE',100),
+    '',
+    'View Field Log: '+fieldLogShareUrl(e.id)
+  ].filter(Boolean).join('\n');
+  if(typeof window.fsmChatPrepareDraft!=='function'){
+    showToast('Chat unavailable','Open Messages and reload the latest FSM development version.','bad');
+    return false;
+  }
+  closeDetail();
+  return window.fsmChatPrepareDraft({roomId:'engineering',text:lines});
+}
+function announceExistingFieldLog(id){
+  const entry=entries.find(row=>String(row.id)===String(id));
+  if(currentUser?.role!=='fse'){fieldLogEditDenied();return;}
+  if(!entry||entry.status==='Voided'){
+    showToast('Visit unavailable','This Field Log cannot be announced.','bad');
+    return;
+  }
+  if(typeof window.fsmChatAnnounceExistingVisit!=='function'){
+    showToast('Chat unavailable','Reload the latest FSM test build and try again.','bad');
+    return;
+  }
+  if(!window.confirm('Post this existing Field Visit to FSE Team?'))return;
+  const queued=window.fsmChatAnnounceExistingVisit(entry);
+  showToast(
+    queued?'FSE Team notification queued':'Chat not connected',
+    queued?'FSM will publish this visit in FSE Team when messaging connects.':'Sign in to Messages with your FSM account and try again.',
+    queued?'ok':'bad'
+  );
+}
+function openFSMFieldLogFromChat(id){
+  if(!currentUser)return false;
+  const entry=entries.find(row=>String(row.id)===String(id));
+  if(!entry){
+    showToast('Field Log unavailable','This visit is not among the records your FSM account can access.','bad');
+    return false;
+  }
+  document.querySelector('.tab[data-tab="fieldlogs"]')?.click();
+  openDetail(entry.id);
+  return true;
+}
+window.fsmOpenFieldLogFromChat=openFSMFieldLogFromChat;
+function openRequestedFSMFieldLog(){
+  const url=new URL(window.location.href);
+  const id=url.searchParams.get('fieldlog');
+  if(!id)return;
+  url.searchParams.delete('fieldlog');
+  history.replaceState(history.state,'',url.pathname+url.search+url.hash);
+  if(id.length>120){showToast('Invalid Field Log link','The visit reference is too long.','bad');return;}
+  openFSMFieldLogFromChat(id);
 }
 
 function openDetail(id){
@@ -6430,6 +6581,17 @@ function openDetail(id){
   const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
+  if(isChatDiscussableVisit(e)){
+    const container=document.querySelector('#drawer-content .vd-footer .drawer-actions');
+    if(container){
+      const discuss=document.createElement('button');
+      discuss.type='button';discuss.className='fsm-discuss-chat-btn';
+      discuss.innerHTML=FIELDLOG_CHAT_ICON+'<span>Discuss in FSE Team</span>';
+      discuss.title='Prepare this incident in FSE Team. Review before sending.';
+      discuss.addEventListener('click',()=>discussFieldLog(e.id));
+      container.prepend(discuss);
+    }
+  }
   document.getElementById('visit-service-form-print')?.addEventListener('click',()=>printEntryServiceForm(e.id));
   document.getElementById('detail-overlay').querySelector('.detail-drawer').scrollTop=0;
   requestAnimationFrame(()=>document.getElementById('drawer-close').focus());
@@ -6737,8 +6899,13 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const saveStatus=document.getElementById('visit-save-status');
   if(saveStatus)saveStatus.textContent='Saving visit. Keep this page open until the save is confirmed.';
+  const chatStatus=document.getElementById('fsm-visit-chat-status');
+  if(chatStatus){chatStatus.hidden=true;chatStatus.textContent='';chatStatus.dataset.visitId='';}
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
+  if(currentUser?.role!=='fse'||(isEdit&&!canEditFieldLog(existing))){
+    fieldLogEditDenied();return;
+  }
   const date=document.getElementById('f-date').value||todayStr();
   const showExtra=!simpleVisit&&!!selectedCat;
   const isResolved=!simpleVisit&&RESOLVABLE_CATS.includes(selectedCat)&&document.getElementById('f-status').value==='Resolved';
@@ -6773,6 +6940,12 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     if(filesToUpload.length){
       clearPendingVisitAttachments();
       queueVisitAttachmentUpload(entry.id,filesToUpload);
+    }
+    if(!isEdit&&chatStatus){
+      chatStatus.dataset.visitId=String(entry.id);
+      chatStatus.textContent='Preparing FSE Team notification…';
+      chatStatus.hidden=false;
+      chatStatus.dataset.state='queued';
     }
     window.dispatchEvent(new CustomEvent('visit-committed',{detail:{isEdit,entry}}));
     if(!isEdit)window.dispatchEvent(new Event('visit-saved'));
@@ -6810,6 +6983,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
     }
     storageSet(STORAGE_KEY,entries);
     render();renderReport();renderDashboard();
+    if(chatStatus){chatStatus.hidden=true;chatStatus.dataset.visitId='';}
     if(saveStatus)saveStatus.textContent='Save not confirmed. Your entries are still in the form. '+(e.message||'Check your connection.')+' Review Field Logs before retrying if the connection dropped during saving.';
     showToast(isEdit?'Update failed':'Visit not saved',e.message||'Unable to sync with the shared sheet.','bad');
   }
@@ -6833,12 +7007,14 @@ document.getElementById('f-issue-type').addEventListener('change',()=>{const mon
 document.getElementById('f-tech').addEventListener('change',()=>{if(activeWork==='mine'){populateMyFse();render();}});
 document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListener('click',()=>{activeWork=btn.dataset.work;document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b===btn));const sel=document.getElementById('my-fse');sel.style.display=activeWork==='mine'?'block':'none';if(activeWork==='mine')populateMyFse();window.attentionFilter=null;render();}));
 document.getElementById('my-fse').addEventListener('change',render);
+document.getElementById('log-fse-filter').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
   window.setVisitWizardStep?.(1,false);
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
+  if(!canEditFieldLog(e)){fieldLogEditDenied();return;}
   restoreServiceForm(serviceFormForEntry(e));
   clearPendingVisitAttachments();
   closeDetail(); document.querySelector('.tab[data-tab="log"]')?.click();
@@ -6876,11 +7052,21 @@ function editFieldLog(id){
 document.getElementById('cancel-visit-edit')?.addEventListener('click',()=>{cancelVisitEdit(); showToast('Edit cancelled','No changes were saved.');});
 
 async function archiveEntry(id){
-  const e=entries.find(x=>x.id===id); if(!e) return;
-  e.voided=true; e.status='Voided'; e.voidedAt=new Date().toISOString(); e.updatedAt=e.voidedAt; e.audit=[...(e.audit||[]),{at:e.voidedAt,by:document.getElementById('f-tech')?.value||'System',action:'Visit archived / voided'}];
-  storageSet(STORAGE_KEY, entries); renderActivePanel();
-  try{ await apiPost('archiveEntry',{id, entry:e}); hideSyncError(); }
-  catch(err){ console.error(err); showSyncError("Archived locally. Update the Apps Script backend to persist archive status to the shared sheet."); }
+  const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
+  if(!canEditFieldLog(e)){fieldLogEditDenied();return;}
+  if(!confirm('Void this Field Log? The original record will be retained.'))return;
+  const before={voided:e.voided,status:e.status,voidedAt:e.voidedAt,updatedAt:e.updatedAt,audit:e.audit};
+  e.voided=true;e.status='Voided';e.voidedAt=new Date().toISOString();e.updatedAt=e.voidedAt;
+  e.audit=[...(e.audit||[]),{at:e.voidedAt,by:currentUser?.name||currentUser?.username||'FSE',action:'Visit archived / voided'}];
+  storageSet(STORAGE_KEY,entries);renderActivePanel();
+  try{
+    await apiPost('archiveEntry',{id,entry:e});
+    hideSyncError();showToast('Visit voided','The original Field Log was retained.','ok');
+  }catch(err){
+    Object.assign(e,before);
+    storageSet(STORAGE_KEY,entries);renderActivePanel();
+    showToast('Unable to void Field Log',err.message||'The original visit was restored.','bad');
+  }
 }
 
 function escapeHtml(s){
@@ -7485,7 +7671,10 @@ function render(){
   const from = document.getElementById('date-from').value;
   const to = document.getElementById('date-to').value;
   const q = (document.getElementById('global-search')?.value || '').trim().toLowerCase();
+  const selectedFse=fieldLogIdentity(document.getElementById('log-fse-filter')?.value);
   let filtered = entries.filter(e=>{
+    if(currentUser?.role==='fse'&&activeWork==='mine'&&!isMyFieldLogWork(e))return false;
+    if(selectedFse&&!entryParticipants(e).some(person=>fieldLogIdentity(person)===selectedFse))return false;
     const status=document.getElementById('log-status-filter')?.value||'';
     if(status&&e.status!==status)return false;
     if(activeCat!=='All' && e.category!==activeCat) return false;
@@ -7554,7 +7743,7 @@ function renderReadableLog(e,tracking){
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
-  <div class="readable-log-actions"><button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div><button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button><button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button></div></details></div></div>
+  <div class="readable-log-actions">${isChatDiscussableVisit(e)?`<button type="button" class="fsm-discuss-chat-btn fsm-discuss-chat-inline" data-discuss-visit="${safe(String(e.id))}" aria-label="Discuss this incident in FSE Team" title="Discuss in FSE Team" onclick="event.stopPropagation();discussFieldLog(this.dataset.discussVisit)">${FIELDLOG_CHAT_ICON}<span>Discuss</span></button>`:''}<button type="button" class="readable-log-view" onclick="event.stopPropagation();openDetail('${id}')">View details <span aria-hidden="true">↗</span></button><details class="readable-log-menu" onclick="event.stopPropagation()"><summary aria-label="More actions for visit ${safe(String(tracking||''))}">•••</summary><div>${canEditFieldLog(e)?`<button type="button" onclick="event.stopPropagation();editFieldLog('${id}')">Edit visit</button>`:''}${currentUser?.role==='fse'? `<button type="button" onclick="event.stopPropagation();announceExistingFieldLog('${id}')">Notify FSE Team</button>`:''}${canEditFieldLog(e)?`<button type="button" onclick="event.stopPropagation();archiveEntry('${id}')">Void visit</button>`:''}</div></details></div></div>
  </article>`;
 }
 
@@ -9823,6 +10012,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   const titles={
     log:'New Field Visit',
     fieldlogs:'Field Logs',
+    chat:'Communications',
     dashboard:'Dashboard',
     report:'Reports',
     inventory:'Asset Operations',
@@ -10633,7 +10823,19 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
 (function(){
  const notices=[];
  ['panel-dashboard','panel-fieldlogs'].forEach(id=>{const box=document.createElement('div');box.className='utility-strip fse-visit-notice';box.hidden=true;const message=document.createElement('span');box.append(message);document.getElementById(id).prepend(box);notices.push({box,message});});
- function update(){const fse=currentUser?.role==='fse';document.getElementById('work-toggle').hidden=fse;document.getElementById('my-fse').style.display=fse?'none':activeWork==='mine'?'block':'none';notices.forEach(({box,message})=>{box.hidden=!fse;if(!fse)return;message.textContent=!currentUser.fse?'Your account has no FSE assignment. Ask management to assign your technician name.':entries.length?'Showing visits assigned to '+currentUser.fse+' · '+entries.length+' loaded.':'No visits returned for '+currentUser.fse+'. Confirm that this account’s FSE assignment matches the technician name on the visits.';});}
+ function update(){
+   const fse=currentUser?.role==='fse';
+   document.getElementById('work-toggle').hidden=false;
+   document.getElementById('my-fse').style.display=fse?'none':activeWork==='mine'?'block':'none';
+   const all=document.querySelector('#work-toggle [data-work="all"]');
+   const mine=document.querySelector('#work-toggle [data-work="mine"]');
+   all?.classList.toggle('active',activeWork==='all');
+   mine?.classList.toggle('active',activeWork==='mine');
+   notices.forEach(({box,message})=>{
+     box.hidden=!fse;
+     if(fse)message.textContent='Shared Field Logs: '+entries.length+' team visits available · Use My Work to view your visits.';
+   });
+ }
  const oldRole=applyRoleUI;applyRoleUI=function(){oldRole();update();};
  const oldLoad=loadEntries;loadEntries=async function(){await oldLoad();update();};
  const oldShow=showApp;showApp=function(user){if(user?.role==='fse'){activeWork='all';activeCat='All';window.attentionFilter=null;managementPeriod='all';['global-search','date-from','date-to'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('[data-mgmt-period]').forEach(b=>b.classList.toggle('active',b.dataset.mgmtPeriod==='all'));}oldShow(user);update();};
@@ -12530,3 +12732,8 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 }
 </style>
 <link rel="stylesheet" href="quality-polish.css"><script src="quality-polish.js"></script>
+<!-- FSM Live Chat: independently scoped and loaded only when needed -->
+<link rel="stylesheet" href="./live-chat.css">
+<link rel="stylesheet" href="./fieldlog-chat.css?v=20261028-visit-notify-status">
+<script src="./chat-config.js"></script>
+<script defer src="./live-chat.js?v=fsm-auto-visit-feedback-manual-20261028"></script>

@@ -1,0 +1,510 @@
+/* OPEXA FSM | Communications V4
+   Dashboard-native styling with mobile inbox → conversation navigation.
+   Every visual rule is scoped to the FSM chat module. */
+#panel-chat{
+  --cm-bg:#111317;--cm-side:#15181d;--cm-pane:#121519;
+  --cm-card:#1c2026;--cm-card-soft:#191c22;--cm-border:#2b3038;
+  --cm-text:#edf0f5;--cm-muted:#939ba8;--cm-dim:#727c8c;
+  --cm-accent:var(--accent,#6d8cff);--cm-active:#20273a;
+  --cm-green:var(--good,#55c59a);
+  min-height:0;
+}
+#panel-chat .fsm-chat-page-heading{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:3px 0 16px;padding:0 1px;
+}
+#panel-chat .fsm-chat-page-heading h2{
+  font:650 24px/1.25 'Space Grotesk','Segoe UI',sans-serif;
+  letter-spacing:-.035em;color:var(--cm-text);margin:0;
+}
+#fsm-live-chat[hidden],#fsm-live-chat [hidden]{display:none!important}
+#fsm-live-chat{width:100%;position:static;inset:auto;color:var(--cm-text);font:13px/1.5 system-ui,'Segoe UI',sans-serif}
+#fsm-live-chat *{box-sizing:border-box}
+#fsm-live-chat button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#fsm-live-chat button:disabled{cursor:default}
+#fsm-live-chat button:focus-visible,
+#fsm-live-chat input:focus-visible,
+#fsm-live-chat textarea:focus-visible{outline:2px solid var(--cm-accent);outline-offset:2px}
+#fsm-chat-launcher{display:none!important}
+#fsm-chat-panel{
+  display:flex;flex-direction:column;position:relative;inset:auto;
+  height:min(775px,calc(100dvh - 203px));min-height:450px;
+  width:100%;border:1px solid var(--cm-border);border-radius:14px;
+  overflow:hidden;background:var(--cm-bg);
+  box-shadow:0 12px 38px rgba(0,0,0,.14);
+}
+#fsm-live-chat .fsm-chat-body{display:flex;flex:1;min-height:0;width:100%}
+
+/* Inbox */
+#panel-chat .fsm-chat-sidebar{
+  display:flex;flex-direction:column;flex:0 0 315px;width:315px;
+  min-width:0;min-height:0;background:var(--cm-side);
+  border-right:1px solid var(--cm-border);
+}
+/* Same search treatment as the Field Logs .global-search component. */
+#panel-chat .fsm-chat-search-wrap{
+  display:flex;align-items:center;gap:8px;
+  height:40px;min-height:40px;
+  margin:14px 15px 12px!important;
+  padding:0 11px;
+  border:1px solid var(--line,#272c34)!important;
+  background:var(--input-bg,#1d1d1b)!important;
+  border-radius:8px!important;
+  color:var(--ink-soft,#8e96a3);
+}
+#panel-chat .fsm-chat-search-wrap span{
+  color:#697382;font-size:20px;line-height:1;flex:0 0 auto;
+}
+#panel-chat #fsm-chat-search{
+  display:block;flex:1;min-width:0;width:100%;height:38px;
+  padding:0!important;margin:0;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;outline:0;
+  background:transparent!important;
+  color:var(--ink,#f1f3f5);font-size:12px;
+}
+#panel-chat #fsm-chat-search::placeholder{color:#858e9b}
+#panel-chat .fsm-chat-search-wrap:focus-within{
+  border-color:var(--accent,#6d8cff)!important;
+  box-shadow:0 0 0 2px rgba(109,140,255,.10);
+}
+#panel-chat .fsm-chat-filters{
+  display:flex;align-items:center;gap:7px;
+  padding:0 15px 13px;border-bottom:1px solid #252a32;
+}
+#panel-chat .fsm-chat-filter{
+  display:inline-flex;align-items:center;gap:6px;min-height:30px;
+  padding:6px 12px;color:#8f99a8;background:transparent;
+  border:1px solid transparent;border-radius:8px;
+  font-size:11px;font-weight:600;
+}
+#panel-chat .fsm-chat-filter.active{
+  color:#e9edf7;background:#242a36;border-color:#384151;
+}
+#panel-chat .fsm-chat-filter:hover{color:#e7eaf1}
+#panel-chat #fsm-chat-unread-count{
+  padding:1px 5px;min-width:17px;border-radius:7px;
+  font-size:9px;background:#3b4765;color:#e0eaff;
+}
+#panel-chat .fsm-chat-contacts{
+  display:block;flex:1;min-height:0;width:100%;max-height:none;
+  overflow-y:auto;overflow-x:hidden;padding:9px 11px 13px;
+  scrollbar-width:thin;scrollbar-color:#393e48 transparent;
+}
+#panel-chat .fsm-chat-caption{
+  margin:14px 11px 8px;padding:0;letter-spacing:.10em;
+  font:650 10px/1.4 'IBM Plex Mono',ui-monospace,monospace;
+  color:#8a929d;text-transform:uppercase;
+}
+#panel-chat .fsm-chat-direct-label{margin-top:24px}
+#panel-chat .fsm-chat-contact{
+  display:flex;width:100%;max-width:none;min-width:0;
+  align-items:center;gap:11px;min-height:68px;
+  padding:9px 11px;margin:2px 0;background:transparent;
+  color:var(--cm-text);text-align:left;
+  border:1px solid transparent;border-radius:10px;
+  transition:background .16s,border-color .16s;
+}
+#panel-chat .fsm-chat-contact:hover{background:#20242b}
+#panel-chat .fsm-chat-contact.active{
+  background:#262c38;border-color:#394155;
+  box-shadow:inset 3px 0 0 var(--cm-accent);
+}
+#panel-chat .fsm-chat-avatar{
+  position:relative;display:grid;place-items:center;
+  width:43px;height:43px;flex:0 0 43px;
+  border-radius:13px;background:#292e36;border:1px solid #39404b;
+  color:#e0e4eb;font:650 16px/1 'Space Grotesk','Segoe UI',sans-serif;
+}
+#panel-chat .fsm-chat-avatar.saved{
+  background:#282630;border-color:#3c374d;color:#cbbfe7;font-size:22px;
+}
+#panel-chat .fsm-chat-avatar.group{
+  background:#242a3a;border-color:#364057;color:#b5c4f3;font-size:20px;
+}
+#panel-chat .fsm-chat-online{
+  position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;
+  border-radius:50%;border:2px solid var(--cm-side);
+  background:var(--cm-green);
+}
+#panel-chat .fsm-chat-contact-detail{
+  flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;align-items:stretch;
+}
+#panel-chat .fsm-chat-contact-detail strong{
+  font:650 12.5px/1.35 system-ui,'Segoe UI',sans-serif;
+  color:#e7eaf0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#panel-chat .fsm-chat-contact-detail small{
+  font:400 11px/1.4 system-ui,'Segoe UI',sans-serif;
+  color:#909aa8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#panel-chat .fsm-chat-person-active{
+  color:#72c6a2;font-size:10px;line-height:1.3;
+}
+#panel-chat .fsm-chat-contact-aside{
+  display:flex;align-items:flex-end;flex-direction:column;
+  gap:8px;justify-content:center;flex:0 0 auto;
+}
+#panel-chat .fsm-chat-contact-time{
+  color:#747f8f;font:500 9.5px/1.2 system-ui,sans-serif;white-space:nowrap;
+}
+#panel-chat .fsm-chat-count{
+  display:block;width:8px;height:8px;min-width:8px;min-height:8px;
+  background:#a2b4f7;border-radius:50%;padding:0;
+}
+#panel-chat .fsm-chat-no-results{
+  padding:25px 13px;color:#919ba9;font-size:12px;text-align:center;line-height:1.6;
+}
+#panel-chat .fsm-chat-sidebar-foot{
+  display:flex;align-items:center;gap:9px;
+  min-height:44px;padding:12px 21px;margin-top:auto;
+  border-top:1px solid var(--cm-border);
+  color:#919aa6;font-size:10px;
+}
+#panel-chat .fsm-chat-sidebar-status{
+  width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:var(--cm-green);
+}
+
+/* Conversation pane */
+#panel-chat .fsm-chat-thread{
+  display:flex;flex:1;min-width:0;min-height:0;
+  flex-direction:column;background:var(--cm-pane);
+}
+#panel-chat .fsm-chat-thread-header{
+  display:flex;align-items:center;gap:12px;min-height:73px;
+  flex:0 0 auto;padding:13px 21px;
+  background:#16191e;border-bottom:1px solid var(--cm-border);
+}
+#panel-chat .fsm-chat-back{display:none}
+#panel-chat .fsm-chat-thread-avatar{
+  display:grid;place-items:center;
+  width:43px;height:43px;flex:0 0 43px;
+  color:#dce3f1;background:#2a2f39;
+  border:1px solid #3b4250;border-radius:12px;
+  font:650 17px/1 'Space Grotesk','Segoe UI',sans-serif;
+}
+#panel-chat .fsm-chat-thread-avatar.saved{
+  color:#cbbfe7;background:#282630;border-color:#3c374d;font-size:23px;
+}
+#panel-chat .fsm-chat-thread-avatar.group{
+  color:#b5c4f3;background:#242a3a;border-color:#364057;font-size:21px;
+}
+#panel-chat .fsm-chat-thread-title{
+  display:flex;flex:1;flex-direction:column;min-width:0;gap:4px;
+}
+#panel-chat .fsm-chat-thread-title strong{
+  font:650 15px/1.3 'Space Grotesk','Segoe UI',sans-serif;
+  color:#ecedf2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#panel-chat .fsm-chat-status-line{
+  display:flex;align-items:center;gap:6px;min-width:0;
+}
+#panel-chat .fsm-chat-status-line small{
+  color:#959eae;font-size:11px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+#panel-chat .fsm-chat-presence-dot{
+  width:7px;height:7px;min-width:7px;border-radius:50%;background:var(--cm-green);
+}
+#panel-chat .fsm-chat-notify-button{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  min-height:36px;padding:7px 12px;flex:0 0 auto;
+  background:#222730;border:1px solid #343b48;
+  border-radius:9px;color:#bbc5d3;font-size:11px;
+}
+#panel-chat .fsm-chat-notify-button:hover:not(:disabled){
+  background:#2b303a;color:#f1f3f8;
+}
+#panel-chat .fsm-chat-notify-button:disabled{opacity:.5}
+#panel-chat .fsm-chat-notify-button svg{width:16px;height:16px}
+#panel-chat .fsm-chat-messages{
+  display:flex;flex:1;flex-direction:column;min-height:0;gap:10px;
+  padding:24px 28px;overflow:auto;overscroll-behavior:contain;
+  background:linear-gradient(180deg,#14171c 0%,#101318 80%);
+  scrollbar-width:thin;scrollbar-color:#444b59 transparent;
+}
+#panel-chat .fsm-chat-day{
+  align-self:center;margin:8px 0 12px;padding:5px 13px;
+  color:#a6adbc;background:#20242c;border:1px solid #303742;
+  border-radius:999px;font-size:10px;font-weight:600;
+}
+#panel-chat .fsm-chat-message-row{
+  display:flex;position:relative;align-items:flex-end;align-self:stretch;gap:8px;
+}
+#panel-chat .fsm-chat-message-row.mine{justify-content:flex-end}
+#panel-chat .fsm-chat-message{
+  display:block;max-width:min(73%,540px);flex:0 1 auto;
+  padding:11px 14px;margin:0;
+  color:#e7eaf1;background:#242932;
+  border:1px solid #353b46;border-radius:13px 13px 13px 4px;
+  overflow-wrap:anywhere;white-space:pre-wrap;box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+#panel-chat .fsm-chat-message.mine{
+  color:#edf1ff;background:#2c3447;
+  border-color:#424c63;border-radius:13px 13px 4px 13px;
+}
+#panel-chat .fsm-chat-message.deleted{
+  background:#202329;color:#a6afbd;border-style:dashed;
+}
+#panel-chat .fsm-chat-message.mine.deleted{color:#acb4c2}
+#panel-chat .fsm-chat-byline{
+  margin:0 0 3px;color:inherit;font-size:10px;font-weight:650;opacity:.7;
+}
+#panel-chat .fsm-chat-text{
+  color:inherit;font-size:12.5px;line-height:1.6;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+#panel-chat .fsm-chat-text a{color:#bbccff;text-decoration:underline;text-underline-offset:2px}
+#panel-chat .fsm-chat-stamp{
+  margin:5px 0 0;color:inherit;opacity:.6;text-align:right;font-size:9.5px;
+}
+#panel-chat .fsm-chat-message-actions{position:relative;flex:0 0 auto;display:flex}
+#panel-chat .fsm-chat-message-more{
+  display:grid;place-items:center;width:30px;height:30px;min-height:30px;
+  color:#a7afbe;background:#222630;
+  border:1px solid #383f4b;border-radius:8px;font-size:19px;
+}
+#panel-chat .fsm-chat-message-more:hover{color:#fff;background:#343b49}
+#panel-chat .fsm-chat-message-menu{
+  display:flex;position:absolute;bottom:36px;left:0;z-index:20;
+  flex-direction:column;min-width:118px;padding:5px;
+  background:#262b34;border:1px solid #474f60;
+  border-radius:9px;box-shadow:0 14px 34px rgba(0,0,0,.4);
+}
+#panel-chat .fsm-chat-message-row.mine .fsm-chat-message-menu{right:0;left:auto}
+#panel-chat .fsm-chat-message-menu[hidden]{display:none!important}
+#panel-chat .fsm-chat-message-menu button{
+  min-height:34px;padding:9px 12px;color:#e2e7f0;
+  background:transparent;border:0;border-radius:6px;text-align:left;font-size:11px;
+}
+#panel-chat .fsm-chat-message-menu button:hover{background:#3b4456}
+#panel-chat .fsm-chat-empty{
+  display:flex;flex-direction:column;gap:9px;
+  align-items:center;justify-content:center;margin:auto;
+  padding:20px;max-width:365px;text-align:center;
+  color:#9aa4b2;font-size:12px;
+}
+#panel-chat .fsm-chat-empty strong{font-size:15px;color:#e4eaf3;font-weight:650}
+#panel-chat .fsm-chat-empty>span:not(.fsm-chat-empty-symbol){line-height:1.65}
+#panel-chat .fsm-chat-empty-symbol{
+  display:grid;place-items:center;margin-bottom:8px;
+  width:66px;height:66px;background:#242a36;color:#c4d0e5;
+  border:1px solid #384355;border-radius:20px;font-size:28px;
+}
+
+/* Composer and actions */
+#panel-chat .fsm-chat-edit-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;padding:10px 15px;color:#cad4e5;
+  background:#222b3d;border-top:1px solid #39475f;font-size:11px;
+}
+#panel-chat .fsm-chat-edit-bar[hidden]{display:none!important}
+#panel-chat .fsm-chat-edit-bar button{
+  color:#c9d6fa;background:transparent;border:0;text-decoration:underline;font-size:11px;
+}
+#panel-chat .fsm-chat-compose{
+  display:flex;flex:0 0 auto;gap:9px;align-items:flex-end;
+  padding:14px 17px;background:#171b21;
+  border-top:1px solid var(--cm-border);
+}
+#panel-chat .fsm-chat-compose textarea{
+  flex:1;resize:none;min-width:0;
+  min-height:45px;max-height:124px;
+  border:1px solid #373e49;border-radius:10px;
+  background:#101319;color:#eceff6;padding:12px 14px;
+  font:12.5px/1.55 system-ui,'Segoe UI',sans-serif;
+}
+#panel-chat .fsm-chat-compose textarea:focus{
+  border-color:#697bb4;box-shadow:0 0 0 2px rgba(109,140,255,.08);
+}
+#panel-chat .fsm-chat-compose textarea::placeholder{color:#8d96a4}
+#panel-chat .fsm-chat-attach-link{
+  display:grid;place-items:center;width:44px;height:44px;min-height:44px;flex:0 0 44px;
+  border-radius:10px;background:#242a34;border:1px solid #394250;color:#b9c4d4;font-size:17px;
+}
+#panel-chat .fsm-chat-attach-link:hover{background:#303746}
+#panel-chat .fsm-chat-send{
+  min-height:44px;flex:0 0 auto;padding:0 18px;
+  color:#f7f9ff;background:#677db7;
+  border:1px solid #798ec6;border-radius:10px;
+  font-size:12px;font-weight:750;
+}
+#panel-chat .fsm-chat-send:hover:not(:disabled){background:#7b91ce}
+#panel-chat .fsm-chat-send:disabled{opacity:.5}
+#panel-chat .fsm-chat-error{padding:0 14px;min-height:0;color:#e2a8a1;font-size:11px}
+#panel-chat .fsm-chat-error:empty{display:none}
+#panel-chat .fsm-chat-gate{
+  display:flex;flex-direction:column;justify-content:center;
+  gap:12px;max-width:420px;width:100%;padding:24px;margin:auto;
+}
+#panel-chat .fsm-chat-gate h3{margin:0;font-size:18px;color:#e9edf4}
+#panel-chat .fsm-chat-gate p{margin:0;color:#a1abb9;font-size:12px}
+
+/* Global FSM chat feedback */
+#fsm-chat-toast{
+  position:fixed;bottom:86px;right:23px;z-index:1100;
+  padding:13px 16px;min-width:210px;max-width:min(360px,90vw);
+  background:#2b3241;color:#eef3fb;
+  border:1px solid #506189;border-left:3px solid #879ae0;
+  border-radius:10px;font-size:12px;font-weight:650;
+  box-shadow:0 12px 30px #0008;cursor:pointer;
+}
+#fsm-chat-toast[hidden]{display:none!important}
+.fsm-chat-nav-badge{
+  display:inline-grid;place-items:center;
+  height:18px;min-width:18px;padding:0 5px;margin-left:auto;
+  color:#17213b;background:#c0cef8;border-radius:8px;
+  font-size:10px;font-weight:750;
+}
+.fsm-chat-nav-badge[hidden]{display:none!important}
+
+/* Keep the global install prompt from covering the message composer.
+   It remains available from the other FSM pages. */
+body:has(#panel-chat.active) .pwa-install-button{display:none!important}
+
+/* If the connection screen is displayed, center it in either layout. */
+#fsm-chat-panel .fsm-chat-body:has(> .fsm-chat-gate){display:flex;align-items:center;justify-content:center}
+
+/* Mobile: two real screens rather than horizontally swiped contacts.
+   Default screen = inbox. Opening a conversation switches to full thread. */
+@media(max-width:820px){
+  #panel-chat .fsm-chat-page-heading{display:none}
+  #fsm-chat-panel{
+    height:calc(100dvh - 155px);min-height:340px;
+    border-radius:12px;max-height:none;
+  }
+  #fsm-live-chat .fsm-chat-body{display:block;position:relative;height:100%}
+  #panel-chat .fsm-chat-sidebar{
+    width:100%;max-width:none;min-width:0;height:100%;max-height:none;
+    flex:none;border-right:0;display:flex;
+  }
+  #panel-chat .fsm-chat-thread{display:none;width:100%;height:100%;min-height:0}
+  #fsm-chat-panel.fsm-chat-mobile-thread .fsm-chat-sidebar{display:none!important}
+  #fsm-chat-panel.fsm-chat-mobile-thread .fsm-chat-thread{display:flex}
+  #panel-chat .fsm-chat-search-wrap{
+    display:flex;margin:15px 13px 12px!important;
+    height:50px;min-height:50px;
+    border-radius:11px!important;
+  }
+  #panel-chat #fsm-chat-search{font-size:16px;height:48px}
+  #panel-chat .fsm-chat-filters{padding:0 13px 12px;gap:9px}
+  #panel-chat .fsm-chat-filter{min-height:33px;padding:7px 13px}
+  #panel-chat .fsm-chat-contacts{
+    display:block;flex:1;overflow-x:hidden;overflow-y:auto;
+    max-height:none;height:auto;padding:5px 9px 15px;
+    -webkit-overflow-scrolling:touch;
+  }
+  #panel-chat .fsm-chat-caption{
+    display:block;margin:15px 13px 8px;font-size:10px;
+  }
+  #panel-chat .fsm-chat-direct-label{margin-top:24px}
+  #panel-chat .fsm-chat-contact{
+    display:flex;width:100%;max-width:none;min-width:0;min-height:78px;
+    margin:3px 0;padding:11px 13px;gap:13px;border-radius:11px;
+  }
+  #panel-chat .fsm-chat-avatar{
+    width:48px;height:48px;flex:0 0 48px;
+    border-radius:14px;font-size:17px;
+  }
+  #panel-chat .fsm-chat-avatar.saved{font-size:24px}
+  #panel-chat .fsm-chat-avatar.group{font-size:23px}
+  #panel-chat .fsm-chat-contact-detail strong{font-size:13.5px}
+  #panel-chat .fsm-chat-contact-detail small{font-size:11.5px}
+  #panel-chat .fsm-chat-person-active{font-size:10px}
+  #panel-chat .fsm-chat-contact-aside{display:flex}
+  #panel-chat .fsm-chat-sidebar-foot{min-height:43px;padding:11px 17px}
+  #panel-chat .fsm-chat-thread-header{
+    min-height:69px;padding:10px 12px;gap:9px;
+  }
+  #panel-chat .fsm-chat-back{
+    display:grid;place-items:center;
+    width:37px;height:41px;flex:0 0 37px;
+    border:0;border-radius:9px;
+    background:transparent;color:#d5deed;
+  }
+  #panel-chat .fsm-chat-back svg{width:23px;height:23px}
+  #panel-chat .fsm-chat-back:hover{background:#282e38}
+  #panel-chat .fsm-chat-thread-avatar{width:38px;height:38px;flex:0 0 38px}
+  #panel-chat .fsm-chat-thread-title strong{font-size:14px}
+  #panel-chat .fsm-chat-status-line small{font-size:10px}
+  #panel-chat .fsm-chat-notify-button{
+    width:37px;height:37px;min-height:37px;padding:0;flex:0 0 37px;
+  }
+  #panel-chat .fsm-chat-notify-button span{display:none}
+  #panel-chat .fsm-chat-messages{
+    padding:16px 13px;gap:9px;-webkit-overflow-scrolling:touch;
+  }
+  #panel-chat .fsm-chat-message{max-width:84%;padding:10px 12px}
+  #panel-chat .fsm-chat-message-more{width:30px;height:30px}
+  #panel-chat .fsm-chat-compose{padding:10px 10px;gap:7px}
+  #panel-chat .fsm-chat-compose textarea{min-height:43px;padding:10px 12px;font-size:13px}
+  #panel-chat .fsm-chat-attach-link{width:40px;height:43px;min-height:43px;flex-basis:40px}
+  #panel-chat .fsm-chat-send{min-height:43px;padding:0 13px}
+  #fsm-chat-toast{right:12px;bottom:88px}
+}
+@media(max-width:420px){
+  #fsm-chat-panel{height:calc(100dvh - 145px);min-height:320px}
+  #panel-chat .fsm-chat-search-wrap{margin:13px 12px 10px!important}
+  #panel-chat .fsm-chat-contact{min-height:73px;padding:9px 11px}
+  #panel-chat .fsm-chat-avatar{width:43px;height:43px;flex-basis:43px}
+  #panel-chat .fsm-chat-thread-header{gap:7px;padding:9px 8px}
+  #panel-chat .fsm-chat-message{max-width:88%}
+}
+@media(prefers-reduced-motion:reduce){
+  #panel-chat .fsm-chat-contact{transition:none}
+}
+
+/* Automatic new-field-visit notifications, designed like compact dashboard events. */
+#panel-chat .fsm-chat-message.fsm-chat-visit-notice{
+  flex:0 1 385px;
+  max-width:min(100%,385px);
+  padding:0;
+  overflow:hidden;
+  background:#1c222c;
+  border:1px solid #3d495d;
+  border-radius:11px;
+  color:#e9edf5;
+  box-shadow:0 4px 15px rgba(0,0,0,.12);
+}
+#panel-chat .fsm-chat-message.fsm-chat-visit-notice .fsm-chat-byline{
+  padding:11px 14px 0;
+  margin:0;
+  color:#b4c1d2;
+  font-size:10.5px;
+}
+#panel-chat .fsm-chat-message.fsm-chat-visit-notice .fsm-chat-text{
+  white-space:normal;
+  padding:8px 14px 10px;
+}
+#panel-chat .fsm-chat-visit-eyebrow{
+  color:#aebbe3;font-size:9px;letter-spacing:.10em;font-weight:740;
+  text-transform:uppercase;margin-bottom:6px;
+}
+#panel-chat .fsm-chat-visit-heading{
+  display:block;color:#f3f5f9;font-size:14px;font-weight:670;line-height:1.35;
+  overflow-wrap:anywhere;
+}
+#panel-chat .fsm-chat-visit-summary{
+  color:#acb6c6;font-size:11px;line-height:1.55;margin:4px 0 10px;
+}
+#panel-chat .fsm-chat-visit-details{
+  display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #343c48;
+  padding-top:10px;
+}
+#panel-chat .fsm-chat-visit-details span{
+  color:#adb9ca;background:#252e3b;border:1px solid #384355;
+  padding:4px 7px;border-radius:5px;font-size:10px;line-height:1.2;
+}
+#panel-chat .fsm-chat-visit-link{border-top:1px solid #353f4e;margin-top:11px;padding-top:9px}
+#panel-chat .fsm-chat-visit-link a{
+  color:#becbff;font-size:11px;font-weight:700;text-decoration:none;
+}
+#panel-chat .fsm-chat-visit-link a:hover{text-decoration:underline}
+#panel-chat .fsm-chat-message.fsm-chat-visit-notice .fsm-chat-stamp{
+  padding:0 13px 11px;margin:0;
+}
+@media(max-width:820px){
+  #panel-chat .fsm-chat-message.fsm-chat-visit-notice{
+    max-width:min(100%,355px);flex-basis:330px;
+  }
+}
