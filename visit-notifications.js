@@ -1,7 +1,8 @@
 /* OPEXA FSM • Field Visit Notifications
  * Renders an authenticated activity feed derived from shared Field Logs.
  * Does not write to Firebase Chat or create duplicate notice records.
- * Read/unread state is per FSM user and device, stored only in localStorage.
+ * Read/archived state is per FSM user and device, stored only in localStorage.
+ * One notice per created visit; edits do not generate duplicate notifications.
  */
 (()=>{
   'use strict';
@@ -13,7 +14,7 @@
   const markAll=document.getElementById('fsm-notif-mark-all');
   const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'});
   const timeFormat=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'});
-  let activeKey='', initialized=false,filter='all',read=new Set(),records=[],polling=false,firstLoad=true;
+  let activeKey='', initialized=false,filter='all',read=new Set(),archived=new Set(),records=[],polling=false,firstLoad=true;
   let toastLast='';
   function isOpen(){return !popover.hidden;}
   function closePopover({restoreFocus=false}={}){
@@ -90,11 +91,12 @@
     const next=key();
     if(!next)return false;
     if(next===activeKey)return true;
-    activeKey=next;initialized=false;read=new Set();records=[];firstLoad=true;
+    activeKey=next;initialized=false;read=new Set();archived=new Set();records=[];firstLoad=true;
     try{
       const stored=JSON.parse(localStorage.getItem(activeKey)||'null');
       if(stored&&Array.isArray(stored.read)){
         read=new Set(stored.read.map(String));
+        archived=new Set(Array.isArray(stored.archived)?stored.archived.map(String):[]);
         initialized=true;
       }
     }catch{}
@@ -104,11 +106,13 @@
     if(!activeKey)return;
     const known=records.map(r=>r.id);
     const retained=[...read].filter(id=>known.includes(id)).slice(-120);
+    const hidden=[...archived].filter(id=>known.includes(id)).slice(-120);
     read=new Set(retained);
-    try{localStorage.setItem(activeKey,JSON.stringify({read:retained,updatedAt:Date.now()}));}
+    archived=new Set(hidden);
+    try{localStorage.setItem(activeKey,JSON.stringify({read:retained,archived:hidden,updatedAt:Date.now()}));}
     catch(err){console.warn('Notifications read state unavailable:',err.message);}
   }
-  function unreadCount(){return records.reduce((sum,r)=>sum+(!read.has(r.id)?1:0),0);}
+  function unreadCount(){return records.reduce((sum,r)=>sum+(!archived.has(r.id)&&!read.has(r.id)?1:0),0);}
   function updateBadges(){
     const count=unreadCount();
     for(const id of ['fsm-notif-desktop-badge','fsm-notif-mobile-badge','fsm-notif-filter-count']){
@@ -140,28 +144,56 @@
     }
   }
   function markRead(ids){
-    for(const id of ids)read.add(id);
+    for(const id of ids)read.add(String(id));
     persist();updateBadges();
+  }
+  function markUnread(id){
+    read.delete(String(id));
+    archived.delete(String(id));
+    persist();render();
+  }
+  function archiveVisit(id){
+    id=String(id);
+    archived.add(id);
+    read.add(id);
+    persist();render();
+  }
+  function restoreVisit(id){
+    archived.delete(String(id));
+    persist();render();
   }
   function render(){
     if(!loadForAccount()){
       list.replaceChildren(el('p','fsm-notif-empty','Sign in to FSM to view team notifications.'));
       updateBadges();return;
     }
-    const shown=filter==='unread'?records.filter(r=>!read.has(r.id)):records;
+    const shown=records.filter(r=>{
+      if(filter==='archived')return archived.has(r.id);
+      if(archived.has(r.id))return false;
+      if(filter==='unread')return !read.has(r.id);
+      if(filter==='read')return read.has(r.id);
+      return true;
+    });
     list.replaceChildren();
     if(!shown.length){
       const empty=el('div','fsm-notif-blank');
+      const messages={
+        all:['No new activity','New team visits will appear here when they are saved.'],
+        unread:['You’re all caught up','No unread field visit notifications.'],
+        read:['No read notifications','Visits you have reviewed will appear here.'],
+        archived:['Nothing archived','Archived visit notifications will appear here.']
+      };
+      const [title,desc]=messages[filter]||messages.all;
       empty.append(el('div','fsm-notif-blank-symbol','✓'),
-        el('strong','',filter==='unread'?'All caught up':'No field visits yet'),
-        el('p','',filter==='unread'?'No unread visit notifications.':'New team visits will appear here when they are saved.'));
+        el('strong','',title),el('p','',desc));
       list.append(empty);updateBadges();return;
     }
     for(const r of shown){
       const unread=!read.has(r.id);
+      const row=el('div','fsm-notif-entry'+(unread?' is-unread':''));
+      row.setAttribute('role','listitem');
       const card=el('button','fsm-notif-item'+(unread?' is-unread':''));card.type='button';
       card.dataset.visitId=r.id;
-      card.setAttribute('role','listitem');
       card.title='Open Field Log';
       const icon=el('span','fsm-notif-icon',/incident|breakdown/i.test(r.type)?'!':'✓');
       icon.setAttribute('aria-hidden','true');
@@ -176,12 +208,38 @@
       const foot=el('span','fsm-notif-meta');
       if(r.priority&&/incident|breakdown/i.test(r.type))foot.append(el('span','fsm-notif-priority',r.priority));
       foot.append(el('span','fsm-notif-status',r.status));
-      if(unread)foot.append(el('span','fsm-notif-new','New'));
+      if(unread&&!archived.has(r.id))foot.append(el('span','fsm-notif-new','New'));
+      if(archived.has(r.id))foot.append(el('span','fsm-notif-archived-tag','Archived'));
       content.append(top,sub,desc,foot);
       const arrow=el('span','fsm-notif-arrow','›');arrow.setAttribute('aria-hidden','true');
       card.append(icon,content,arrow);
       card.addEventListener('click',()=>{markRead([r.id]);render();closePopover();openFieldLog(r.id);});
-      list.append(card);
+
+      const controls=el('div','fsm-notif-item-controls');
+      const toggle=el('button','fsm-notif-more','⋯');
+      toggle.type='button';toggle.setAttribute('aria-label','Actions for '+r.tech+' at '+r.site);
+      toggle.setAttribute('aria-haspopup','menu');toggle.setAttribute('aria-expanded','false');
+      const menu=el('div','fsm-notif-menu');menu.hidden=true;menu.setAttribute('role','menu');
+      const action=(label,fn)=>{
+        const b=el('button','',label);b.type='button';b.setAttribute('role','menuitem');
+        b.addEventListener('click',event=>{event.stopPropagation();fn();});
+        menu.append(b);
+      };
+      if(archived.has(r.id))action('Restore to All activity',()=>restoreVisit(r.id));
+      else {
+        if(unread)action('Mark as read',()=>{markRead([r.id]);render();});
+        else action('Mark as unread',()=>markUnread(r.id));
+        action('Archive',()=>archiveVisit(r.id));
+      }
+      toggle.addEventListener('click',event=>{
+        event.stopPropagation();
+        list.querySelectorAll('.fsm-notif-menu').forEach(node=>{if(node!==menu)node.hidden=true;});
+        menu.hidden=!menu.hidden;
+        toggle.setAttribute('aria-expanded',String(!menu.hidden));
+      });
+      controls.append(toggle,menu);
+      row.append(card,controls);
+      list.append(row);
     }
     updateBadges();
   }
@@ -208,7 +266,7 @@
   }
   window.fsmNotificationsSync=rows=>sync(rows);
   window.fsmNotificationsRender=render;
-  markAll?.addEventListener('click',()=>{markRead(records.map(r=>r.id));render();});
+  markAll?.addEventListener('click',()=>{markRead(records.filter(r=>!archived.has(r.id)).map(r=>r.id));render();});
   filterButtons.forEach(btn=>btn.addEventListener('click',()=>{
     filter=btn.dataset.fsmNotifFilter;
     filterButtons.forEach(b=>{
@@ -231,8 +289,13 @@
     catch(err){console.warn('Notification refresh unavailable:',err.message);}
     finally{polling=false;}
   }
-  window.setInterval(poll,120000);
+  window.setInterval(poll,60000);
   window.addEventListener('focus',()=>{if(user())void poll();});
+  document.addEventListener('click',event=>{
+    if(event.target.closest('.fsm-notif-item-controls'))return;
+    list.querySelectorAll('.fsm-notif-menu').forEach(node=>node.hidden=true);
+    list.querySelectorAll('.fsm-notif-more').forEach(node=>node.setAttribute('aria-expanded','false'));
+  });
   window.addEventListener('resize',()=>{if(isOpen())closePopover();});
   // In case an existing authenticated session was restored before this script loaded.
   if(user()&&typeof entries!=='undefined')sync(entries,true);
