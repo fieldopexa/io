@@ -149,3 +149,63 @@
   #fsm-notif-popover .fsm-notif-header p{max-width:220px}
 }
 @media(prefers-reduced-motion:reduce){#fsm-notif-popover .fsm-notif-item{transition:none}}
+
+/* Activity bell V2: separate read/archive actions without obscuring the visit. */
+#fsm-notif-popover .fsm-notif-filters{
+  display:flex;flex-wrap:nowrap;gap:4px;margin:0 13px;
+  padding:0 0 10px;overflow-x:auto;scrollbar-width:none;
+}
+#fsm-notif-popover .fsm-notif-filters::-webkit-scrollbar{display:none}
+#fsm-notif-popover .fsm-notif-filters button{
+  flex:0 0 auto;padding:7px 10px;font-size:10.5px;white-space:nowrap;
+}
+#fsm-notif-popover .fsm-notif-entry{
+  display:flex;position:relative;align-items:stretch;
+  border-radius:10px;border:1px solid #343b46;
+  background:#1b212a;min-height:84px;
+}
+#fsm-notif-popover .fsm-notif-entry.is-unread{border-left:3px solid #95a9e9;background:#202632}
+#fsm-notif-popover .fsm-notif-entry:hover{background:#252c37;border-color:#526178}
+#fsm-notif-popover .fsm-notif-entry .fsm-notif-item{
+  flex:1 1 auto;min-width:0;width:auto;min-height:84px;
+  margin:0;padding:12px 8px 12px 12px;
+  border:0!important;border-radius:9px;background:transparent!important;
+}
+#fsm-notif-popover .fsm-notif-entry .fsm-notif-title{line-height:1.35}
+#fsm-notif-popover .fsm-notif-item-controls{
+  display:flex;position:relative;flex:0 0 40px;
+  align-items:flex-start;justify-content:center;padding:10px 6px 0 0;
+}
+#fsm-notif-popover .fsm-notif-more{
+  display:grid;place-items:center;width:30px;height:30px;min-height:30px;
+  border-radius:8px;border:1px solid transparent;background:transparent;
+  color:#b6c0d2;font-size:22px;line-height:1;cursor:pointer;
+}
+#fsm-notif-popover .fsm-notif-more:hover,
+#fsm-notif-popover .fsm-notif-more[aria-expanded="true"]{
+  border-color:#48576d;color:#ecf1ff;background:#354155;
+}
+#fsm-notif-popover .fsm-notif-menu{
+  position:absolute;top:38px;right:9px;min-width:172px;z-index:15;
+  display:flex;flex-direction:column;gap:2px;padding:6px;
+  background:#2a3140;border:1px solid #515e73;border-radius:9px;
+  box-shadow:0 12px 28px rgba(0,0,0,.45);
+}
+#fsm-notif-popover .fsm-notif-menu[hidden]{display:none!important}
+#fsm-notif-popover .fsm-notif-menu button{
+  display:block;min-height:35px;width:100%;padding:8px 10px;
+  border:0;border-radius:6px;background:transparent;color:#e5ecf7;
+  text-align:left;font-size:11px;cursor:pointer;
+}
+#fsm-notif-popover .fsm-notif-menu button:hover{background:#3d495e}
+#fsm-notif-popover .fsm-notif-meta .fsm-notif-archived-tag{
+  background:#282c36;color:#a7b1c0;border-color:#444c5b;
+}
+#fsm-notif-popover .fsm-notif-list{gap:7px}
+@media(max-width:900px){
+ #fsm-notif-popover .fsm-notif-entry{min-height:80px}
+ #fsm-notif-popover .fsm-notif-entry .fsm-notif-item{gap:9px;padding:10px 5px 10px 10px}
+ #fsm-notif-popover .fsm-notif-item-controls{flex-basis:36px;padding:8px 5px 0 0}
+ #fsm-notif-popover .fsm-notif-filters{margin:0 10px}
+ #fsm-notif-popover .fsm-notif-filters button{font-size:10px;padding:7px 9px}
+}
