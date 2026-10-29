@@ -82,16 +82,16 @@ A successful Field Log save is independent of the Firebase message. The retry qu
 3. Open an Erwin visit. Details and attachments should be readable, but **Edit**, **Duplicate**, **Void** and **Add attachment** should not be available. Discuss in FSE Team must still work for incidents.
 4. Sign in as Erwin and verify that Erwin can edit and void **only Erwin's Primary FSE visits**. Supporting FSEs may view but not change someone else's log.
 5. Sign in as Management. All Field Logs are visible, but New Visit, Edit, Void and permanent delete requests are blocked.
-6. Check automatic new-visit notifications in FSE Team still appear once for newly saved visits, and old logs/history have not changed.
+6. Verify newly saved visits appear once in the upper-right Notifications bell, not as automatic FSE Team messages. Confirm manual incident discussion still works.
 
 ## Header Notification Bell (2026-10-29)
 
 - Notifications live in the **top-right bell**, not Dashboard/Field Logs/Reports/Messages navigation.
 - **Desktop:** bell is in the upper-right of the workspace. **Mobile:** bell is next to the hamburger menu.
-- Tap/click to open **Notifications** without changing pages. Unread badge, **All activity / Unread**, **Mark all as read**, and visit links are retained. Click outside or press Escape to close.
+- Tap/click to open **Notifications** without changing pages. Unread badge, **All / Unread / Read / Archived**, **Mark all as read**, per-item More actions and visit links are available. Click outside or press Escape to close.
 - Saved New Visits create feed entries based on authenticated shared Field Logs; they **do not auto-post to FSE Team Chat**. Incident **Discuss in Chat** remains a manual option.
 - An FSE view link to `?intent=notifications` still takes them through FSM sign-in before opening the bell after login.
-- Existing notices are derived from Field Logs, not separately stored. Current browser remembers read status per FSE account in local storage. Other signed-in accounts check for new saved visits while the app is open (approximately every two minutes); no claim of FCM closed-browser delivery for visit notifications.
+- Existing notices are derived from Field Logs, not separately stored. Current browser remembers read status per FSE account in local storage. Other signed-in accounts check for new saved visits while the app is open (approximately every minute); no claim of FCM closed-browser delivery for visit notifications.
 - **No backend, Firestore rule, or account migration** is required for this header placement change. No Firebase chat messages are deleted by this UI change.
 
 ### Quick smoke test
@@ -99,3 +99,7 @@ A successful Field Log save is independent of the Firebase message. The retry qu
 2. On mobile, verify the bell is next to the menu button. Open and close using touch and then tap a visit.
 3. Have another FSE save a new visit. Confirm the new feed item and unread badge show after a refresh/poll; the FSE Team conversation should **not** get an automatic visit message.
 4. Tap a notification and confirm it opens the correct visit in Field Logs, while **Discuss in Chat** remains available for a manual incident conversation.
+
+### Notification status controls (production update)
+
+From the upper-right bell, choose **All**, **Unread**, **Read**, or **Archived**. Open a notification to mark it read and view the corresponding Field Log, or use the notification's **⋯** menu to mark it unread, archive it, or restore it from Archived. The unread badge excludes archived notifications. **Mark all as read** does not alter archived records. Each visit is identified by its stable ID and appears once, even if edited. Your read/archive choices are stored locally per FSM account **on each device**, not yet synchronized across devices. Visit notifications refresh while FSM is open, not after the browser is closed.
