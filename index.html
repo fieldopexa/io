@@ -3999,7 +3999,7 @@ body:has(#spare-modal[style*="display:flex"]){
       <img src="https://www.opexa.io/_next/static/media/logo.0ji5glv1jnv4q.png" alt="Opexa">
       <div><b>Field Operations</b><small>Operations App</small></div>
     </div>
-    <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">☰</button>
+    <div class="fsm-mobile-header-actions"><button type="button" class="fsm-notif-bell fsm-notif-bell-mobile" id="fsm-notif-bell-mobile" aria-label="Notifications" aria-haspopup="dialog" aria-expanded="false" aria-controls="fsm-notif-popover" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="fsm-notif-badge" id="fsm-notif-mobile-badge" hidden></span></button><button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">☰</button></div>
   </div>
 
   <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Main navigation">
@@ -4019,7 +4019,6 @@ body:has(#spare-modal[style*="display:flex"]){
       <button type="button" data-mobile-tab="log" class="active"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></span><b>New Visit</b></button>
       <button type="button" class="fse-shared-mobile" data-mobile-tab="fieldlogs"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><b>Field Logs</b></button>
       <button type="button" class="fse-shared-mobile" data-mobile-tab="dashboard"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><b>Dashboard</b></button>
-      <button type="button" class="fse-shared-mobile" data-mobile-tab="notifications"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></span><b>Notifications</b><span class="fsm-notif-badge" id="fsm-notif-mobile-badge" hidden></span></button>
       <button type="button" class="fse-shared-mobile" data-mobile-tab="chat"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.3a7.8 7.8 0 0 1-8 7.5 9.3 9.3 0 0 1-3.2-.6L4 20l1.2-4A7.5 7.5 0 0 1 4 11.3C4 7.3 7.6 4 12 4s8 3.3 8 7.3Z"/><path d="M8.7 11.3h.1m3.2 0h.1m3.2 0h.1"/></svg></span><b>Messages</b><span class="fsm-chat-nav-badge" id="fsm-chat-mobile-badge" hidden></span></button>
       <button type="button" data-mobile-tab="report"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><b>Reports</b></button>
       <button type="button" data-mobile-tab="inventory"><span><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><b>Asset Operations</b></button>
@@ -4043,7 +4042,6 @@ body:has(#spare-modal[style*="display:flex"]){
       <div class="nav-section-label">Operations</div>
       <div class="tab fse-shared-tab" data-tab="dashboard"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span>Dashboard</span></div>
       <div class="tab fse-shared-tab" data-tab="fieldlogs"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span>Field Logs</span></div>
-      <div class="tab fse-shared-tab" data-tab="notifications"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></span><span>Notifications</span><span class="fsm-notif-badge" id="fsm-notif-desktop-badge" hidden></span></div>
       <div class="tab fse-shared-tab" data-tab="chat"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.3a7.8 7.8 0 0 1-8 7.5 9.3 9.3 0 0 1-3.2-.6L4 20l1.2-4A7.5 7.5 0 0 1 4 11.3C4 7.3 7.6 4 12 4s8 3.3 8 7.3Z"/><path d="M8.7 11.3h.1m3.2 0h.1m3.2 0h.1"/></svg></span><span>Messages</span><span class="fsm-chat-nav-badge" id="fsm-chat-nav-badge" hidden></span></div>
       <div class="tab" data-tab="report"><span class="tab-icon"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v17h17M8 16v-5M13 16V7M18 16V4"/></svg></span><span>Reports</span></div>
 
@@ -4056,7 +4054,15 @@ body:has(#spare-modal[style*="display:flex"]){
     </div>
     <div class="app-actions"><div class="user-badge"><span class="user-dot"></span><span><b id="logged-user">—</b><small id="logged-role" style="display:block;color:var(--ink-soft);font-size:9px;margin-top:1px">—</small></span></div><button type="button" class="fullscreen-btn" id="fullscreen-btn" title="Toggle fullscreen" aria-label="Toggle fullscreen"><svg class="nav-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg></button><button class="logout-btn" id="logout-btn">Log out</button></div>
   </div>
+  <div id="fsm-notif-popover" class="fsm-notif-popover" role="dialog" aria-modal="false" aria-label="Notifications" tabindex="-1" hidden>
+  <div class="fsm-notif-header"><div><h2>Notifications</h2><p>Latest FSE field visits</p></div><button id="fsm-notif-mark-all" type="button" class="fsm-notif-mark-read">Mark all as read</button></div>
+  <div class="fsm-notif-filters" role="group" aria-label="Notification filter"><button type="button" class="active" data-fsm-notif-filter="all" aria-pressed="true">All activity</button><button type="button" data-fsm-notif-filter="unread" aria-pressed="false">Unread <span id="fsm-notif-filter-count" hidden></span></button></div>
+  <div id="fsm-notif-list" class="fsm-notif-list" role="list" aria-live="polite"><p class="fsm-notif-empty">Your team's latest visits will appear here.</p></div>
+  <p class="fsm-notif-footnote">From Field Logs · Updates while FSM is open</p>
+</div>
+
   <div class="app-content">
+  <div class="fsm-workspace-tools" role="group" aria-label="Workspace notifications"><button type="button" class="fsm-notif-bell fsm-notif-bell-desktop" id="fsm-notif-bell-desktop" aria-label="Notifications" aria-haspopup="dialog" aria-expanded="false" aria-controls="fsm-notif-popover" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="fsm-notif-badge" id="fsm-notif-desktop-badge" hidden></span></button></div>
   <h1 style="display:none">Field Operations</h1>
   <p class="sub" style="display:none">Field service activity, visit records, and operational performance.</p>
   <div class="mobile-page-head is-new-visit">
@@ -4079,13 +4085,6 @@ body:has(#spare-modal[style*="display:flex"]){
     </span>
   </div>
   <div class="banner" id="storage-banner">Couldn't reach the shared sheet. Check your internet connection and reload.</div>
-
-  <div class="panel" id="panel-notifications" aria-label="Field team notifications">
-  <div class="fsm-notif-header"><div><span class="fsm-notif-eyebrow">TEAM ACTIVITY</span><h2>Notifications</h2><p>New field visits and updates from the engineering team.</p></div><button id="fsm-notif-mark-all" type="button" class="fsm-notif-mark-read">Mark all as read</button></div>
-  <div class="fsm-notif-filters" role="group" aria-label="Notification filter"><button type="button" class="active" data-fsm-notif-filter="all" aria-pressed="true">All activity</button><button type="button" data-fsm-notif-filter="unread" aria-pressed="false">Unread <span id="fsm-notif-filter-count" hidden></span></button></div>
-  <div id="fsm-notif-list" class="fsm-notif-list" role="list" aria-live="polite"><p class="fsm-notif-empty">Your team's latest visits will appear here.</p></div>
-  <p class="fsm-notif-footnote">Based on saved Field Logs · Updates while FSM is open</p>
-</div>
 
   <div class="panel" id="panel-chat" aria-label="FSM Communications">
     <div class="fsm-chat-page-heading"><h2>Communications</h2></div>
@@ -5091,9 +5090,10 @@ function openFsmRequestedFeature(){
   const request=url.searchParams.get('intent');
   if(!['messages','newvisit','notifications'].includes(request))return;
   if(!currentUser||!authToken)return;
-  const tab=request==='notifications'?'notifications':request==='messages'?'chat':'log';
+  const tab=request==='messages'?'chat':'log';
   const target=document.querySelector('.tab[data-tab="'+tab+'"]');
-  if(target)target.click();
+  if(request==='notifications'){window.fsmNotificationsOpen?.();}
+  else if(target)target.click();
   url.searchParams.delete('intent');
   history.replaceState(history.state,'',url.pathname+url.search+url.hash);
 }
@@ -7640,9 +7640,7 @@ async function createLocalUser(){
   }catch(e){err.textContent=e.message||'Unable to create user.';err.style.display='block';}
 }
 function renderActivePanel(){
-  if(activeTab==='notifications'){
-    window.fsmNotificationsRender?.();
-  }else if(activeTab==='report'){
+  if(activeTab==='report'){
     renderReport();
   }else if(activeTab==='dashboard'){
     lazyLoadInventory();
@@ -10005,7 +10003,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
     log:'New Field Visit',
     fieldlogs:'Field Logs',
     chat:'Communications',
-    notifications:'Notifications',
     dashboard:'Dashboard',
     report:'Reports',
     inventory:'Asset Operations',
@@ -12730,5 +12727,5 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 <link rel="stylesheet" href="./fieldlog-chat.css?v=20261028-visit-notify-status">
 <script src="./chat-config.js"></script>
 <script defer src="./live-chat.js?v=fsm-notif-center-no-autopost-20261029"></script>
-<link rel="stylesheet" href="./visit-notifications.css?v=fsm-notif-20261029">
-<script defer src="./visit-notifications.js?v=fsm-notif-20261029"></script>
+<link rel="stylesheet" href="./visit-notifications.css?v=fsm-notif-bell-20261029">
+<script defer src="./visit-notifications.js?v=fsm-notif-bell-20261029"></script>
