@@ -6,13 +6,53 @@
 (()=>{
   'use strict';
   const list=document.getElementById('fsm-notif-list');
-  if(!list)return;
+  const popover=document.getElementById('fsm-notif-popover');
+  const bells=[document.getElementById('fsm-notif-bell-desktop'),document.getElementById('fsm-notif-bell-mobile')].filter(Boolean);
+  if(!list||!popover||!bells.length)return;
   const filterButtons=[...document.querySelectorAll('[data-fsm-notif-filter]')];
   const markAll=document.getElementById('fsm-notif-mark-all');
   const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'});
   const timeFormat=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'});
   let activeKey='', initialized=false,filter='all',read=new Set(),records=[],polling=false,firstLoad=true;
   let toastLast='';
+  function isOpen(){return !popover.hidden;}
+  function closePopover({restoreFocus=false}={}){
+    if(!isOpen())return;
+    popover.hidden=true;
+    bells.forEach(b=>b.setAttribute('aria-expanded','false'));
+    if(restoreFocus){
+      const trigger=bells.find(b=>b.offsetParent!==null)||bells[0];
+      trigger?.focus({preventScroll:true});
+    }
+  }
+  function openPopover(trigger){
+    if(!user())return;
+    const active=trigger||bells.find(b=>b.offsetParent!==null)||bells[0];
+    const bounds=active.getBoundingClientRect();
+    popover.style.setProperty('--fsm-notif-top',Math.max(8,Math.min(bounds.bottom+9,window.innerHeight-220))+'px');
+    popover.style.setProperty('--fsm-notif-right',Math.max(12,window.innerWidth-bounds.right)+'px');
+    popover.hidden=false;
+    bells.forEach(b=>b.setAttribute('aria-expanded','true'));
+    render();
+    // On demand refresh without requiring users to leave their current page.
+    void poll();
+  }
+  bells.forEach(bell=>bell.addEventListener('click',event=>{
+    event.stopPropagation();
+    if(isOpen())closePopover({restoreFocus:true});
+    else openPopover(bell);
+  }));
+  document.addEventListener('pointerdown',event=>{
+    if(isOpen()&&!popover.contains(event.target)&&!bells.some(b=>b.contains(event.target)))closePopover();
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&isOpen()){
+      event.preventDefault();closePopover({restoreFocus:true});
+    }
+  });
+  window.fsmNotificationsOpen=()=>openPopover();
+  window.fsmNotificationsClose=()=>closePopover();
+  window.fsmNotificationsToggle=()=>isOpen()?closePopover():openPopover();
   function user(){
     try{return typeof currentUser==='object'&&currentUser&&['fse','management'].includes(currentUser.role)?currentUser:null;}
     catch{return null;}
@@ -75,6 +115,11 @@
       const item=document.getElementById(id);
       if(item){item.hidden=count===0;item.textContent=count>99?'99+':String(count);}
     }
+    bells.forEach(bell=>{
+      const label=count?count+' unread field visit notification'+(count===1?'':'s'):'Notifications';
+      bell.setAttribute('aria-label',label);
+      bell.title=label;
+    });
     if(markAll)markAll.disabled=count===0;
   }
   function el(tag,cls,text){
@@ -135,7 +180,7 @@
       content.append(top,sub,desc,foot);
       const arrow=el('span','fsm-notif-arrow','›');arrow.setAttribute('aria-hidden','true');
       card.append(icon,content,arrow);
-      card.addEventListener('click',()=>{markRead([r.id]);render();openFieldLog(r.id);});
+      card.addEventListener('click',()=>{markRead([r.id]);render();closePopover();openFieldLog(r.id);});
       list.append(card);
     }
     updateBadges();
@@ -188,6 +233,7 @@
   }
   window.setInterval(poll,120000);
   window.addEventListener('focus',()=>{if(user())void poll();});
+  window.addEventListener('resize',()=>{if(isOpen())closePopover();});
   // In case an existing authenticated session was restored before this script loaded.
   if(user()&&typeof entries!=='undefined')sync(entries,true);
 })();

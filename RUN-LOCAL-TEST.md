@@ -83,3 +83,19 @@ A successful Field Log save is independent of the Firebase message. The retry qu
 4. Sign in as Erwin and verify that Erwin can edit and void **only Erwin's Primary FSE visits**. Supporting FSEs may view but not change someone else's log.
 5. Sign in as Management. All Field Logs are visible, but New Visit, Edit, Void and permanent delete requests are blocked.
 6. Check automatic new-visit notifications in FSE Team still appear once for newly saved visits, and old logs/history have not changed.
+
+## Header Notification Bell (2026-10-29)
+
+- Notifications live in the **top-right bell**, not Dashboard/Field Logs/Reports/Messages navigation.
+- **Desktop:** bell is in the upper-right of the workspace. **Mobile:** bell is next to the hamburger menu.
+- Tap/click to open **Notifications** without changing pages. Unread badge, **All activity / Unread**, **Mark all as read**, and visit links are retained. Click outside or press Escape to close.
+- Saved New Visits create feed entries based on authenticated shared Field Logs; they **do not auto-post to FSE Team Chat**. Incident **Discuss in Chat** remains a manual option.
+- An FSE view link to `?intent=notifications` still takes them through FSM sign-in before opening the bell after login.
+- Existing notices are derived from Field Logs, not separately stored. Current browser remembers read status per FSE account in local storage. Other signed-in accounts check for new saved visits while the app is open (approximately every two minutes); no claim of FCM closed-browser delivery for visit notifications.
+- **No backend, Firestore rule, or account migration** is required for this header placement change. No Firebase chat messages are deleted by this UI change.
+
+### Quick smoke test
+1. Sign in from the main FSM or via FSE View. Verify the bell appears at the top-right, and **Notifications** does not appear as a navigation item.
+2. On mobile, verify the bell is next to the menu button. Open and close using touch and then tap a visit.
+3. Have another FSE save a new visit. Confirm the new feed item and unread badge show after a refresh/poll; the FSE Team conversation should **not** get an automatic visit message.
+4. Tap a notification and confirm it opens the correct visit in Field Logs, while **Discuss in Chat** remains available for a manual incident conversation.
