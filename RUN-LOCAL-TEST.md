@@ -99,3 +99,13 @@ A successful Field Log save is independent of the Firebase message. The retry qu
 2. On mobile, verify the bell is next to the menu button. Open and close using touch and then tap a visit.
 3. Have another FSE save a new visit. Confirm the new feed item and unread badge show after a refresh/poll; the FSE Team conversation should **not** get an automatic visit message.
 4. Tap a notification and confirm it opens the correct visit in Field Logs, while **Discuss in Chat** remains available for a manual incident conversation.
+
+## Notifications bell: read and archive statuses (October 29)
+
+- Field Visit updates appear in the **upper-right bell** on desktop and beside the mobile menu in the app header. They do **not** create automatic FSE Team group-chat messages. The separate **Discuss in Chat** incident action remains unchanged.
+- Open the bell for **All**, **Unread**, **Read**, and **Archived** views. Select a visit to mark it read and open its Field Log. Use each entry's **⋯** menu for **Mark as read/unread**, **Archive**, or **Restore to All**. **Mark all as read** affects active notifications but not archives.
+- The same visit has one notification keyed to its stable Field Log ID. Editing or saving a follow-up to the same visit does not create extra notices; new visits are detected by refreshing the authenticated Field Logs data.
+- Existing visits are treated as already read the first time an account enables this notification center, avoiding an avalanche of old notifications. Thereafter, new entries become unread and increase the bell count.
+- Read/Archived state is currently stored **per signed-in user and per browser/device**. It does not yet synchronize between laptops and phones. Visits themselves remain in shared Google Sheets and are available to permitted team members.
+- While FSM is open, notifications refresh approximately every 60 seconds while the browser is visible and on window focus; this is **not closed-app device push**. The device must be online with a valid FSM session. Clicking a notice opens its original Field Log in FSM.
+- Test: sign in with two FSE accounts on separate browsers, create a Field Visit from one, check the other FSE's notification bell after the next refresh or by reopening it. Mark read, archive, restore, and confirm the badge changes. Confirm no new automatic FSE Team Chat entry appears.
