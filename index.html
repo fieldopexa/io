@@ -5089,9 +5089,9 @@ renderUsers();}
 function openFsmRequestedFeature(){
   const url=new URL(location.href);
   const request=url.searchParams.get('intent');
-  if(!['messages','newvisit'].includes(request))return;
+  if(!['messages','newvisit','notifications'].includes(request))return;
   if(!currentUser||!authToken)return;
-  const tab=request==='messages'?'chat':'log';
+  const tab=request==='notifications'?'notifications':request==='messages'?'chat':'log';
   const target=document.querySelector('.tab[data-tab="'+tab+'"]');
   if(target)target.click();
   url.searchParams.delete('intent');
