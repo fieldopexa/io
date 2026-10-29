@@ -2,6 +2,7 @@ name: Validate FSM Communications
 on:
   push:
     branches:
+      - main
       - feature/fsm-live-chat-v1
   pull_request:
     paths:
