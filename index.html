@@ -4056,9 +4056,9 @@ body:has(#spare-modal[style*="display:flex"]){
   </div>
   <div id="fsm-notif-popover" class="fsm-notif-popover" role="dialog" aria-modal="false" aria-label="Notifications" tabindex="-1" hidden>
   <div class="fsm-notif-header"><div><h2>Notifications</h2><p>Latest FSE field visits</p></div><button id="fsm-notif-mark-all" type="button" class="fsm-notif-mark-read">Mark all as read</button></div>
-  <div class="fsm-notif-filters" role="group" aria-label="Notification filter"><button type="button" class="active" data-fsm-notif-filter="all" aria-pressed="true">All activity</button><button type="button" data-fsm-notif-filter="unread" aria-pressed="false">Unread <span id="fsm-notif-filter-count" hidden></span></button></div>
+  <div class="fsm-notif-filters" role="group" aria-label="Notification filter"><button type="button" class="active" data-fsm-notif-filter="all" aria-pressed="true">All</button><button type="button" data-fsm-notif-filter="unread" aria-pressed="false">Unread <span id="fsm-notif-filter-count" hidden></span></button><button type="button" data-fsm-notif-filter="read" aria-pressed="false">Read</button><button type="button" data-fsm-notif-filter="archived" aria-pressed="false">Archived</button></div>
   <div id="fsm-notif-list" class="fsm-notif-list" role="list" aria-live="polite"><p class="fsm-notif-empty">Your team's latest visits will appear here.</p></div>
-  <p class="fsm-notif-footnote">From Field Logs · Updates while FSM is open</p>
+  <p class="fsm-notif-footnote">Field Visits · Automatically refreshed while FSM is open</p>
 </div>
 
   <div class="app-content">
@@ -12727,5 +12727,5 @@ body #panel-inventory .asset-mobile-overflow>summary{height:48px!important;min-h
 <link rel="stylesheet" href="./fieldlog-chat.css?v=20261028-visit-notify-status">
 <script src="./chat-config.js"></script>
 <script defer src="./live-chat.js?v=fsm-notif-center-no-autopost-20261029"></script>
-<link rel="stylesheet" href="./visit-notifications.css?v=fsm-notif-bell-20261029">
-<script defer src="./visit-notifications.js?v=fsm-notif-bell-20261029"></script>
+<link rel="stylesheet" href="./visit-notifications.css?v=fsm-notif-status-v2-20261029">
+<script defer src="./visit-notifications.js?v=fsm-notif-status-v2-20261029"></script>
