@@ -20,25 +20,6 @@
   const defaultTitle=document.title;
   const notifyMemory=new Map();
   let pendingIncidentDraft=null;
-  let visitAnnouncementFlush=null;
-  let visitAnnouncementRetryTimer=null;
-  let visitAnnouncementRetryDelay=30000;
-  function visitAnnouncementStatus(id,status){
-    window.dispatchEvent(new CustomEvent('fsm-visit-announcement-status',{
-      detail:{id:String(id||''),status}
-    }));
-  }
-  function scheduleVisitAnnouncementRetry(){
-    if(visitAnnouncementRetryTimer)return;
-    const delay=visitAnnouncementRetryDelay;
-    visitAnnouncementRetryDelay=Math.min(300000,Math.round(delay*1.8));
-    visitAnnouncementRetryTimer=setTimeout(()=>{
-      visitAnnouncementRetryTimer=null;
-      if(state.user)void flushVisitAnnouncements();
-    },delay);
-  }
-  const visitAnnounceKey=username=>'fsm-chat-visit-announcements-v1:'+String(username||'').trim().toLowerCase();
-  const announcementMaxAge=14*24*60*60*1000;
   // Directory entries are based on confirmed existing FSM usernames, not Firebase
   // email accounts. Add future users here if you need them to appear before
   // their first chat login. Users who have already used chat appear dynamically.
@@ -260,124 +241,6 @@
     try{await state.pushLib?.deleteToken(state.messaging);}catch(err){console.warn('Failed to revoke browser push token:',err.code);}
     state.pushEnabled=false;state.pushToken=null;state.pushTokenRef=null;
   }
-
-  // Field Visits are posted to the FSE Team *only after* Apps Script confirms
-  // creation. The ID is stable, so refreshes or retry cannot create duplicates.
-  function announcementFsmUsername(){
-    const fsm=(typeof currentUser!=='undefined')?currentUser:null;
-    return fsm?.username&&['fse','management'].includes(String(fsm.role||'').toLowerCase())?String(fsm.username||'').trim().toLowerCase():'';
-  }
-  function loadPendingVisitAnnouncements(username){
-    if(!username)return [];
-    try{
-      const saved=JSON.parse(localStorage.getItem(visitAnnounceKey(username))||'[]');
-      if(!Array.isArray(saved))return [];
-      return saved.filter(x=>x&&x.id&&x.payload&&Date.now()-Number(x.queuedAt||0)<announcementMaxAge).slice(-60);
-    }catch{return [];}
-  }
-  function storePendingVisitAnnouncements(username,items){
-    if(!username)return;
-    try{localStorage.setItem(visitAnnounceKey(username),JSON.stringify(items.slice(-60)));}
-    catch(err){console.warn('Cannot persist pending visit announcement:',err.message);}
-  }
-  function formatVisitAnnouncement(entry){
-    const short=(value,max=110)=>String(value||'').replace(/\s+/g,' ').trim().slice(0,max);
-    const id=String(entry.id||'').trim();
-    if(!/^[A-Za-z0-9_-]{1,120}$/.test(id))return null;
-    const url=new URL('https://fieldopexa.github.io/io/');
-    url.searchParams.set('fieldlog',id);
-    const details=[
-      '📋 NEW FIELD VISIT LOGGED',
-      'Site: '+short(entry.site||'Unspecified site',130),
-      'Visit: '+short(entry.visitType||'Field Visit',75),
-      'FSE: '+short(entry.tech||'Engineer',65),
-      'Visit date: '+short(entry.date||'',30),
-      entry.machineNo?'Machine: '+short(entry.machineNo,60):'',
-      entry.ticketNo?'Ticket: '+short(entry.ticketNo,60):'',
-      entry.priority&&/incident|breakdown/i.test(entry.visitType||'')?'Priority: '+short(entry.priority,30):'',
-      'Status: '+short(entry.status||'Not specified',35),
-      '',
-      'View Field Log: '+url.href
-    ];
-    return details.filter(Boolean).join('\n').slice(0,2000);
-  }
-  function queueVisitAnnouncement(entry){
-    const username=announcementFsmUsername();
-    if(!username||!entry?.id)return false;
-    const text=formatVisitAnnouncement(entry);
-    if(!text)return false;
-    const id=String(entry.id).trim();
-    const queued=loadPendingVisitAnnouncements(username);
-    if(!queued.some(item=>item.id===id)){
-      queued.push({id,payload:text,queuedAt:Date.now()});
-      storePendingVisitAnnouncements(username,queued);
-    }
-    visitAnnouncementStatus(id,'queued');
-    // This is deliberately fire-and-forget and cannot roll back the successful
-    // visit save; if Firebase is unavailable, keep the announcement for retry.
-    if(state.user)void flushVisitAnnouncements();
-    else if(!state.booting)launcher.click();
-    return true;
-  }
-  window.fsmChatAnnounceExistingVisit=entry=>queueVisitAnnouncement(entry);
-  async function flushVisitAnnouncements(){
-    if(visitAnnouncementFlush)return visitAnnouncementFlush;
-    const username=announcementFsmUsername();
-    if(!username||!state.user||!state.member?.active||!state.lib)return;
-    if(state.user.uid!==uidForFsmUsername(username))return;
-    visitAnnouncementFlush=(async()=>{
-      const {doc,runTransaction,serverTimestamp}=state.lib;
-      // Re-read on each iteration so a second confirmed visit arriving during
-      // a previous upload is included in the same flush.
-      const attempted=new Set();
-      while(true){
-        const item=loadPendingVisitAnnouncements(username).find(row=>!attempted.has(row.id));
-        if(!item||!state.user||state.user.uid!==uidForFsmUsername(username))break;
-        attempted.add(item.id);
-        try{
-          const ref=doc(state.db,'chatRooms','engineering','messages','visit_'+item.id);
-          const activity=doc(state.db,'chatActivity','engineering');
-          const senderId=state.user.uid;
-          const senderName=state.member.name||state.member.username||'FSE';
-          // Transaction reads first; a previously published visit is never
-          // overwritten and therefore won't trigger another unread alert.
-          const created=await runTransaction(state.db,async tx=>{
-            const existing=await tx.get(ref);
-            if(existing.exists())return false;
-            tx.set(ref,{
-              text:item.payload,
-              senderId,
-              senderName,
-              createdAt:serverTimestamp()
-            });
-            tx.set(activity,{senderId,updatedAt:serverTimestamp()});
-            return true;
-          });
-          const latest=loadPendingVisitAnnouncements(username);
-          storePendingVisitAnnouncements(username,latest.filter(row=>row.id!==item.id));
-          visitAnnouncementRetryDelay=30000;
-          visitAnnouncementStatus(item.id,'posted');
-          if(created&&window.FSM_CHAT_WEB_PUSH_VAPID_KEY){
-            apiPost('chatPush',{roomId:'engineering',messageId:ref.id})
-              .catch(err=>console.warn('Visit push notification unavailable:',err.message));
-          }
-        }catch(err){
-          console.warn('FSE Team visit announcement pending:',err.code||err.message);
-          visitAnnouncementStatus(item.id,'pending');
-          // Network and temporary permission issues can resolve without a
-          // page reload. Retry gradually; never compromise the saved visit.
-          scheduleVisitAnnouncementRetry();
-          break;
-        }
-      }
-    })().finally(()=>{visitAnnouncementFlush=null;});
-    return visitAnnouncementFlush;
-  }
-  window.addEventListener('visit-committed',event=>{
-    if(event.detail?.isEdit)return;
-    queueVisitAnnouncement(event.detail?.entry);
-  });
-  window.addEventListener('online',()=>{if(state.user)void flushVisitAnnouncements();});
 
   function isRecentlyActive(uid){
     const seen=state.presence[uid]?.toMillis?.()||0;
@@ -728,7 +591,6 @@
       return;
     }
     state.user=user;state.member=self.data();
-    void flushVisitAnnouncements();
     // A notification click can open the matching conversation directly.
     const requestedRoom=new URL(location.href).searchParams.get('chat');
     if(requestedRoom&&conversations().some(c=>c.id===requestedRoom)){
@@ -836,10 +698,10 @@
     }
 
   }
-  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;clearTimeout(visitAnnouncementRetryTimer);visitAnnouncementRetryTimer=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user&&isThreadVisible())markRead();launcher.click();});
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncPresence();if(state.user)void flushVisitAnnouncements();}});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncPresence();}});
   navigator.serviceWorker?.addEventListener('message',event=>{
     if(event.data?.type!=='FSM_CHAT_OPEN'||!state.user)return;
     const room=event.data.roomId;
