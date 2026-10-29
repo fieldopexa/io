@@ -37,7 +37,7 @@
   // Keep read status separate for different FSM accounts using the same browser.
   const seenStorageKey=()=>state.user?'fsm-chat-seen-v2:'+state.user.uid:'';
   const isOpen=()=>!!document.getElementById('panel-chat')?.classList.contains('active');
-  const isMobileChat=()=>window.matchMedia('(max-width:820px)').matches;
+  const isMobileChat=()=>window.matchMedia('(max-width:900px)').matches;
   const isThreadVisible=()=>isOpen()&&(!isMobileChat()||state.mobileThreadOpen);
   function showChatScreen(screen){
     state.mobileThreadOpen=screen==='thread';
