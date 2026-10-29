@@ -114,7 +114,17 @@ jobs:
           assert(notificationStyles.includes('position:sticky;top:12px'),'Desktop bell not anchored at top-right');
           const notifications=fs.readFileSync('visit-notifications.js','utf8');
           assert(notifications.includes("window.addEventListener('visit-committed'"),'Confirmed saves must refresh the activity feed');
-          assert(notifications.includes('window.setInterval(poll,120000)'), 'Background refresh interval missing');
+          assert(notifications.includes('window.setInterval(poll,60000)'), 'Background refresh interval missing');
+          assert(html.includes('data-fsm-notif-filter="read"'), 'Read status filter missing');
+          assert(html.includes('data-fsm-notif-filter="archived"'), 'Archived status filter missing');
+          assert(notifications.includes("archived=new Set()"), 'Per-user archive state missing');
+          assert(notifications.includes('function archiveVisit(id)'), 'Archive action missing');
+          assert(notifications.includes('function restoreVisit(id)'), 'Restore action missing');
+          assert(notifications.includes('function markUnread(id)'), 'Mark as unread action missing');
+          assert(notifications.includes("!archived.has(r.id)&&!read.has(r.id)"), 'Archived notices still count as unread');
+          assert(notifications.includes("filter==='archived'"), 'Archived tab is not wired');
+          assert(notifications.includes("filter==='read'"), 'Read tab is not wired');
+          assert(notifications.includes('!event.detail?.entry'), 'Visit notices must require a confirmed save');
           assert(notifications.includes('window.fsmNotificationsOpen=()=>openPopover()'),'Bell opening interaction missing');
           assert(notifications.includes("event.key==='Escape'"),'Bell dialog Escape close missing');
           assert(notifications.includes("popover.contains(event.target)"),'Click outside close missing');
