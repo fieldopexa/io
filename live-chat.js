@@ -24,7 +24,7 @@
   // email accounts. Add future users here if you need them to appear before
   // their first chat login. Users who have already used chat appear dynamically.
   const TEAM_DIRECTORY=[
-    {username:'ian',name:'Ian'},
+    {username:'ian',name:'Ian',role:'management'},
     {username:'kenneth',name:'Kenneth'},
     {username:'erwin',name:'Erwin'},
     {username:'popoy',name:'Popoy'}
@@ -208,7 +208,7 @@
     updateUnread();renderContacts();
   }
   async function syncPresence(){
-    if(!state.user||!state.member?.active||document.visibilityState!=='visible')return;
+    if(!state.user||!state.member?.active||!showsActivity(state.user.uid)||document.visibilityState!=='visible')return;
     const {doc,setDoc,serverTimestamp}=state.lib;
     try{
       await setDoc(doc(state.db,'chatPresence',state.user.uid),{uid:state.user.uid,lastSeen:serverTimestamp()});
@@ -242,7 +242,15 @@
     state.pushEnabled=false;state.pushToken=null;state.pushTokenRef=null;
   }
 
+  function showsActivity(uid){
+    // Existing chat profiles predate role metadata; retain Ian's directory role.
+    const directory=TEAM_DIRECTORY.find(p=>uidForFsmUsername(p.username)===uid);
+    const profile=state.profiles.find(p=>p.uid===uid);
+    const role=uid===state.user?.uid?state.member?.role:profile?.role;
+    return role!=='management'&&directory?.role!=='management';
+  }
   function isRecentlyActive(uid){
+    if(!showsActivity(uid))return false;
     const seen=state.presence[uid]?.toMillis?.()||0;
     return !!seen&&Date.now()-seen<180000;
   }
@@ -283,6 +291,7 @@
   }
   function lastActiveText(uid){
     if(!uid)return 'FSM member';
+    if(!showsActivity(uid))return 'Private message';
     const seen=state.presence[uid]?.toMillis?.()||0;
     if(!seen)return 'Not active yet';
     const delta=Date.now()-seen;
@@ -590,7 +599,7 @@
       gate('Access disabled','Your messaging access is disabled. Contact your FSM administrator.');
       return;
     }
-    state.user=user;state.member=self.data();
+    state.user=user;state.member={...self.data(),role:claims.fsm_role};
     // A notification click can open the matching conversation directly.
     const requestedRoom=new URL(location.href).searchParams.get('chat');
     if(requestedRoom&&conversations().some(c=>c.id===requestedRoom)){
@@ -675,7 +684,7 @@
       if(!me||me.active!==true){
         stopListeners();gate('Chat access disabled','Contact your FSM administrator.');return;
       }
-      state.member=me;syncRoomPreviews();
+      state.member={...me,role:claims.fsm_role};syncRoomPreviews();
     },err=>console.warn('Team directory listener:',err.code));
     selectRoom(state.room,false);
     if(pendingIncidentDraft)applyIncidentChatDraft();

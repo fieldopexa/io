@@ -17,6 +17,7 @@ on:
       - 'FirebaseChatSSO.gs'
       - 'FirebaseChatPush.gs'
       - 'firestore.rules'
+      - 'chat-presence.test.cjs'
 jobs:
   syntax:
     runs-on: ubuntu-latest
@@ -28,6 +29,7 @@ jobs:
           node --check visit-notifications.js
           node --check sw.js
           node --check chat-config.js
+          node chat-presence.test.cjs
       - name: Verify Apps Script helpers compile as JavaScript
         run: |
           cp FirebaseChatSSO.gs /tmp/fsm-sso.js
@@ -53,7 +55,7 @@ jobs:
           assert(css.includes('overflow-x:hidden;overflow-y:auto'), 'Mobile inbox should be a vertically scrolling list');
           assert(js.includes("name:'Saved Messages'"), 'Private self-chat lost');
           assert(js.includes('isRecentlyActive'), 'Active indicators lost');
-          assert(html.includes('live-chat.js?v=fsm-notif-center-no-autopost-20261029'), 'Stale chat script URL');
+          assert(html.includes('live-chat.js?v=fsm-mobile-notif-management-20261030'), 'Stale chat script URL');
           assert(!js.includes('OPEXA / MESSAGES'), 'Redundant inbox eyebrow is still present');
           assert(!js.includes('<h3>Inbox</h3>'), 'Redundant inbox header is still present');
           assert(js.includes("name:'FSE Team'"), 'FSE group name not updated');
