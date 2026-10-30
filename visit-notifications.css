@@ -128,7 +128,7 @@
 .fsm-notif-badge[hidden],#fsm-notif-filter-count[hidden]{display:none!important}
 #fsm-notif-popover button:focus-visible{outline:2px solid var(--accent,#7294e9);outline-offset:3px}
 @media(max-width:900px){
-  #fsm-notif-popover{width:100%}
+  #fsm-notif-popover{left:12px;right:12px;width:auto;max-width:none}
   #fsm-notif-popover .fsm-notif-header{align-items:flex-start;margin:3px 0 15px}
   #fsm-notif-popover .fsm-notif-header h2{font-size:21px}
   #fsm-notif-popover .fsm-notif-header p{font-size:11px}
