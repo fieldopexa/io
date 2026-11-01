@@ -14,7 +14,7 @@ const state={user:{uid:'viewer'},member:{active:true,role:'fse'},profiles:[],pre
 let writes=0;
 state.lib={doc:()=>({}),serverTimestamp:()=>Date.now(),setDoc:async()=>{writes++;}};
 const context=vm.createContext({state,document:{visibilityState:'visible'},Date,btoa:s=>Buffer.from(s).toString('base64'),console});
-vm.runInContext('const TEAM_DIRECTORY='+directory+';'+['uidForFsmUsername','showsActivity','isRecentlyActive','lastActiveText','groupActiveText','syncPresence'].map(source).join('\n'),context);
+vm.runInContext('const TEAM_DIRECTORY='+directory+';'+['uidForFsmUsername','showsActivity','canViewActivity','isRecentlyActive','lastActiveText','groupActiveText','syncPresence'].map(source).join('\n'),context);
 const ian=context.uidForFsmUsername('ian');
 const fse=context.uidForFsmUsername('popoy');
 const manager=context.uidForFsmUsername('manager');
@@ -24,9 +24,21 @@ for(const uid of [ian,manager]){
   assert.equal(context.isRecentlyActive(uid),false,'Management must have no green dot or Active now badge');
   assert.equal(context.lastActiveText(uid),'Private message','Management must have no activity timestamp');
 }
+assert.equal(context.isRecentlyActive(fse),false,'FSE cannot see another FSE online');
+assert.equal(context.lastActiveText(fse),'Private message');
+assert.equal(context.groupActiveText(),'Engineering group','FSE cannot see aggregate activity');
+state.member.role='management';
 assert.equal(context.isRecentlyActive(fse),true);
 assert.equal(context.lastActiveText(fse),'Active now');
 assert.equal(context.groupActiveText(),'1 active recently','Management excluded from group activity count');
+state.presence[fse]={toMillis:()=>Date.now()-600000};
+assert.match(context.lastActiveText(fse),/^Last active 10m ago$/);
+state.member.role='fse';
+assert.equal(context.lastActiveText(fse),'Private message','FSE cannot see historical activity');
+state.member.role=undefined;
+assert.equal(context.canViewActivity(),false,'Missing role fails closed');
+state.member.role='fse';
+assert.match(fs.readFileSync('firestore.rules','utf8'),/match \/chatPresence\/\{uid\} \{[\s\S]*?allow read: if activeMember\(\) && request.auth.token.fsm_role == 'management';/);
 (async()=>{
   await context.syncPresence();
   assert.equal(writes,1,'FSE presence still publishes');
@@ -36,5 +48,5 @@ assert.equal(context.groupActiveText(),'1 active recently','Management excluded 
   state.user.uid=ian;state.member.role='fse';
   await context.syncPresence();
   assert.equal(writes,1,'Legacy Ian account must not publish');
-  console.log('PASS: management activity hidden; FSE activity retained.');
+  console.log('PASS: only management sees FSE activity; FSE presence still publishes.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

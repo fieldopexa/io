@@ -249,8 +249,11 @@
     const role=uid===state.user?.uid?state.member?.role:profile?.role;
     return role!=='management'&&directory?.role!=='management';
   }
+  function canViewActivity(){
+    return state.member?.active===true&&state.member?.role==='management';
+  }
   function isRecentlyActive(uid){
-    if(!showsActivity(uid))return false;
+    if(!canViewActivity()||!showsActivity(uid))return false;
     const seen=state.presence[uid]?.toMillis?.()||0;
     return !!seen&&Date.now()-seen<180000;
   }
@@ -291,7 +294,7 @@
   }
   function lastActiveText(uid){
     if(!uid)return 'FSM member';
-    if(!showsActivity(uid))return 'Private message';
+    if(!canViewActivity()||!showsActivity(uid))return 'Private message';
     const seen=state.presence[uid]?.toMillis?.()||0;
     if(!seen)return 'Not active yet';
     const delta=Date.now()-seen;
@@ -301,6 +304,7 @@
     return 'Last active '+new Date(seen).toLocaleDateString([],{month:'short',day:'numeric'});
   }
   function groupActiveText(){
+    if(!canViewActivity())return 'Engineering group';
     const online=state.profiles.filter(p=>p.active===true&&isRecentlyActive(p.uid)).length;
     return online?online+' active recently':'Engineering group';
   }
@@ -688,7 +692,8 @@
     },err=>console.warn('Team directory listener:',err.code));
     selectRoom(state.room,false);
     if(pendingIncidentDraft)applyIncidentChatDraft();
-    state.unsubPresence=onSnapshot(collection(state.db,'chatPresence'),snap=>{
+    state.presence={};
+    if(canViewActivity())state.unsubPresence=onSnapshot(collection(state.db,'chatPresence'),snap=>{
       state.presence={};
       for(const entry of snap.docs)state.presence[entry.id]=entry.data().lastSeen;
       renderContacts();
@@ -707,7 +712,7 @@
     }
 
   }
-  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
+  window.fsmChatSignOut=async()=>{pendingIncidentDraft=null;stopListeners();void unregisterPushDevice().catch(()=>{});state.user=null;state.member=null;state.profiles=[];state.presence={};state.room='engineering';state.filter='';state.unreadOnly=false;showChatScreen('inbox');state.lastSeen={};state.preview={};state.unread={};updateUnread();if(state.auth&&state.lib)await state.lib.signOut(state.auth);};
   // Firebase Chat signs out with the existing FSM logout button. No second sign-out UI.
   document.querySelector('.tab[data-tab="chat"]')?.addEventListener('click',()=>{if(state.user&&isThreadVisible())markRead();launcher.click();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncPresence();}});

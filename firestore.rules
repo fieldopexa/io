@@ -96,7 +96,8 @@ service cloud.firestore {
     }
     match /chatPresence/{uid} {
       // Presence is approximate and only written by the authenticated user.
-      allow read: if activeMember();
+      // Only management may retrieve presence, including through direct SDK calls.
+      allow read: if activeMember() && request.auth.token.fsm_role == 'management';
       allow create, update: if activeMember()
         && uid == request.auth.uid
         && request.resource.data.keys().hasOnly(['uid','lastSeen'])
