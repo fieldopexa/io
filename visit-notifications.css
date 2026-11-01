@@ -114,7 +114,7 @@
 #fsm-notif-popover .fsm-notif-time{color:#939eaf;font-size:10px;white-space:nowrap;flex-shrink:0}
 #fsm-notif-popover .fsm-notif-site{font-size:12px;font-weight:550;color:#cdd7e6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #fsm-notif-popover .fsm-notif-description{font-size:11px;color:#a4adba}
-#fsm-notif-popover .fsm-notif-meta{display:flex;gap:7px;align-items:center;margin-top:4px}
+#fsm-notif-popover .fsm-notif-meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:4px}
 #fsm-notif-popover .fsm-notif-meta>span{border-radius:5px;padding:3px 7px;border:1px solid #3e4755;color:#aebbd0;font-size:10px}
 #fsm-notif-popover .fsm-notif-meta .fsm-notif-priority{color:#e0b78c;border-color:#72523b}
 #fsm-notif-popover .fsm-notif-meta .fsm-notif-new{color:#d7e2ff;border-color:#485c91;background:#303e5c}
@@ -160,7 +160,7 @@
   flex:0 0 auto;padding:7px 10px;font-size:10.5px;white-space:nowrap;
 }
 #fsm-notif-popover .fsm-notif-entry{
-  display:flex;position:relative;align-items:stretch;
+  display:flex;position:relative;align-items:stretch;flex:0 0 auto;
   border-radius:10px;border:1px solid #343b46;
   background:#1b212a;min-height:84px;
 }
