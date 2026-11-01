@@ -621,9 +621,15 @@ body:has(#panel-chat.active) .pwa-install-button{display:none!important}
    Keep the search clear of the fixed app header and restore compact,
    touch-friendly chat rows. CSS-only: no auth or message logic changes. */
 @media (max-width:900px){
-  /* The mobile app header is slightly taller than the old chat offset. */
+  /* Match the current mobile masthead so no page background shows above chat. */
+  body:has(#panel-chat.active) .mobile-app-header{
+    position:fixed;
+    top:0;left:0;right:0;
+    width:100vw!important;max-width:none;margin:0;border-radius:0;
+    height:calc(58px + env(safe-area-inset-top))!important;
+  }
   #panel-chat.active{
-    top:calc(64px + env(safe-area-inset-top))!important;
+    top:calc(58px + env(safe-area-inset-top))!important;
   }
   /* The global .global-search height:40px!important otherwise wins here. */
   #panel-chat .fsm-chat-search-wrap{
