@@ -5556,13 +5556,15 @@ function isMyFieldLogWork(entry){
   return !!name&&entryParticipants(entry).some(person=>fieldLogIdentity(person)===name);
 }
 function canEditFieldLog(entry){
-  // Management and supporting FSEs may read; only the Primary FSE may write.
+  if(!entry||entry.status==='Voided'||entry.voided===true)return false;
+  if(currentUser?.role==='management')return true;
+  // FSEs may modify only visits where they are the Primary FSE.
   return currentUser?.role==='fse'&&!!entry&&entry.status!=='Voided'
     &&!!fieldLogIdentity(currentUser.fse||currentUser.username)
     &&fieldLogIdentity(entry.tech)===fieldLogIdentity(currentUser.fse||currentUser.username);
 }
 function fieldLogEditDenied(){
-  showToast('View-only Field Log','You can read and discuss this visit, but only the Primary FSE can modify it.','bad');
+  showToast('View-only Field Log','Only management or the Primary FSE can modify an active visit. Voided visits cannot be changed.','bad');
 }
 function refreshFieldLogFseFilter(){
   const sel=document.getElementById('log-fse-filter');
@@ -6893,7 +6895,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   if(chatStatus){chatStatus.hidden=true;chatStatus.textContent='';chatStatus.dataset.visitId='';}
   const isEdit=!!editingEntryId;
   const existing=isEdit?entries.find(x=>String(x.id)===String(editingEntryId)):null;
-  if(currentUser?.role!=='fse'||(isEdit&&!canEditFieldLog(existing))){
+  if(isEdit?!canEditFieldLog(existing):currentUser?.role!=='fse'){
+    submitBtn.disabled=false;submitBtn.classList.remove('syncing-btn');
     fieldLogEditDenied();return;
   }
   const date=document.getElementById('f-date').value||todayStr();
