@@ -770,7 +770,6 @@ function doPost(e) {
       var updatedEntry = body.entry || {};
       var updateId = String(body.id || updatedEntry.id || '').trim();
       if (!updateId) throw new Error('Field log ID is required.');
-      requireFseFieldLogWrite_(user);
       var beforeEntry = getRowObjectById_(updateSheet, updateId);
       if (!beforeEntry) throw new Error('Entry not found.');
       requirePrimaryFseFieldLogOwner_(user, beforeEntry);
@@ -788,7 +787,6 @@ function doPost(e) {
     }
 
     if (action === 'archiveEntry') {
-      requireFseFieldLogWrite_(user);
       var archiveSheet = ss.getSheetByName('Entries');
       var beforeArchive = getRowObjectById_(archiveSheet, body.id);
       if (!beforeArchive) throw new Error('Entry not found.');
@@ -2468,6 +2466,8 @@ function requireFseFieldLogWrite_(user) {
   }
 }
 function requirePrimaryFseFieldLogOwner_(user, entry) {
+  if (!entry || entry.status === 'Voided') throw new Error('Voided Field Logs cannot be modified.');
+  if (user && user.role === 'management') return;
   requireFseFieldLogWrite_(user);
   var own = fseNameKey_(user.fse || user.username);
   var primary = fseNameKey_(entry && (entry.tech || entry.technician || entry.Technician || entry.fse || entry.FSE));
