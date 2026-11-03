@@ -2458,15 +2458,15 @@ function ensureEntriesSupportingFsesColumn_() {
 
 // Exact assignment matching after Unicode/case/whitespace normalization.
 // Never falls back to username or grants access to all visits.
-// Field Logs are shared for reading, but Primary FSE ownership is enforced
-// server-side for all edits. Supporting engineers can review and discuss.
+// Management may edit or void active visits. FSE writes require Primary
+// FSE ownership; supporting engineers can review and discuss.
 function requireFseFieldLogWrite_(user) {
   if (!user || user.role !== 'fse') {
     throw new Error('Only an authenticated Field Support Engineer may modify Field Logs.');
   }
 }
 function requirePrimaryFseFieldLogOwner_(user, entry) {
-  if (!entry || entry.status === 'Voided') throw new Error('Voided Field Logs cannot be modified.');
+  if (!entry || entry.status === 'Voided' || entry.voided === true) throw new Error('Voided Field Logs cannot be modified.');
   if (user && user.role === 'management') return;
   requireFseFieldLogWrite_(user);
   var own = fseNameKey_(user.fse || user.username);
