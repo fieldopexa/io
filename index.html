@@ -5659,6 +5659,12 @@ function validateWorkLocationDetail(){
   detail?.focus();detail?.reportValidity();
   return false;
 }
+function isSiteWorkLocation(entry){
+  const name=workLocationForEntry(entry);
+  // Historical entries cannot be classified precisely; retain their
+  // earlier site reporting until each is reclassified by an engineer.
+  return name==='On-Site Visit'||name===FSM_WORK_LOCATION_FALLBACK;
+}
 function renderWorkLocationSummary(id, rows){
   const host=document.getElementById(id);
   if(!host)return;
@@ -7872,7 +7878,7 @@ function renderReport(){
     if(counts[e.category]!==undefined) counts[e.category]++;
     if(statusCounts[e.status]!==undefined) statusCounts[e.status]++;
     if(e.priority && priorityCounts[e.priority]!==undefined) priorityCounts[e.priority]++;
-    if(e.site) siteCounts[e.site] = (siteCounts[e.site]||0)+1;
+    if(e.site&&isSiteWorkLocation(e)) siteCounts[e.site] = (siteCounts[e.site]||0)+1;
     if(e.status==='Resolved'){
       const mins = minutesBetween(e.timeIn, e.timeResolved);
       if(mins!==null) resolutionTimes.push(mins);
@@ -8055,7 +8061,7 @@ function renderManagementOverview(){
   const resolved=period.filter(e=>norm(e.status)==='resolved').length;
   const open=period.filter(isOpen).length;
   const critical=period.filter(e=>['critical','high'].includes(norm(e.priority))).length;
-  const activeSites=new Set(period.map(e=>String(e.site||'').trim()).filter(Boolean)).size;
+  const activeSites=new Set(period.filter(isSiteWorkLocation).map(e=>String(e.site||'').trim()).filter(Boolean)).size;
 
   const deployed=inventoryRows.filter(r=>String(r.deploymentStatus||'')==='Deployed').reduce((s,r)=>s+Number(r.quantity||0),0);
   const operational=cabinetRows.filter(c=>norm(c.status)==='operational').length;
@@ -8063,7 +8069,7 @@ function renderManagementOverview(){
 
   const snap=document.getElementById('mgmt-snapshot');
   if(snap) snap.innerHTML=`
-    <div class="mgmt-kpi primary"><span>Field Visits</span><b>${period.length}</b><small>${activeSites} active site${activeSites===1?'':'s'}</small></div>
+    <div class="mgmt-kpi primary"><span>Logged Activities</span><b>${period.length}</b><small>${activeSites} active site${activeSites===1?'':'s'}</small></div>
     <div class="mgmt-kpi"><span>Open Concerns</span><b>${open}</b><small>${resolved} resolved</small></div>
     <div class="mgmt-kpi"><span>Critical / High</span><b>${critical}</b><small>Priority activity</small></div>
     <div class="mgmt-kpi"><span>Registered Cabinets</span><b>${deployed||registeredCabinetRows().length}</b><small>${operational} registered operational</small></div>
@@ -8089,7 +8095,7 @@ function renderManagementOverview(){
     Object.entries(healthCounts).map(([k,v])=>`<div class="mgmt-health-row"><span>${k}</span><div><i style="width:${v/totalCab*100}%"></i></div><b>${v}</b></div>`).join('');
 
   const siteMap={};
-  period.forEach(e=>{
+  period.filter(isSiteWorkLocation).forEach(e=>{
     const s=String(e.site||'Unknown Site').trim()||'Unknown Site';
     if(!siteMap[s])siteMap[s]={visits:0,open:0,priority:0,categories:{}};
     siteMap[s].visits++;
@@ -8152,7 +8158,7 @@ function renderDashboard(){
   document.getElementById('followup-list').innerHTML=[...overdue,...upcoming].slice(0,12).map(e=>`<div class="followup-item"><div><b>${escapeHtml(e.site)}</b><br><small>${escapeHtml(e.followupReason||'Follow-up')}</small></div><span>${e.followupDate}</span></div>`).join('')||'<div class="empty">No active follow-ups.</div>';
   document.getElementById('sla-percent').textContent=pct===null?'—':pct.toFixed(1)+'%';
   document.getElementById('sla-summary').textContent=sla.length?`${met} within SLA · ${sla.length-met} breached · Targets: C ${SLA_TARGETS.Critical/60}h / H ${SLA_TARGETS.High/60}h / M ${SLA_TARGETS.Medium/60}h / L ${SLA_TARGETS.Low/60}h`:'No completed SLA measurements yet.';
-  const sitesCount={}; valid.forEach(e=>sitesCount[e.site]=(sitesCount[e.site]||0)+1); const top=Object.entries(sitesCount).sort((a,b)=>b[1]-a[1]).slice(0,8); const max=top[0]?.[1]||1;
+  const sitesCount={}; valid.filter(isSiteWorkLocation).forEach(e=>sitesCount[e.site]=(sitesCount[e.site]||0)+1); const top=Object.entries(sitesCount).sort((a,b)=>b[1]-a[1]).slice(0,8); const max=top[0]?.[1]||1;
   document.getElementById('top-sites').innerHTML=top.map((x,i)=>`<div class="rank-row"><b>${i+1}</b><div><div>${escapeHtml(x[0])}</div><div class="rank-bar"><i style="width:${x[1]/max*100}%"></i></div></div><strong>${x[1]}</strong></div>`).join('')||'<div class="empty">No visits yet.</div>';
   const f={}; valid.forEach(e=>{const names=entryParticipants(e);(names.length?names:['Unassigned']).forEach(n=>{if(!f[n])f[n]={v:0,r:0,p:0};f[n].v++;if(e.status==='Resolved')f[n].r++;if(e.status==='Pending'||e.status==='Follow-up')f[n].p++;});});
   document.getElementById('fse-workload').innerHTML=Object.entries(f).sort((a,b)=>b[1].v-a[1].v).map(([n,x])=>`<tr><td>${escapeHtml(n)}</td><td>${x.v}</td><td>${x.r}</td><td>${x.p}</td></tr>`).join('')||'<tr><td colspan="4">No visits yet.</td></tr>';
@@ -10510,7 +10516,8 @@ function presentationMetrics(rows){
  const resolved=valid.filter(e=>e.status==='Resolved').length;
  const open=valid.filter(e=>['Pending','Follow-up'].includes(e.status));
  const groups=field=>Object.entries(valid.reduce((out,e)=>{const name=e[field]||'Unspecified';out[name]=(out[name]||0)+1;return out;},{})).sort((a,b)=>b[1]-a[1]);
- return {count,resolved,open,rate:count?Math.round(resolved/count*100):null,categories:groups('category'),sites:groups('site'),statuses:groups('status'),urgent:open.filter(e=>['Critical','High'].includes(e.priority)),excluded:rows.length-count};
+ const onsiteSites=Object.entries(valid.filter(isSiteWorkLocation).reduce((out,e)=>{const name=e.site||'Unspecified';out[name]=(out[name]||0)+1;return out;},{})).sort((a,b)=>b[1]-a[1]);
+ return {count,resolved,open,rate:count?Math.round(resolved/count*100):null,categories:groups('category'),sites:onsiteSites,statuses:groups('status'),urgent:open.filter(e=>['Critical','High'].includes(e.priority)),excluded:rows.length-count};
 }
 function reportAttentionSummary(open){
  const order={Critical:0,High:1,Medium:2,Low:3};
