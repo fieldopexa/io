@@ -5630,7 +5630,12 @@ function visitWorkLocation(){
   return normalizeWorkLocationValue(document.getElementById('f-work-location')?.value)||'On-Site Visit';
 }
 function workLocationForEntry(entry){
-  return normalizeWorkLocationValue(entry?.workLocation)||FSM_WORK_LOCATION_FALLBACK;
+  // Respect an explicit duty selection, including "Others" and office work.
+  const selected=normalizeWorkLocationValue(entry?.workLocation);
+  if(selected)return selected;
+  // Older visits have no Work Location field. Only match the approved gaming
+  // sites from the canonical directory; never guess from an unknown location.
+  return siteDirectoryRecord(entry?.site)?'On-Site Visit':FSM_WORK_LOCATION_FALLBACK;
 }
 function updateWorkLocationUI(){
   const location=visitWorkLocation();
@@ -5667,10 +5672,8 @@ function validateWorkLocationDetail(){
   return false;
 }
 function isSiteWorkLocation(entry){
-  const name=workLocationForEntry(entry);
-  // Historical entries cannot be classified precisely; retain their
-  // earlier site reporting until each is reclassified by an engineer.
-  return name==='On-Site Visit'||name===FSM_WORK_LOCATION_FALLBACK;
+  // Only confirmed site visits count in site rankings and site risk metrics.
+  return workLocationForEntry(entry)==='On-Site Visit';
 }
 function renderWorkLocationSummary(id, rows){
   const host=document.getElementById(id);
@@ -7242,9 +7245,9 @@ const SITE_DIRECTORY = [
   {code:'BRANT', name:'BINGO REPUBLIC ANTIQUE', aliases:['Bingo Republic - Antique']},
   {code:'BRNAGA', name:'BINGO REPUBLIC NAGA', aliases:['Bingo Republic - Naga']},
   {code:'BRCAL', name:'BINGO REPUBLIC DEPARO', aliases:['Bingo Republic - Caloocan','BINGO REPUBLIC CALOOCAN','BRCALOOCAN','BRCAL']},
-  {code:'BRRQC', name:'Big A Gaming Corp. Quezon City', aliases:['IEST Kamias (IWP)','Big A Gaming Corp Quezon City']},
-  {code:'OECPANG', name:'Radiant Bay Games and Entertainment Corporation - Angono', aliases:[]},
-  {code:'ECPLIPA', name:'Radiant Bay Games and Entertainment Corporation - Lipa', aliases:[]},
+  {code:'BRRQC', name:'Big A Gaming Corp. Quezon City', aliases:['IEST Kamias (IWP)','Big A Gaming Corp Quezon City','BigA QC','BRQC BigA']},
+  {code:'OECPANG', name:'Radiant Bay Games and Entertainment Corporation - Angono', aliases:['ECP Angono','ECPAng']},
+  {code:'ECPLIPA', name:'Radiant Bay Games and Entertainment Corporation - Lipa', aliases:['ECP Lipa']},
   {code:'TREGSC', name:'TREGS Electronic Gaming Station Inc. - Sta Cruz', aliases:[]},
   {code:'TREGTUR', name:'TREGS Electronic Gaming Station Inc. - Turbina', aliases:[]},
   {code:'OT2BYPAS', name:'TREGS Electronic Gaming Station Inc. - Calamba (Lamesa Bypass)', aliases:[]},
@@ -7252,7 +7255,7 @@ const SITE_DIRECTORY = [
   {code:'olutarlc', name:'LuckyU Inc. - Tarlac (EzBet)', aliases:['Lucky U Inc Tarlac','LuckyU Tarlac','OLUTAR']},
   {code:'oshangel', name:'SHL Amusement & Gaming, Inc. - Angeles (former Don Meleton)', aliases:['SHL Amusement & Gaming Inc. - Angeles Pampanga','SHLANG']},
   {code:'opgrzl', name:'PINOYGAMES- Valleyfair, Taytay', aliases:['Pinoy Games Gaming & Amusement Corp','PGTAY']},
-  {code:'OT8SJD', name:'Venezia Bingo Botique SJDM', aliases:['Triple 8 Entertainment Company Inc. - Venezia SJDM','OT8SJDM']},
+  {code:'OT8SJD', name:'Venezia Bingo Botique SJDM', aliases:['Venezia Bingo Botique SJDM*','Triple 8 Entertainment Company Inc. - Venezia SJDM','OT8SJDM']},
   {code:'REINWAY', name:'REINWAY CORP.', aliases:[]}
 ];
 
