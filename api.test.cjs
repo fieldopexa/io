@@ -23,7 +23,7 @@ const removed={id:entry.id,serviceForm:null};context.prepareVisitServiceForm_(re
 assert.equal(context.visitEntryCell_([{action:'created'}]),'[{"action":"created"}]');
 let role='management';
 context.requireSession_=()=>({role,fse:'Ian'});context.json_=value=>value;
-context.ensureEntriesAttachmentCountColumn_=()=>{};context.ensureEntriesServiceFormColumns_=()=>{};
+context.ensureEntriesAttachmentCountColumn_=()=>{};context.ensureEntriesServiceFormColumns_=()=>{};context.ensureEntriesWorkLocationColumns_=()=>{};
 const headers=['id','tech','serviceFormFileId'];
 const rows=[headers,[entry.id,'Kenneth',entry.serviceFormFileId],['ian-visit','Ian','']];
 context.SpreadsheetApp={getActiveSpreadsheet:()=>({getSheetByName:()=>({getDataRange:()=>({getValues:()=>rows})})})};
