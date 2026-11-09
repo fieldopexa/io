@@ -9,7 +9,7 @@ vm.runInContext(fs.readFileSync('api.gs','utf8'),api);
 let user,record,writes,audits;
 api.SpreadsheetApp={getActiveSpreadsheet:()=>({getSheetByName:()=>({})})};
 api.requireSession_=()=>user;api.json_=x=>x;
-for(const name of ['ensureEntriesServiceFormColumns_','ensureEntriesSupportingFsesColumn_','ensureEntriesAttachmentCountColumn_','prepareVisitServiceForm_'])api[name]=()=>{};
+for(const name of ['ensureEntriesServiceFormColumns_','ensureEntriesSupportingFsesColumn_','ensureEntriesAttachmentCountColumn_','ensureEntriesWorkLocationColumns_','prepareVisitServiceForm_'])api[name]=()=>{};
 api.getRowObjectById_=()=>record;
 api.updateRowById_=(_sheet,_id,patch)=>{writes++;record={...record,...patch};};
 api.appendAudit_=()=>audits++;
