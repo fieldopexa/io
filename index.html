@@ -6656,7 +6656,7 @@ function openRequestedFSMFieldLog(){
 function openDetail(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e) return;
   const m=computeTrackingMap()[e.id]||'-';
-  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
+  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client / Location',e.site||'—'],['Work Location',workLocationForEntry(e)],['Duty Details',e.workLocationDetail||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
   if(isChatDiscussableVisit(e)){
@@ -7089,6 +7089,7 @@ document.getElementById('f-tech').addEventListener('change',()=>{if(activeWork==
 document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListener('click',()=>{activeWork=btn.dataset.work;document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b===btn));const sel=document.getElementById('my-fse');sel.style.display=activeWork==='mine'?'block':'none';if(activeWork==='mine')populateMyFse();window.attentionFilter=null;render();}));
 document.getElementById('my-fse').addEventListener('change',render);
 document.getElementById('log-fse-filter').addEventListener('change',render);
+document.getElementById('log-work-location-filter').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
 function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';document.getElementById('f-work-location').value=FSM_WORK_LOCATIONS.includes(e.workLocation)?e.workLocation:'On-Site Visit';document.getElementById('f-work-location-detail').value=e.workLocationDetail||'';updateWorkLocationUI();renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
@@ -7756,15 +7757,17 @@ function render(){
   const to = document.getElementById('date-to').value;
   const q = (document.getElementById('global-search')?.value || '').trim().toLowerCase();
   const selectedFse=fieldLogIdentity(document.getElementById('log-fse-filter')?.value);
+  const selectedWorkLocation=document.getElementById('log-work-location-filter')?.value||'';
   let filtered = entries.filter(e=>{
     if(currentUser?.role==='fse'&&activeWork==='mine'&&!isMyFieldLogWork(e))return false;
     if(selectedFse&&!entryParticipants(e).some(person=>fieldLogIdentity(person)===selectedFse))return false;
+    if(selectedWorkLocation&&workLocationForEntry(e)!==selectedWorkLocation)return false;
     const status=document.getElementById('log-status-filter')?.value||'';
     if(status&&e.status!==status)return false;
     if(activeCat!=='All' && e.category!==activeCat) return false;
     if(from && e.date < from) return false;
     if(to && e.date > to) return false;
-    if(q){ const hay=[trackingMapForEntry(e),e.ticketNo,e.site,e.tech,e.supportingFses,e.notes,e.resolution,e.category,e.issueType,e.generalType,e.visitType,e.resolvedVia,e.status].join(' ').toLowerCase(); if(!hay.includes(q)) return false; }
+    if(q){ const hay=[trackingMapForEntry(e),e.ticketNo,e.site,e.tech,e.supportingFses,e.notes,e.resolution,e.category,e.issueType,e.generalType,e.visitType,e.resolvedVia,e.workLocation,e.workLocationDetail,e.status].join(' ').toLowerCase(); if(!hay.includes(q)) return false; }
     if(currentUser?.role==='management'&&activeWork==='mine'){ const mine=document.getElementById('my-fse')?.value; if(mine && !entryParticipants(e).some(n=>n.toLowerCase()===mine.toLowerCase())) return false; }
     if(window.attentionFilter){ const f=window.attentionFilter; if(f==='pending' && e.status!=='Pending') return false; if(f==='critical' && e.priority!=='Critical') return false; if(f==='overdue' && !(e.status==='Follow-up'&&e.followupDate&&e.followupDate<todayStr())) return false; if(f==='sla'){ const mins=minutesBetween(e.timeIn,e.timeResolved||e.timeOut); if(!(e.priority&&mins!==null&&mins>SLA_TARGETS[e.priority])) return false; } }
     return true;
@@ -7823,7 +7826,7 @@ function renderReadableLog(e,tracking){
  const status=e.status||'Unspecified';const statusClass=status==='Resolved'?'resolved':status==='Pending'?'pending':status==='Follow-up'?'followup':'neutral';
  const issue=e.issueType||e.generalType||e.visitType||'Field visit';
  return `<article class="entry fieldlog-card readable-log" data-calm="true" data-entry-id="${safe(String(e.id))}">
-  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
+  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="work-location-tag">${safe(workLocationForEntry(e))}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
@@ -7852,6 +7855,7 @@ function renderReport(){
   const {key, label} = periodKeyFns();
   const periodValue = document.getElementById('period-picker').value;
   const periodEntries = entries.filter(e=>reportPeriodKey(e)===periodValue && e.status!=='Voided');
+  renderWorkLocationSummary('work-location-report',periodEntries);
 
   const counts = {Hardware:0, Software:0, Network:0, Backoffice:0, General:0};
   const statusCounts = {Resolved:0, Pending:0, 'Follow-up':0};
@@ -8039,6 +8043,7 @@ function managementEntries(){
 
 function renderManagementOverview(){
   const period=managementEntries();
+  renderWorkLocationSummary('work-location-dashboard',period);
   const norm=v=>String(v||'').trim().toLowerCase();
   const isOpen=e=>['pending','follow-up','follow up','open','in progress','ongoing'].includes(norm(e.status));
   const resolved=period.filter(e=>norm(e.status)==='resolved').length;
@@ -8157,7 +8162,7 @@ document.getElementById('export-btn').addEventListener('click', ()=>{
   const rows = periodEntries.map(e=>({
     'Trk #': trackingMap[e.id]||'', 'Ticket #': e.ticketNo||'', Period: label(reportPeriodKey(e)), Date: e.date, 'Site name': e.site,
     'Primary FSE': e.tech||'', 'Supporting FSEs': parseSupportingFses(e.supportingFses).join(', '),
-    'Visit type': e.visitType||'', Issue: (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||''), 'Resolution / Action Taken': (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'':(e.resolution||''),
+    'Work location': workLocationForEntry(e), 'Location / duty details': e.workLocationDetail||'', 'Visit type': e.visitType||'', Issue: (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||''), 'Resolution / Action Taken': (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'':(e.resolution||''),
     'Concern category': catLabel[e.category], 'Issue type': e.issueType||e.generalType||'', Priority: e.priority, Status: e.status,
     'Visit / Support Mode': e.resolvedVia, 'Time in': e.timeIn, 'Time out': e.timeOut, 'Visit duration': formatMinutes(minutesBetween(e.timeIn,e.timeOut)),
     'Time resolved': e.timeResolved, 'Follow-up date': e.followupDate||'', 'Follow-up reason': e.followupReason||'',
@@ -10520,6 +10525,7 @@ function reportAttentionSummary(open){
  function bars(items,total){if(!items.length)return '<p class="brief-empty">No visits in this period.</p>';return items.map(([name,n])=>'<div class="brief-bar"><div><span>'+escapeHtml(catLabel[name]||name)+'</span><b>'+n+' <small>· '+Math.round(n/Math.max(total,1)*100)+'%</small></b></div><div class="brief-track"><i style="width:'+Math.round(n/Math.max(total,1)*100)+'%"></i></div></div>').join('');}
  function paint(){
   const value=document.getElementById('period-picker').value;const period=periodKeyFns().label(value);const rows=entries.filter(e=>reportPeriodKey(e)===value);const m=presentationMetrics(rows);const top=m.categories[0];
+  renderWorkLocationSummary('work-location-report',rows);
   const categories=['Software','Backoffice','Hardware','Network','General'].map(name=>[name,m.categories.find(c=>c[0]===name)?.[1]||0]);
   m.categories.filter(c=>!categories.some(k=>k[0]===c[0])).forEach(c=>categories.push(c));
   const siteRows=reportVisitRows(rows);
@@ -11348,7 +11354,7 @@ html{scrollbar-gutter:stable}
 <script id="other-visit-location-hint">
 (function(){
  const site=document.getElementById('f-site');
- function update(){const other=site.value==='Others';document.getElementById('other-client-field').hidden=!other;document.getElementById('f-other-client').required=other;}
+ function update(){const other=site.value==='Others';document.getElementById('other-client-field').hidden=!other;document.getElementById('f-other-client').required=other&&visitWorkLocation()==='On-Site Visit';}
  site.addEventListener('change',update);new MutationObserver(update).observe(site,{childList:true});update();
 })();
 </script>
