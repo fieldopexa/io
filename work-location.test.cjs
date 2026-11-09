@@ -7,9 +7,11 @@ const src = fs.readFileSync('api.gs', 'utf8');
 
 // Browser: New Visit distinguishes work location from activity and only
 // requires a client when the duty is an on-site visit.
-for (const location of ['EM Office', 'OPD', 'On-Site Visit', 'Others']) {
+for (const location of ['EM Office', 'On-Site Visit', 'Others']) {
   assert.match(html, new RegExp('<option value="' + location + '"'));
 }
+assert.match(html, /<option value="EM Office">EM Office \/ OPD<\/option>/);
+assert.doesNotMatch(html, /<option value="OPD">/);
 assert.match(html, /id="f-work-location"/);
 assert.match(html, /id="f-visit-type"/);
 assert.match(html, /id="log-work-location-filter"/);
@@ -19,7 +21,7 @@ assert.match(html, /workLocationDetail:\(visitWorkLocation\(\)==='On-Site Visit'
 assert.match(html, /renderWorkLocationSummary\('work-location-dashboard',period\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
 
-// Site validation is skipped for office/OPD/other duties; these activities
+// Site validation is skipped for combined office/OPD/other duties; these activities
 // use a stable synthetic site label while preserving the actual duty type.
 const clients = vm.createContext({
   document:{getElementById:id=>({
@@ -33,6 +35,23 @@ const clients = vm.createContext({
 vm.runInContext(service.slice(service.indexOf('function visitClientName()'),service.indexOf('function restoreOtherClient(')), clients);
 assert.equal(clients.visitClientName(), 'EM Office');
 assert.equal(clients.validateOtherClient(), true);
+
+// Historic OPD records are grouped with EM Office without changing stored Sheets rows.
+const summaryNode={innerHTML:''};
+const locations=vm.createContext({
+  document:{getElementById:id=>id==='work-location-dashboard'?summaryNode:{value:'EM Office'}},
+  escapeHtml:value=>value
+});
+vm.runInContext(html.slice(html.indexOf('const FSM_WORK_LOCATIONS='), html.indexOf('function normalizeEntry(e)')), locations);
+assert.equal(locations.workLocationForEntry({workLocation:'OPD'}),'EM Office');
+assert.equal(locations.workLocationForEntry({workLocation:'EM Office'}),'EM Office');
+assert.equal(locations.workLocationLabel('EM Office'),'EM Office / OPD');
+assert.equal(locations.isSiteWorkLocation({workLocation:'OPD'}),false);
+locations.renderWorkLocationSummary('work-location-dashboard',[
+  {workLocation:'OPD',status:'Resolved'},
+  {workLocation:'EM Office',status:'Resolved'}
+]);
+assert.match(summaryNode.innerHTML, /EM Office \/ OPD<\/span><b>2<\/b>/);
 
 // Server: migration adds dedicated fields once without erasing historic data.
 const api = vm.createContext({console});
