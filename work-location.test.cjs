@@ -43,6 +43,7 @@ const locations=vm.createContext({
   escapeHtml:value=>value
 });
 vm.runInContext(html.slice(html.indexOf('const FSM_WORK_LOCATIONS='), html.indexOf('function normalizeEntry(e)')), locations);
+vm.runInContext(html.slice(html.indexOf('function normalizeSiteKey('), html.indexOf('function canonicalSiteName(')), locations);
 assert.equal(locations.workLocationForEntry({workLocation:'OPD'}),'EM Office');
 assert.equal(locations.workLocationForEntry({workLocation:'EM Office'}),'EM Office');
 assert.equal(locations.workLocationLabel('EM Office'),'EM Office / OPD');
@@ -52,6 +53,31 @@ locations.renderWorkLocationSummary('work-location-dashboard',[
   {workLocation:'EM Office',status:'Resolved'}
 ]);
 assert.match(summaryNode.innerHTML, /EM Office \/ OPD<\/span><b>2<\/b>/);
+
+// Confirm all 15 approved sites are recognized without changing stored records.
+assert.equal(vm.runInContext('SITE_DIRECTORY.length',locations),15);
+for(const record of vm.runInContext('SITE_DIRECTORY.map(({name,code})=>({name,code}))',locations)){
+  assert.equal(locations.workLocationForEntry({site:record.name}), 'On-Site Visit',record.name);
+  assert.equal(locations.workLocationForEntry({site:record.code}), 'On-Site Visit',record.code);
+}
+for(const alias of ['ECP Angono','ECP Lipa','BigA QC','Venezia Bingo Botique SJDM*']){
+  assert.equal(locations.workLocationForEntry({site:alias}),'On-Site Visit',alias);
+}
+assert.equal(locations.workLocationForEntry({site:'Big A Gaming Corp. Quezon City',workLocation:'Others'}),'Others');
+assert.equal(locations.workLocationForEntry({site:'Big A Gaming Corp. Quezon City',workLocation:'EM Office'}),'EM Office');
+assert.equal(locations.workLocationForEntry({site:'Unknown location'}),'Legacy / Unclassified');
+assert.equal(locations.workLocationForEntry({site:'EM Office'}),'Legacy / Unclassified');
+assert.equal(locations.isSiteWorkLocation({site:'Unknown location'}),false);
+assert.equal(locations.isSiteWorkLocation({site:'ECP Lipa'}),true);
+locations.renderWorkLocationSummary('work-location-dashboard',[
+  {site:'ECP Angono',status:'Resolved'},
+  {site:'Big A Gaming Corp. Quezon City',status:'Resolved'},
+  {site:'ECP Lipa',workLocation:'Others',status:'Resolved'},
+  {site:'Unrecognized',status:'Resolved'}
+]);
+assert.match(summaryNode.innerHTML, /On-Site Visit<\/span><b>2<\/b>/);
+assert.match(summaryNode.innerHTML, /Others<\/span><b>1<\/b>/);
+assert.match(summaryNode.innerHTML, /Legacy \/ Unclassified<\/span><b>1<\/b>/);
 
 // Server: migration adds dedicated fields once without erasing historic data.
 const api = vm.createContext({console});
