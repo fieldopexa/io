@@ -734,10 +734,9 @@ function doPost(e) {
 
       var entry = body.entry || {};
 
-      requireFseFieldLogWrite_(user);
-      // The backend, not the browser, sets the Primary FSE for new visits.
-      entry.tech = String(user.fse || user.username || '').trim();
-      if (!entry.tech) throw new Error('Your FSM account has no assigned FSE identity.');
+      // FSE accounts create visits for themselves. Management can select an
+      // existing FSE from the directory, with that selection checked server-side.
+      entry.tech = primaryFseForNewFieldLog_(user, entry, ss);
       var primaryTech = String(entry.tech || '').trim().toLowerCase();
       var supporting = String(entry.supportingFses || '')
         .split(',')
@@ -2455,6 +2454,30 @@ function ensureEntriesSupportingFsesColumn_() {
   }
 }
 
+
+// Field Log creation allows authenticated Management or FSE accounts.
+// FSEs cannot forge their Primary FSE; management choices must exist in
+// the shared FSE directory. The audit log records the authenticated actor.
+function primaryFseForNewFieldLog_(user, entry, spreadsheet) {
+  if (!user || (user.role !== 'fse' && user.role !== 'management')) {
+    throw new Error('Only an authenticated FSE or Management account can create Field Logs.');
+  }
+  if (user.role === 'fse') {
+    var own = String(user.fse || user.username || '').trim();
+    if (!own) throw new Error('Your FSM account has no assigned FSE identity.');
+    return own;
+  }
+  var requested = String(entry && entry.tech || '').trim();
+  if (!requested) throw new Error('Select a Primary FSE before submitting the Field Log.');
+  var directorySheet = spreadsheet.getSheetByName('FSEs');
+  if (!directorySheet) throw new Error('The FSE directory is unavailable.');
+  var key = fseNameKey_(requested);
+  var values = directorySheet.getDataRange().getValues();
+  var match = values.map(function(row){return String(row[0] || '').trim();})
+    .find(function(name){return name && fseNameKey_(name) === key;});
+  if (!match) throw new Error('The selected Primary FSE is not in the FSE directory.');
+  return match;
+}
 
 // Exact assignment matching after Unicode/case/whitespace normalization.
 // Never falls back to username or grants access to all visits.
