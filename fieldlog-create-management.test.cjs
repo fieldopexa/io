@@ -18,7 +18,7 @@ api.sheetObjects_ = () => [];
 api.visitEntryCell_ = value => value;
 api.canonicalSiteNameV2_ = site => site;
 api.appendAudit_ = () => auditCalls++;
-for (const name of ['ensureEntriesServiceFormColumns_', 'ensureEntriesSupportingFsesColumn_', 'ensureEntriesAttachmentCountColumn_', 'prepareVisitServiceForm_']) api[name] = () => {};
+for (const name of ['ensureEntriesServiceFormColumns_', 'ensureEntriesSupportingFsesColumn_', 'ensureEntriesAttachmentCountColumn_', 'ensureEntriesWorkLocationColumns_', 'prepareVisitServiceForm_']) api[name] = () => {};
 function submit(actor, selectedFse) {
   user = actor; addedRows = []; auditCalls = 0;
   const entry = {id: 'v-1', tech: selectedFse, site: 'Test Site'};
