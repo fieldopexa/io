@@ -24,6 +24,7 @@ function doGet(e) {
     if (type === 'entries') {
       ensureEntriesServiceFormColumns_();
       ensureEntriesAttachmentCountColumn_();
+      ensureEntriesWorkLocationColumns_();
       var sheet = ss.getSheetByName('Entries');
       var data = sheet.getDataRange().getValues();
 
@@ -727,12 +728,15 @@ function doPost(e) {
       ensureEntriesServiceFormColumns_();
       ensureEntriesSupportingFsesColumn_();
       ensureEntriesAttachmentCountColumn_();
+      ensureEntriesWorkLocationColumns_();
       var sheet = ss.getSheetByName('Entries');
       var headers = sheet
         .getRange(1, 1, 1, sheet.getLastColumn())
         .getValues()[0];
 
       var entry = body.entry || {};
+      entry.workLocation = normalizeFsmWorkLocation_(entry.workLocation);
+      entry.workLocationDetail = String(entry.workLocationDetail || '').trim().slice(0, 200);
 
       // FSE accounts create visits for themselves. Management can select an
       // existing FSE from the directory, with that selection checked server-side.
@@ -765,6 +769,7 @@ function doPost(e) {
       ensureEntriesServiceFormColumns_();
       ensureEntriesSupportingFsesColumn_();
       ensureEntriesAttachmentCountColumn_();
+      ensureEntriesWorkLocationColumns_();
       var updateSheet = ss.getSheetByName('Entries');
       var updatedEntry = body.entry || {};
       var updateId = String(body.id || updatedEntry.id || '').trim();
@@ -772,6 +777,8 @@ function doPost(e) {
       var beforeEntry = getRowObjectById_(updateSheet, updateId);
       if (!beforeEntry) throw new Error('Entry not found.');
       requirePrimaryFseFieldLogOwner_(user, beforeEntry);
+      updatedEntry.workLocation = normalizeFsmWorkLocation_(updatedEntry.workLocation || beforeEntry.workLocation);
+      updatedEntry.workLocationDetail = String(updatedEntry.workLocationDetail === undefined ? (beforeEntry.workLocationDetail || '') : updatedEntry.workLocationDetail).trim().slice(0, 200);
       // Preserve the original record identity and Primary FSE.
       updatedEntry.id = updateId;
       updatedEntry.tech = beforeEntry.tech;
@@ -2442,6 +2449,26 @@ function json_(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+
+// Separate duty location from the technical Activity Type without altering
+// existing Entries rows. The two new fields persist in dedicated Sheet columns.
+function ensureEntriesWorkLocationColumns_() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Entries');
+  if (!sheet) throw new Error('Entries sheet not found.');
+  var lastCol = Math.max(sheet.getLastColumn(), 1);
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  ['workLocation', 'workLocationDetail'].forEach(function(field) {
+    if (headers.indexOf(field) === -1) {
+      lastCol++;
+      sheet.getRange(1, lastCol).setValue(field);
+      headers.push(field);
+    }
+  });
+}
+function normalizeFsmWorkLocation_(value) {
+  var name = String(value || '').trim();
+  return ['EM Office','OPD','On-Site Visit','Others'].indexOf(name) !== -1 ? name : 'On-Site Visit';
+}
 
 function ensureEntriesSupportingFsesColumn_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();

@@ -3975,6 +3975,20 @@ body:has(#spare-modal[style*="display:flex"]){
 <link rel="stylesheet" href="./install.css">
 <script defer src="./install.js"></script>
 <style>@media(min-width:901px){#panel-fieldlogs .fieldlogs-create-action{display:none!important}}</style>
+<style id="fsm-work-location-style">
+.work-location-breakdown{padding:16px 18px;margin:14px 0 18px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+.work-location-summary-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.work-location-summary-heading h2{font-size:15px!important;font-weight:700;margin:0}.work-location-summary-heading small{font-size:11px;color:var(--ink-soft)}
+.work-location-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px}
+.work-location-summary-item{min-width:0;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:var(--surface)}
+.work-location-summary-item span{display:block;font-size:11px;color:var(--ink-soft);min-height:2.5em}
+.work-location-summary-item b{display:block;font-size:22px;line-height:1.3;margin:3px 0 8px}
+.work-location-summary-track{height:4px;background:var(--line);border-radius:999px;overflow:hidden}.work-location-summary-track i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.work-location-tag{font-size:10px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink-soft)}
+#log-work-location-filter{max-width:185px}
+#visit-site-fields[style*="none"],#visit-work-location-detail-row[style*="none"]{display:none!important}
+@media(max-width:700px){.work-location-breakdown{padding:14px}.work-location-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#log-work-location-filter{max-width:none;width:100%}}
+</style>
 </head>
 <body>
 <div class="login-screen" id="login-screen">
@@ -4113,6 +4127,24 @@ body:has(#spare-modal[style*="display:flex"]){
           </div>
         </div>
       </div>
+      <div class="row" id="visit-work-location-row">
+        <div class="field">
+          <label for="f-work-location">Work Location / Duty Type <span class="field-required">Required</span></label>
+          <select id="f-work-location" aria-describedby="work-location-hint">
+            <option value="On-Site Visit" selected>On-Site Visit</option>
+            <option value="EM Office">EM Office</option>
+            <option value="OPD">OPD</option>
+            <option value="Others">Others</option>
+          </select>
+          <small id="work-location-hint" class="muted">Choose where the activity was performed. Activity Type stays separate.</small>
+        </div>
+      </div>
+      <div class="row" id="visit-work-location-detail-row" style="display:none">
+        <div class="field">
+          <label for="f-work-location-detail" id="work-location-detail-label">Location / Duty Details (optional)</label>
+          <input type="text" id="f-work-location-detail" maxlength="200" placeholder="Optional location, unit, or activity details">
+        </div>
+      </div>
       <div class="row" id="visit-type-row">
         <div class="field" id="field-visit-support-mode">
           <label for="f-resolved-via">Support type</label>
@@ -4130,7 +4162,7 @@ body:has(#spare-modal[style*="display:flex"]){
           </select>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="visit-site-fields">
         <div class="field">
             <label for="f-site">Client <span class="field-required">Required</span></label>
           <div style="display:flex; gap:6px;">
@@ -4362,7 +4394,7 @@ body:has(#spare-modal[style*="display:flex"]){
   <div class="panel" id="panel-fieldlogs">
     <div class="section-head compact-head fieldlogs-create-action"><button class="btn-secondary" id="fieldlogs-new-btn">＋ New Visit</button></div>
     <div class="global-search"><span>⌕</span><input id="global-search" type="search" placeholder="Search tracking #, ticket #, site, FSE, notes, resolution…"></div>
-    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
+    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="log-work-location-filter" aria-label="Filter Field Logs by work location"><option value="">All work locations</option><option>EM Office</option><option>OPD</option><option>On-Site Visit</option><option>Others</option><option value="Legacy / Unclassified">Legacy / Unclassified</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
     <div class="filters" id="filters">
       <span class="chip active" data-cat="All">All</span><span class="chip" data-cat="Backoffice">Back Office</span><span class="chip" data-cat="Software">Software</span><span class="chip" data-cat="Hardware">Hardware</span><span class="chip" data-cat="Network">Network</span><span class="chip" data-cat="General">General</span>
       <input type="date" id="date-from" title="From"><input type="date" id="date-to" title="To">
@@ -4388,6 +4420,7 @@ body:has(#spare-modal[style*="display:flex"]){
     </div>
 
     <div class="mgmt-snapshot" id="mgmt-snapshot"></div>
+    <section class="work-location-breakdown" id="work-location-dashboard" aria-label="Work location summary"></section>
 
     <div class="mgmt-grid">
       <div class="chart-card">
@@ -4897,6 +4930,7 @@ body:has(#spare-modal[style*="display:flex"]){
       </div>
     </div>
 
+    <section class="work-location-breakdown" id="work-location-report" aria-label="Work location summary"></section>
     <div class="stats" id="report-stats"></div>
 
     <div class="report-grid">
@@ -5582,6 +5616,65 @@ function parseVisitAudit(value){
   if(typeof value==='string'){try{value=JSON.parse(value);}catch{return [];}}
   return Array.isArray(value)?value:[];
 }
+const FSM_WORK_LOCATIONS=['EM Office','OPD','On-Site Visit','Others'];
+const FSM_WORK_LOCATION_FALLBACK='Legacy / Unclassified';
+function visitWorkLocation(){
+  const value=document.getElementById('f-work-location')?.value||'On-Site Visit';
+  return FSM_WORK_LOCATIONS.includes(value)?value:'On-Site Visit';
+}
+function workLocationForEntry(entry){
+  return FSM_WORK_LOCATIONS.includes(entry?.workLocation)?entry.workLocation:FSM_WORK_LOCATION_FALLBACK;
+}
+function updateWorkLocationUI(){
+  const location=visitWorkLocation();
+  const onsite=location==='On-Site Visit';
+  const siteFields=document.getElementById('visit-site-fields');
+  const cabinet=document.getElementById('visit-cabinet-card');
+  const detailRow=document.getElementById('visit-work-location-detail-row');
+  const detail=document.getElementById('f-work-location-detail');
+  const label=document.getElementById('work-location-detail-label');
+  if(siteFields)siteFields.style.display=onsite?'':'none';
+  if(!onsite && cabinet)cabinet.style.display='none';
+  if(detailRow)detailRow.style.display=onsite?'none':'';
+  if(detail){
+    detail.required=location==='Others';
+    detail.placeholder=location==='EM Office'?'Office department, meeting or work area (optional)':location==='OPD'?'OPD site / activity details (optional)':'Enter the location or duty performed';
+  }
+  if(label)label.textContent=location==='Others'?'Location / Duty Details (required)':'Location / Duty Details (optional)';
+  const otherClient=document.getElementById('f-other-client');
+  if(otherClient)otherClient.required=onsite&&document.getElementById('f-site')?.value==='Others';
+  const siteProfile=document.getElementById('site-profile');
+  if(!onsite&&siteProfile)siteProfile.style.display='none';
+  const err=document.getElementById('site-err');
+  if(err&&!onsite)err.style.display='none';
+  const combobox=document.getElementById('location-combobox');
+  if(combobox)combobox.setAttribute('aria-required',String(onsite));
+  return location;
+}
+function validateWorkLocationDetail(){
+  if(visitWorkLocation()!=='Others')return true;
+  const detail=document.getElementById('f-work-location-detail');
+  if(detail?.value.trim())return true;
+  window.setVisitWizardStep?.(1,false);
+  detail?.focus();detail?.reportValidity();
+  return false;
+}
+function isSiteWorkLocation(entry){
+  const name=workLocationForEntry(entry);
+  // Historical entries cannot be classified precisely; retain their
+  // earlier site reporting until each is reclassified by an engineer.
+  return name==='On-Site Visit'||name===FSM_WORK_LOCATION_FALLBACK;
+}
+function renderWorkLocationSummary(id, rows){
+  const host=document.getElementById(id);
+  if(!host)return;
+  const source=Array.isArray(rows)?rows.filter(e=>e.status!=='Voided'):[];
+  const groups=[...FSM_WORK_LOCATIONS,FSM_WORK_LOCATION_FALLBACK];
+  const counts=Object.fromEntries(groups.map(name=>[name,0]));
+  source.forEach(entry=>{counts[workLocationForEntry(entry)]++;});
+  host.innerHTML='<div class="work-location-summary-heading"><h2>Work location breakdown</h2><small>'+source.length+' recorded activities</small></div>'+
+    '<div class="work-location-summary-grid">'+groups.map(name=>'<div class="work-location-summary-item"><span>'+escapeHtml(name)+'</span><b>'+counts[name]+'</b><div class="work-location-summary-track"><i style="width:'+(source.length?Math.round(counts[name]/source.length*100):0)+'%"></i></div></div>').join('')+'</div>';
+}
 function normalizeEntry(e){
   return {
     ...e,
@@ -5591,6 +5684,8 @@ function normalizeEntry(e){
     timeOut: normalizeTimeOrDate(e.timeOut, true),
     ticketNo: e.ticketNo || e.ticket || '', visitType: e.visitType || 'Breakdown / Incident',
     site: canonicalSiteName(e.site || ''),
+    workLocation: FSM_WORK_LOCATIONS.includes(e.workLocation) ? e.workLocation : '',
+    workLocationDetail: String(e.workLocationDetail || ''),
     resolution: e.resolution || '', resolutionType: e.resolutionType || '', machineNo: e.machineNo || '', component: e.component || '', assetNo: e.assetNo || '', createdAt: e.createdAt || '', updatedAt: e.updatedAt || e.createdAt || '', audit: parseVisitAudit(e.audit), followupDate: normalizeTimeOrDate(e.followupDate, false) || '',
     followupReason: e.followupReason || '', parts: e.parts || '',
     supportingFses: e.supportingFses || e.supportingFSEs || e.withFses || '',
@@ -6570,7 +6665,7 @@ function openRequestedFSMFieldLog(){
 function openDetail(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e) return;
   const m=computeTrackingMap()[e.id]||'-';
-  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client',e.site||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
+  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client / Location',e.site||'—'],['Work Location',workLocationForEntry(e)],['Duty Details',e.workLocationDetail||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
   if(isChatDiscussableVisit(e)){
@@ -6736,7 +6831,7 @@ function syncCategoryOptionState(){
 }
 function clearVisitRequiredErrorIfComplete(){
   const err=document.getElementById('err-msg');
-  const site=canonicalSiteName(document.getElementById('f-site')?.value||'');
+  const site=visitWorkLocation()!=='On-Site Visit'||canonicalSiteName(document.getElementById('f-site')?.value||'');
   if(err&&site&&(isSimpleActivityVisit()||selectedCat))err.style.display='none';
 }
 
@@ -6864,7 +6959,7 @@ document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{
 });
 
 document.getElementById('submit-btn').addEventListener('click', async ()=>{
-  if(!validateOtherClient())return;
+  if(!validateWorkLocationDetail()||!validateOtherClient())return;
   const site=visitClientName();
   const err=document.getElementById('err-msg');
   const visitType=document.getElementById('f-visit-type').value;
@@ -6873,7 +6968,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   if(!site||(!simpleVisit&&!selectedCat)){
     err.style.display='block';
     if(!site){
-      err.textContent='Choose a client to continue.';
+      err.textContent='Choose a client for the On-Site Visit.';
       window.setVisitWizardStep?.(1,false);
       const siteField=document.getElementById('location-combobox')||document.getElementById('f-site');siteField?.focus();siteField?.scrollIntoView({behavior:'smooth',block:'center'});
     }else{
@@ -6886,7 +6981,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
   if(!validateServiceForm())return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
-  const duplicates=entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site));
+  const duplicates=visitWorkLocation()==='On-Site Visit'?entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&workLocationForEntry(row)!=='EM Office'&&workLocationForEntry(row)!=='OPD'&&workLocationForEntry(row)!=='Others'&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)):[];
   if(duplicates.length&&!confirm('Same-day visit warning: '+duplicates.length+' visit log'+(duplicates.length===1?' has':'s have')+' already been created for '+site+' on '+duplicateDate+'.\n\nDo you want to create another visit log for the same site and date?'))return;
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const saveStatus=document.getElementById('visit-save-status');
@@ -6906,10 +7001,10 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:(visitWorkLocation()==='On-Site Visit'?'':document.getElementById('f-work-location-detail').value.trim()),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   entry.serviceForm=readServiceForm();
-  entry.siteSelection=document.getElementById('f-site').value==='Others'?'Others':'';
+  entry.siteSelection=visitWorkLocation()==='On-Site Visit'&&document.getElementById('f-site').value==='Others'?'Others':'';
   entry.audit[entry.audit.length-1].siteSelection=entry.siteSelection;
   // Keep a snapshot in the existing audit field for backends with fixed visit columns.
   entry.audit[entry.audit.length-1].serviceForm=entry.serviceForm;
@@ -6959,7 +7054,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
       saveWarning||(filesToUpload.length?`${filesToUpload.length} attachment${filesToUpload.length===1?' is':'s are'} uploading in the background.`:`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`),
       saveWarning?'bad':'ok'
     );
-    cancelVisitEdit();restoreServiceForm(null);restoreOtherClient();
+    cancelVisitEdit();restoreServiceForm(null);restoreOtherClient();document.getElementById('f-work-location').value='On-Site Visit';document.getElementById('f-work-location-detail').value='';updateWorkLocationUI();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
     clearPendingVisitAttachments();
     if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);window.resetVisitWizard?.();
@@ -6996,14 +7091,17 @@ document.getElementById('date-to').addEventListener('change', render);
 document.getElementById('global-search').addEventListener('input', render);
 
 document.getElementById('f-site').addEventListener('change',e=>{renderSiteHistory(e.target.value);clearVisitRequiredErrorIfComplete();});
+document.getElementById('f-work-location').addEventListener('change',()=>{updateWorkLocationUI();clearVisitRequiredErrorIfComplete();});
+updateWorkLocationUI();
 document.getElementById('f-issue-type').addEventListener('change',()=>{const monitoring=selectedCat==='General'&&document.getElementById('f-issue-type').value==='Site Monitoring';document.getElementById('f-notes').placeholder=monitoring?'Optional — add a note only if there is a concern.':'What happened on this visit';updateCategoryFields();updateResolutionExtra();});
 document.getElementById('f-tech').addEventListener('change',()=>{if(activeWork==='mine'){populateMyFse();render();}});
 document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListener('click',()=>{activeWork=btn.dataset.work;document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b===btn));const sel=document.getElementById('my-fse');sel.style.display=activeWork==='mine'?'block':'none';if(activeWork==='mine')populateMyFse();window.attentionFilter=null;render();}));
 document.getElementById('my-fse').addEventListener('change',render);
 document.getElementById('log-fse-filter').addEventListener('change',render);
+document.getElementById('log-work-location-filter').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';document.getElementById('f-work-location').value=FSM_WORK_LOCATIONS.includes(e.workLocation)?e.workLocation:'On-Site Visit';document.getElementById('f-work-location-detail').value=e.workLocationDetail||'';updateWorkLocationUI();renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
   window.setVisitWizardStep?.(1,false);
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
@@ -7018,8 +7116,12 @@ function editFieldLog(id){
   document.getElementById('f-time-in').value=e.timeIn||'';
   document.getElementById('f-time-out').value=e.timeOut||'';
   document.getElementById('f-tech').value=e.tech||'';
+  document.getElementById('f-work-location').value=FSM_WORK_LOCATIONS.includes(e.workLocation)?e.workLocation:'On-Site Visit';
+  document.getElementById('f-work-location-detail').value=e.workLocationDetail||'';
+  updateWorkLocationUI();
   renderSupportingFses(e.supportingFses||'');
   renderSiteOptions(canonicalSiteName(e.site||''));
+  if(visitWorkLocation()==='On-Site Visit')restoreOtherClient(e);
   document.getElementById('f-ticket').value=e.ticketNo||'';
   document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';
   document.getElementById('f-status').value=e.status==='Voided'?'Pending':(e.status||'Pending');
@@ -7511,6 +7613,8 @@ function filterLogsBySite(siteName){
 function startVisitForSite(siteName){
   closeSiteProfile();
   document.querySelector('.tab[data-tab="log"]')?.click();
+  document.getElementById('f-work-location').value='On-Site Visit';
+  updateWorkLocationUI();
   renderSiteOptions(siteName);
   const sel=document.getElementById('f-site'); if(sel)sel.value=siteName;
   renderSiteHistory(siteName);
@@ -7665,15 +7769,17 @@ function render(){
   const to = document.getElementById('date-to').value;
   const q = (document.getElementById('global-search')?.value || '').trim().toLowerCase();
   const selectedFse=fieldLogIdentity(document.getElementById('log-fse-filter')?.value);
+  const selectedWorkLocation=document.getElementById('log-work-location-filter')?.value||'';
   let filtered = entries.filter(e=>{
     if(currentUser?.role==='fse'&&activeWork==='mine'&&!isMyFieldLogWork(e))return false;
     if(selectedFse&&!entryParticipants(e).some(person=>fieldLogIdentity(person)===selectedFse))return false;
+    if(selectedWorkLocation&&workLocationForEntry(e)!==selectedWorkLocation)return false;
     const status=document.getElementById('log-status-filter')?.value||'';
     if(status&&e.status!==status)return false;
     if(activeCat!=='All' && e.category!==activeCat) return false;
     if(from && e.date < from) return false;
     if(to && e.date > to) return false;
-    if(q){ const hay=[trackingMapForEntry(e),e.ticketNo,e.site,e.tech,e.supportingFses,e.notes,e.resolution,e.category,e.issueType,e.generalType,e.visitType,e.resolvedVia,e.status].join(' ').toLowerCase(); if(!hay.includes(q)) return false; }
+    if(q){ const hay=[trackingMapForEntry(e),e.ticketNo,e.site,e.tech,e.supportingFses,e.notes,e.resolution,e.category,e.issueType,e.generalType,e.visitType,e.resolvedVia,e.workLocation,e.workLocationDetail,e.status].join(' ').toLowerCase(); if(!hay.includes(q)) return false; }
     if(currentUser?.role==='management'&&activeWork==='mine'){ const mine=document.getElementById('my-fse')?.value; if(mine && !entryParticipants(e).some(n=>n.toLowerCase()===mine.toLowerCase())) return false; }
     if(window.attentionFilter){ const f=window.attentionFilter; if(f==='pending' && e.status!=='Pending') return false; if(f==='critical' && e.priority!=='Critical') return false; if(f==='overdue' && !(e.status==='Follow-up'&&e.followupDate&&e.followupDate<todayStr())) return false; if(f==='sla'){ const mins=minutesBetween(e.timeIn,e.timeResolved||e.timeOut); if(!(e.priority&&mins!==null&&mins>SLA_TARGETS[e.priority])) return false; } }
     return true;
@@ -7732,7 +7838,7 @@ function renderReadableLog(e,tracking){
  const status=e.status||'Unspecified';const statusClass=status==='Resolved'?'resolved':status==='Pending'?'pending':status==='Follow-up'?'followup':'neutral';
  const issue=e.issueType||e.generalType||e.visitType||'Field visit';
  return `<article class="entry fieldlog-card readable-log" data-calm="true" data-entry-id="${safe(String(e.id))}">
-  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
+  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="work-location-tag">${safe(workLocationForEntry(e))}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
@@ -7761,6 +7867,7 @@ function renderReport(){
   const {key, label} = periodKeyFns();
   const periodValue = document.getElementById('period-picker').value;
   const periodEntries = entries.filter(e=>reportPeriodKey(e)===periodValue && e.status!=='Voided');
+  renderWorkLocationSummary('work-location-report',periodEntries);
 
   const counts = {Hardware:0, Software:0, Network:0, Backoffice:0, General:0};
   const statusCounts = {Resolved:0, Pending:0, 'Follow-up':0};
@@ -7771,7 +7878,7 @@ function renderReport(){
     if(counts[e.category]!==undefined) counts[e.category]++;
     if(statusCounts[e.status]!==undefined) statusCounts[e.status]++;
     if(e.priority && priorityCounts[e.priority]!==undefined) priorityCounts[e.priority]++;
-    if(e.site) siteCounts[e.site] = (siteCounts[e.site]||0)+1;
+    if(e.site&&isSiteWorkLocation(e)) siteCounts[e.site] = (siteCounts[e.site]||0)+1;
     if(e.status==='Resolved'){
       const mins = minutesBetween(e.timeIn, e.timeResolved);
       if(mins!==null) resolutionTimes.push(mins);
@@ -7948,12 +8055,13 @@ function managementEntries(){
 
 function renderManagementOverview(){
   const period=managementEntries();
+  renderWorkLocationSummary('work-location-dashboard',period);
   const norm=v=>String(v||'').trim().toLowerCase();
   const isOpen=e=>['pending','follow-up','follow up','open','in progress','ongoing'].includes(norm(e.status));
   const resolved=period.filter(e=>norm(e.status)==='resolved').length;
   const open=period.filter(isOpen).length;
   const critical=period.filter(e=>['critical','high'].includes(norm(e.priority))).length;
-  const activeSites=new Set(period.map(e=>String(e.site||'').trim()).filter(Boolean)).size;
+  const activeSites=new Set(period.filter(isSiteWorkLocation).map(e=>String(e.site||'').trim()).filter(Boolean)).size;
 
   const deployed=inventoryRows.filter(r=>String(r.deploymentStatus||'')==='Deployed').reduce((s,r)=>s+Number(r.quantity||0),0);
   const operational=cabinetRows.filter(c=>norm(c.status)==='operational').length;
@@ -7961,7 +8069,7 @@ function renderManagementOverview(){
 
   const snap=document.getElementById('mgmt-snapshot');
   if(snap) snap.innerHTML=`
-    <div class="mgmt-kpi primary"><span>Field Visits</span><b>${period.length}</b><small>${activeSites} active site${activeSites===1?'':'s'}</small></div>
+    <div class="mgmt-kpi primary"><span>Logged Activities</span><b>${period.length}</b><small>${activeSites} active site${activeSites===1?'':'s'}</small></div>
     <div class="mgmt-kpi"><span>Open Concerns</span><b>${open}</b><small>${resolved} resolved</small></div>
     <div class="mgmt-kpi"><span>Critical / High</span><b>${critical}</b><small>Priority activity</small></div>
     <div class="mgmt-kpi"><span>Registered Cabinets</span><b>${deployed||registeredCabinetRows().length}</b><small>${operational} registered operational</small></div>
@@ -7987,7 +8095,7 @@ function renderManagementOverview(){
     Object.entries(healthCounts).map(([k,v])=>`<div class="mgmt-health-row"><span>${k}</span><div><i style="width:${v/totalCab*100}%"></i></div><b>${v}</b></div>`).join('');
 
   const siteMap={};
-  period.forEach(e=>{
+  period.filter(isSiteWorkLocation).forEach(e=>{
     const s=String(e.site||'Unknown Site').trim()||'Unknown Site';
     if(!siteMap[s])siteMap[s]={visits:0,open:0,priority:0,categories:{}};
     siteMap[s].visits++;
@@ -8050,7 +8158,7 @@ function renderDashboard(){
   document.getElementById('followup-list').innerHTML=[...overdue,...upcoming].slice(0,12).map(e=>`<div class="followup-item"><div><b>${escapeHtml(e.site)}</b><br><small>${escapeHtml(e.followupReason||'Follow-up')}</small></div><span>${e.followupDate}</span></div>`).join('')||'<div class="empty">No active follow-ups.</div>';
   document.getElementById('sla-percent').textContent=pct===null?'—':pct.toFixed(1)+'%';
   document.getElementById('sla-summary').textContent=sla.length?`${met} within SLA · ${sla.length-met} breached · Targets: C ${SLA_TARGETS.Critical/60}h / H ${SLA_TARGETS.High/60}h / M ${SLA_TARGETS.Medium/60}h / L ${SLA_TARGETS.Low/60}h`:'No completed SLA measurements yet.';
-  const sitesCount={}; valid.forEach(e=>sitesCount[e.site]=(sitesCount[e.site]||0)+1); const top=Object.entries(sitesCount).sort((a,b)=>b[1]-a[1]).slice(0,8); const max=top[0]?.[1]||1;
+  const sitesCount={}; valid.filter(isSiteWorkLocation).forEach(e=>sitesCount[e.site]=(sitesCount[e.site]||0)+1); const top=Object.entries(sitesCount).sort((a,b)=>b[1]-a[1]).slice(0,8); const max=top[0]?.[1]||1;
   document.getElementById('top-sites').innerHTML=top.map((x,i)=>`<div class="rank-row"><b>${i+1}</b><div><div>${escapeHtml(x[0])}</div><div class="rank-bar"><i style="width:${x[1]/max*100}%"></i></div></div><strong>${x[1]}</strong></div>`).join('')||'<div class="empty">No visits yet.</div>';
   const f={}; valid.forEach(e=>{const names=entryParticipants(e);(names.length?names:['Unassigned']).forEach(n=>{if(!f[n])f[n]={v:0,r:0,p:0};f[n].v++;if(e.status==='Resolved')f[n].r++;if(e.status==='Pending'||e.status==='Follow-up')f[n].p++;});});
   document.getElementById('fse-workload').innerHTML=Object.entries(f).sort((a,b)=>b[1].v-a[1].v).map(([n,x])=>`<tr><td>${escapeHtml(n)}</td><td>${x.v}</td><td>${x.r}</td><td>${x.p}</td></tr>`).join('')||'<tr><td colspan="4">No visits yet.</td></tr>';
@@ -8066,7 +8174,7 @@ document.getElementById('export-btn').addEventListener('click', ()=>{
   const rows = periodEntries.map(e=>({
     'Trk #': trackingMap[e.id]||'', 'Ticket #': e.ticketNo||'', Period: label(reportPeriodKey(e)), Date: e.date, 'Site name': e.site,
     'Primary FSE': e.tech||'', 'Supporting FSEs': parseSupportingFses(e.supportingFses).join(', '),
-    'Visit type': e.visitType||'', Issue: (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||''), 'Resolution / Action Taken': (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'':(e.resolution||''),
+    'Work location': workLocationForEntry(e), 'Location / duty details': e.workLocationDetail||'', 'Visit type': e.visitType||'', Issue: (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||''), 'Resolution / Action Taken': (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'':(e.resolution||''),
     'Concern category': catLabel[e.category], 'Issue type': e.issueType||e.generalType||'', Priority: e.priority, Status: e.status,
     'Visit / Support Mode': e.resolvedVia, 'Time in': e.timeIn, 'Time out': e.timeOut, 'Visit duration': formatMinutes(minutesBetween(e.timeIn,e.timeOut)),
     'Time resolved': e.timeResolved, 'Follow-up date': e.followupDate||'', 'Follow-up reason': e.followupReason||'',
@@ -10303,7 +10411,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCabinetProfile(
   clearPendingVisitAttachments();
   const applyFields=()=>controls().forEach(el=>{if(!Object.prototype.hasOwnProperty.call(d.fields,el.id))return;const value=d.fields[el.id];if(el.tagName==='SELECT'&&value&&!Array.from(el.options).some(o=>o.value===value)){const opt=document.createElement('option');opt.value=value;opt.textContent=value;el.append(opt);}if(el.type==='checkbox')el.checked=!!value;else el.value=value==null?'':String(value);});
   renderSiteOptions(d.fields['f-site']);
-  applyFields();updateVisitTypeFlow(false);
+  applyFields();updateWorkLocationUI();updateVisitTypeFlow(false);
   selectedCat=isAutoGeneralActivity()?'General':(d.category||null);
   document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{el.className='cat-opt';if(el.dataset.cat===selectedCat)el.classList.add('sel-'+selectedCat);});
   document.getElementById('cat-desc').textContent=catDesc[selectedCat]||'';
@@ -10408,7 +10516,8 @@ function presentationMetrics(rows){
  const resolved=valid.filter(e=>e.status==='Resolved').length;
  const open=valid.filter(e=>['Pending','Follow-up'].includes(e.status));
  const groups=field=>Object.entries(valid.reduce((out,e)=>{const name=e[field]||'Unspecified';out[name]=(out[name]||0)+1;return out;},{})).sort((a,b)=>b[1]-a[1]);
- return {count,resolved,open,rate:count?Math.round(resolved/count*100):null,categories:groups('category'),sites:groups('site'),statuses:groups('status'),urgent:open.filter(e=>['Critical','High'].includes(e.priority)),excluded:rows.length-count};
+ const onsiteSites=Object.entries(valid.filter(isSiteWorkLocation).reduce((out,e)=>{const name=e.site||'Unspecified';out[name]=(out[name]||0)+1;return out;},{})).sort((a,b)=>b[1]-a[1]);
+ return {count,resolved,open,rate:count?Math.round(resolved/count*100):null,categories:groups('category'),sites:onsiteSites,statuses:groups('status'),urgent:open.filter(e=>['Critical','High'].includes(e.priority)),excluded:rows.length-count};
 }
 function reportAttentionSummary(open){
  const order={Critical:0,High:1,Medium:2,Low:3};
@@ -10429,6 +10538,7 @@ function reportAttentionSummary(open){
  function bars(items,total){if(!items.length)return '<p class="brief-empty">No visits in this period.</p>';return items.map(([name,n])=>'<div class="brief-bar"><div><span>'+escapeHtml(catLabel[name]||name)+'</span><b>'+n+' <small>· '+Math.round(n/Math.max(total,1)*100)+'%</small></b></div><div class="brief-track"><i style="width:'+Math.round(n/Math.max(total,1)*100)+'%"></i></div></div>').join('');}
  function paint(){
   const value=document.getElementById('period-picker').value;const period=periodKeyFns().label(value);const rows=entries.filter(e=>reportPeriodKey(e)===value);const m=presentationMetrics(rows);const top=m.categories[0];
+  renderWorkLocationSummary('work-location-report',rows);
   const categories=['Software','Backoffice','Hardware','Network','General'].map(name=>[name,m.categories.find(c=>c[0]===name)?.[1]||0]);
   m.categories.filter(c=>!categories.some(k=>k[0]===c[0])).forEach(c=>categories.push(c));
   const siteRows=reportVisitRows(rows);
@@ -10608,6 +10718,8 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  function startMaintenanceVisit(record){
   if(!confirm('Start a maintenance visit? This will replace the current visit form.'))return;
   const location=canonicalSiteName(record.site||'');
+  document.getElementById('f-work-location').value='On-Site Visit';
+  updateWorkLocationUI();
   if(!location||siteIsClosed(location)){showToast('Location unavailable','Choose an open location before starting this check.','bad');return;}
   document.querySelector('.tab[data-tab="log"]')?.click();cancelVisitEdit();
   const names=String(record.technician||'').split(/[,;\n]+/).map(n=>n.trim()).filter(Boolean);
@@ -11257,7 +11369,7 @@ html{scrollbar-gutter:stable}
 <script id="other-visit-location-hint">
 (function(){
  const site=document.getElementById('f-site');
- function update(){const other=site.value==='Others';document.getElementById('other-client-field').hidden=!other;document.getElementById('f-other-client').required=other;}
+ function update(){const other=site.value==='Others';document.getElementById('other-client-field').hidden=!other;document.getElementById('f-other-client').required=other&&visitWorkLocation()==='On-Site Visit';}
  site.addEventListener('change',update);new MutationObserver(update).observe(site,{childList:true});update();
 })();
 </script>
@@ -11591,12 +11703,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   }
   next?.addEventListener('click',()=>{
     const ids=stepIds();
-    if(activeStep===1&&!document.getElementById('f-site')?.value){
+    if(activeStep===1&&visitWorkLocation()==='On-Site Visit'&&!document.getElementById('f-site')?.value){
       const siteError=document.getElementById('site-err');
       if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
       (document.getElementById('location-combobox')||document.getElementById('f-site'))?.focus();return;
     }
-    if(activeStep===1&&!validateOtherClient())return;
+    if(activeStep===1&&(!validateWorkLocationDetail()||!validateOtherClient()))return;
     if(activeStep===2&&!isSimple()&&!isAutoGeneralActivity()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
       if(error){error.textContent='Choose a concern to continue.';error.style.display='block';}
       document.querySelector('#cat-picker .cat-opt')?.focus();return;
@@ -11611,6 +11723,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('f-site')?.addEventListener('change',()=>{
     if(document.getElementById('f-site').value){const siteError=document.getElementById('site-err');if(siteError)siteError.style.display='none';}
   });
+  document.getElementById('f-work-location')?.addEventListener('change',()=>{if(enabled())goToStep(activeStep,false);});
   document.getElementById('f-visit-type')?.addEventListener('change',()=>{
     if(enabled()&&!stepIds().includes(activeStep))goToStep(3,false);
     else if(enabled())goToStep(activeStep,false);

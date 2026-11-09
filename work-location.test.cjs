@@ -1,0 +1,82 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync('index.html', 'utf8');
+const service = fs.readFileSync('service-form.js', 'utf8');
+const src = fs.readFileSync('api.gs', 'utf8');
+
+// Browser: New Visit distinguishes work location from activity and only
+// requires a client when the duty is an on-site visit.
+for (const location of ['EM Office', 'OPD', 'On-Site Visit', 'Others']) {
+  assert.match(html, new RegExp('<option value="' + location + '"'));
+}
+assert.match(html, /id="f-work-location"/);
+assert.match(html, /id="f-visit-type"/);
+assert.match(html, /id="log-work-location-filter"/);
+assert.match(html, /visitWorkLocation\(\)==='On-Site Visit'&&!document.getElementById\('f-site'\)/);
+assert.match(html, /workLocation:visitWorkLocation\(\)/);
+assert.match(html, /workLocationDetail:\(visitWorkLocation\(\)==='On-Site Visit'/);
+assert.match(html, /renderWorkLocationSummary\('work-location-dashboard',period\)/);
+assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
+
+// Site validation is skipped for office/OPD/other duties; these activities
+// use a stable synthetic site label while preserving the actual duty type.
+const clients = vm.createContext({
+  document:{getElementById:id=>({
+    'f-site':{value:''},
+    'f-other-client':{value:'',trim:()=>''},
+    'f-work-location-detail':{value:''}
+  }[id])},
+  canonicalSiteName:v=>v,
+  visitWorkLocation:()=> 'EM Office'
+});
+vm.runInContext(service.slice(service.indexOf('function visitClientName()'),service.indexOf('function restoreOtherClient(')), clients);
+assert.equal(clients.visitClientName(), 'EM Office');
+assert.equal(clients.validateOtherClient(), true);
+
+// Server: migration adds dedicated fields once without erasing historic data.
+const api = vm.createContext({console});
+vm.runInContext(src, api);
+const headers = ['id', 'tech', 'site'];
+const written = [];
+let appended = [], currentUser = {role:'fse',username:'ian',fse:'Ian'};
+const entriesSheet = {
+  getLastColumn:() => headers.length,
+  getRange:(_row,col) => ({
+    getValues:() => [headers.slice()],
+    setValue:value => {headers[col-1]=value;written.push(value);}
+  }),
+  appendRow:row=>appended.push(row)
+};
+const roster = ['Ian','Popoy','Erwin','Kenneth'];
+const fseSheet = {getDataRange:() => ({getValues:()=>roster.map(name=>[name])})};
+const spreadsheet = {getSheetByName:name=>name==='Entries'?entriesSheet:name==='FSEs'?fseSheet:null};
+api.SpreadsheetApp = {getActiveSpreadsheet:() => spreadsheet};
+api.ensureEntriesServiceFormColumns_=()=>{};
+api.ensureEntriesSupportingFsesColumn_=()=>{};
+api.ensureEntriesAttachmentCountColumn_=()=>{};
+api.prepareVisitServiceForm_=()=>{};
+api.sheetObjects_=()=>[];
+api.visitEntryCell_=value=>value;
+api.canonicalSiteNameV2_=value=>value;
+api.appendAudit_=()=>{};
+api.requireSession_=()=>currentUser;
+api.json_=value=>value;
+api.ensureEntriesWorkLocationColumns_();
+assert.deepEqual(headers,['id','tech','site','workLocation','workLocationDetail']);
+assert.deepEqual(written,['workLocation','workLocationDetail']);
+api.ensureEntriesWorkLocationColumns_();
+assert.equal(written.length,2,'migration is idempotent');
+for(const location of ['EM Office','OPD','On-Site Visit','Others']) {
+  appended=[];
+  const result=api.doPost({postData:{contents:JSON.stringify({action:'addEntry',token:'test',entry:{
+    id:'visit-'+location,site:location,tech:'Forged FSE',workLocation:location,
+    workLocationDetail:'Sample work performed'
+  }})}});
+  assert.equal(result.status,'ok',JSON.stringify(result));
+  assert.equal(appended[0][headers.indexOf('tech')],'Ian','Primary FSE must come from session');
+  assert.equal(appended[0][headers.indexOf('workLocation')],location);
+  assert.equal(appended[0][headers.indexOf('workLocationDetail')],'Sample work performed');
+}
+assert.equal(api.normalizeFsmWorkLocation_('invalid'),'On-Site Visit');
+console.log('PASS: work-location categories, validation, persistence, idempotent schema migration, and FSE identity');

@@ -1,11 +1,14 @@
 /* Optional service forms share the field visit's save and audit lifecycle. */
 function visitClientName() {
+  // Internal and miscellaneous duties are not client site visits.
+  const workLocation=visitWorkLocation();
+  if(workLocation!=='On-Site Visit')return workLocation;
   const selected=document.getElementById('f-site').value;
   return selected==='Others' ? document.getElementById('f-other-client').value.trim() : canonicalSiteName(selected);
 }
 function validateOtherClient() {
   const input=document.getElementById('f-other-client');
-  if(document.getElementById('f-site').value!=='Others'||input.value.trim())return true;
+  if(visitWorkLocation()!=='On-Site Visit'||document.getElementById('f-site').value!=='Others'||input.value.trim())return true;
   window.setVisitWizardStep?.(1,false);
   input.required=true; input.focus(); input.reportValidity(); return false;
 }
@@ -15,7 +18,7 @@ function restoreOtherClient(entry) {
   document.getElementById('f-other-client').value=other ? entry.site : '';
   if(other)document.getElementById('f-site').value='Others';
   document.getElementById('other-client-field').hidden=document.getElementById('f-site').value!=='Others';
-  document.getElementById('f-other-client').required=document.getElementById('f-site').value==='Others';
+  document.getElementById('f-other-client').required=visitWorkLocation()==='On-Site Visit'&&document.getElementById('f-site').value==='Others';
 }
 function serviceFormForEntry(entry) {
   const decode=value=>{
