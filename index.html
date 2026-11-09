@@ -5615,6 +5615,57 @@ function parseVisitAudit(value){
   if(typeof value==='string'){try{value=JSON.parse(value);}catch{return [];}}
   return Array.isArray(value)?value:[];
 }
+const FSM_WORK_LOCATIONS=['EM Office','OPD','On-Site Visit','Others'];
+const FSM_WORK_LOCATION_FALLBACK='Legacy / Unclassified';
+function visitWorkLocation(){
+  const value=document.getElementById('f-work-location')?.value||'On-Site Visit';
+  return FSM_WORK_LOCATIONS.includes(value)?value:'On-Site Visit';
+}
+function workLocationForEntry(entry){
+  return FSM_WORK_LOCATIONS.includes(entry?.workLocation)?entry.workLocation:FSM_WORK_LOCATION_FALLBACK;
+}
+function updateWorkLocationUI(){
+  const location=visitWorkLocation();
+  const onsite=location==='On-Site Visit';
+  const siteFields=document.getElementById('visit-site-fields');
+  const cabinet=document.getElementById('visit-cabinet-card');
+  const detailRow=document.getElementById('visit-work-location-detail-row');
+  const detail=document.getElementById('f-work-location-detail');
+  const label=document.getElementById('work-location-detail-label');
+  if(siteFields)siteFields.style.display=onsite?'':'none';
+  if(!onsite && cabinet)cabinet.style.display='none';
+  if(detailRow)detailRow.style.display=onsite?'none':'';
+  if(detail){
+    detail.required=location==='Others';
+    detail.placeholder=location==='EM Office'?'Office department, meeting or work area (optional)':location==='OPD'?'OPD site / activity details (optional)':'Enter the location or duty performed';
+  }
+  if(label)label.textContent=location==='Others'?'Location / Duty Details (required)':'Location / Duty Details (optional)';
+  const otherClient=document.getElementById('f-other-client');
+  if(otherClient)otherClient.required=onsite&&document.getElementById('f-site')?.value==='Others';
+  const err=document.getElementById('site-err');
+  if(err&&!onsite)err.style.display='none';
+  const combobox=document.getElementById('location-combobox');
+  if(combobox)combobox.setAttribute('aria-required',String(onsite));
+  return location;
+}
+function validateWorkLocationDetail(){
+  if(visitWorkLocation()!=='Others')return true;
+  const detail=document.getElementById('f-work-location-detail');
+  if(detail?.value.trim())return true;
+  window.setVisitWizardStep?.(1,false);
+  detail?.focus();detail?.reportValidity();
+  return false;
+}
+function renderWorkLocationSummary(id, rows){
+  const host=document.getElementById(id);
+  if(!host)return;
+  const source=Array.isArray(rows)?rows.filter(e=>e.status!=='Voided'):[];
+  const groups=[...FSM_WORK_LOCATIONS,FSM_WORK_LOCATION_FALLBACK];
+  const counts=Object.fromEntries(groups.map(name=>[name,0]));
+  source.forEach(entry=>{counts[workLocationForEntry(entry)]++;});
+  host.innerHTML='<div class="work-location-summary-heading"><h2>Work location breakdown</h2><small>'+source.length+' recorded activities</small></div>'+
+    '<div class="work-location-summary-grid">'+groups.map(name=>'<div class="work-location-summary-item"><span>'+escapeHtml(name)+'</span><b>'+counts[name]+'</b><div class="work-location-summary-track"><i style="width:'+(source.length?Math.round(counts[name]/source.length*100):0)+'%"></i></div></div>').join('')+'</div>';
+}
 function normalizeEntry(e){
   return {
     ...e,
@@ -5624,6 +5675,8 @@ function normalizeEntry(e){
     timeOut: normalizeTimeOrDate(e.timeOut, true),
     ticketNo: e.ticketNo || e.ticket || '', visitType: e.visitType || 'Breakdown / Incident',
     site: canonicalSiteName(e.site || ''),
+    workLocation: FSM_WORK_LOCATIONS.includes(e.workLocation) ? e.workLocation : '',
+    workLocationDetail: String(e.workLocationDetail || ''),
     resolution: e.resolution || '', resolutionType: e.resolutionType || '', machineNo: e.machineNo || '', component: e.component || '', assetNo: e.assetNo || '', createdAt: e.createdAt || '', updatedAt: e.updatedAt || e.createdAt || '', audit: parseVisitAudit(e.audit), followupDate: normalizeTimeOrDate(e.followupDate, false) || '',
     followupReason: e.followupReason || '', parts: e.parts || '',
     supportingFses: e.supportingFses || e.supportingFSEs || e.withFses || '',
@@ -6769,7 +6822,7 @@ function syncCategoryOptionState(){
 }
 function clearVisitRequiredErrorIfComplete(){
   const err=document.getElementById('err-msg');
-  const site=canonicalSiteName(document.getElementById('f-site')?.value||'');
+  const site=visitWorkLocation()!=='On-Site Visit'||canonicalSiteName(document.getElementById('f-site')?.value||'');
   if(err&&site&&(isSimpleActivityVisit()||selectedCat))err.style.display='none';
 }
 
@@ -7029,6 +7082,8 @@ document.getElementById('date-to').addEventListener('change', render);
 document.getElementById('global-search').addEventListener('input', render);
 
 document.getElementById('f-site').addEventListener('change',e=>{renderSiteHistory(e.target.value);clearVisitRequiredErrorIfComplete();});
+document.getElementById('f-work-location').addEventListener('change',()=>{updateWorkLocationUI();clearVisitRequiredErrorIfComplete();});
+updateWorkLocationUI();
 document.getElementById('f-issue-type').addEventListener('change',()=>{const monitoring=selectedCat==='General'&&document.getElementById('f-issue-type').value==='Site Monitoring';document.getElementById('f-notes').placeholder=monitoring?'Optional — add a note only if there is a concern.':'What happened on this visit';updateCategoryFields();updateResolutionExtra();});
 document.getElementById('f-tech').addEventListener('change',()=>{if(activeWork==='mine'){populateMyFse();render();}});
 document.querySelectorAll('#work-toggle button').forEach(btn=>btn.addEventListener('click',()=>{activeWork=btn.dataset.work;document.querySelectorAll('#work-toggle button').forEach(b=>b.classList.toggle('active',b===btn));const sel=document.getElementById('my-fse');sel.style.display=activeWork==='mine'?'block':'none';if(activeWork==='mine')populateMyFse();window.attentionFilter=null;render();}));
