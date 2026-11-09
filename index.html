@@ -3986,6 +3986,7 @@ body:has(#spare-modal[style*="display:flex"]){
 .work-location-summary-track{height:4px;background:var(--line);border-radius:999px;overflow:hidden}.work-location-summary-track i{display:block;height:100%;background:var(--accent);border-radius:999px}
 .work-location-tag{font-size:10px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink-soft)}
 #log-work-location-filter{max-width:185px}
+#visit-site-fields[style*="none"],#visit-work-location-detail-row[style*="none"]{display:none!important}
 @media(max-width:700px){.work-location-breakdown{padding:14px}.work-location-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#log-work-location-filter{max-width:none;width:100%}}
 </style>
 </head>
@@ -5642,6 +5643,8 @@ function updateWorkLocationUI(){
   if(label)label.textContent=location==='Others'?'Location / Duty Details (required)':'Location / Duty Details (optional)';
   const otherClient=document.getElementById('f-other-client');
   if(otherClient)otherClient.required=onsite&&document.getElementById('f-site')?.value==='Others';
+  const siteProfile=document.getElementById('site-profile');
+  if(!onsite&&siteProfile)siteProfile.style.display='none';
   const err=document.getElementById('site-err');
   if(err&&!onsite)err.style.display='none';
   const combobox=document.getElementById('location-combobox');
@@ -7112,6 +7115,7 @@ function editFieldLog(id){
   updateWorkLocationUI();
   renderSupportingFses(e.supportingFses||'');
   renderSiteOptions(canonicalSiteName(e.site||''));
+  if(visitWorkLocation()==='On-Site Visit')restoreOtherClient(e);
   document.getElementById('f-ticket').value=e.ticketNo||'';
   document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';
   document.getElementById('f-status').value=e.status==='Voided'?'Pending':(e.status||'Pending');
@@ -7603,6 +7607,8 @@ function filterLogsBySite(siteName){
 function startVisitForSite(siteName){
   closeSiteProfile();
   document.querySelector('.tab[data-tab="log"]')?.click();
+  document.getElementById('f-work-location').value='On-Site Visit';
+  updateWorkLocationUI();
   renderSiteOptions(siteName);
   const sel=document.getElementById('f-site'); if(sel)sel.value=siteName;
   renderSiteHistory(siteName);
@@ -10705,6 +10711,8 @@ function reportPageCount(rowCount){return 1+Math.max(1,Math.ceil(rowCount/5));}
  function startMaintenanceVisit(record){
   if(!confirm('Start a maintenance visit? This will replace the current visit form.'))return;
   const location=canonicalSiteName(record.site||'');
+  document.getElementById('f-work-location').value='On-Site Visit';
+  updateWorkLocationUI();
   if(!location||siteIsClosed(location)){showToast('Location unavailable','Choose an open location before starting this check.','bad');return;}
   document.querySelector('.tab[data-tab="log"]')?.click();cancelVisitEdit();
   const names=String(record.technician||'').split(/[,;\n]+/).map(n=>n.trim()).filter(Boolean);
