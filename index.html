@@ -3988,7 +3988,8 @@ body:has(#spare-modal[style*="display:flex"]){
 #log-work-location-filter{max-width:185px}
 #visit-site-fields[style*="none"],#visit-site-client-selector[hidden],#visit-site-cabinet-fields[hidden],#other-client-field[hidden],
 #panel-log #field-visit-support-mode[hidden]{display:none!important}
-#panel-log #visit-type-row[hidden]{display:none!important}
+#panel-log #visit-type-row[hidden],
+#panel-log .visit-step-panel[data-visit-step="1"] > #visit-site-fields[style*="none"]{display:none!important}
 #panel-log #visit-type-row.solo-client > .field:first-child{grid-column:1/-1}
 #panel-log #visit-site-fields > .field{grid-column:1/-1}
 .work-location-method-split{display:block;font-size:10px;color:var(--ink-soft);line-height:1.45;margin:2px 0 8px}
@@ -4140,7 +4141,7 @@ body:has(#spare-modal[style*="display:flex"]){
             <option value="EM Office">EM Office / OPD</option>
             <option value="Others">Others</option>
           </select>
-          <small id="work-location-hint" class="muted">Choose where this activity was performed.</small>
+          <small id="work-location-hint" class="muted">Choose the type of work being logged.</small>
         </div>
         <div class="field" id="field-visit-activity-type">
           <label for="f-visit-type">Activity Type</label>
@@ -4394,7 +4395,7 @@ body:has(#spare-modal[style*="display:flex"]){
   <div class="panel" id="panel-fieldlogs">
     <div class="section-head compact-head fieldlogs-create-action"><button class="btn-secondary" id="fieldlogs-new-btn">＋ New Visit</button></div>
     <div class="global-search"><span>⌕</span><input id="global-search" type="search" placeholder="Search tracking #, ticket #, site, FSE, notes, resolution…"></div>
-    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="log-work-location-filter" aria-label="Filter Field Logs by work location"><option value="">All work locations</option><option value="EM Office">EM Office / OPD</option><option value="On-Site Visit">Client / Site Support</option><option>Others</option><option value="Legacy / Unclassified">Legacy / Unclassified</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
+    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="log-work-location-filter" aria-label="Filter Field Logs by duty type"><option value="">All duty types</option><option value="EM Office">EM Office / OPD</option><option value="On-Site Visit">Client / Site Support</option><option>Others</option><option value="Legacy / Unclassified">Legacy / Unclassified</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
     <div class="filters" id="filters">
       <span class="chip active" data-cat="All">All</span><span class="chip" data-cat="Backoffice">Back Office</span><span class="chip" data-cat="Software">Software</span><span class="chip" data-cat="Hardware">Hardware</span><span class="chip" data-cat="Network">Network</span><span class="chip" data-cat="General">General</span>
       <input type="date" id="date-from" title="From"><input type="date" id="date-to" title="To">
@@ -7004,7 +7005,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
   if(!validateServiceForm())return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
-  const duplicates=visitWorkLocation()==='On-Site Visit'?entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&workLocationForEntry(row)!=='EM Office'&&workLocationForEntry(row)!=='Others'&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)):[];
+  const selectedSupportMethod=visitWorkLocation()==='On-Site Visit'?document.getElementById('f-resolved-via').value:'';
+  const duplicates=selectedSupportMethod?entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&workLocationForEntry(row)==='On-Site Visit'&&supportMethodForEntry(row)===supportMethodForEntry({workLocation:'On-Site Visit',resolvedVia:selectedSupportMethod})&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)):[];
   if(duplicates.length&&!confirm('Same-day visit warning: '+duplicates.length+' visit log'+(duplicates.length===1?' has':'s have')+' already been created for '+site+' on '+duplicateDate+'.\n\nDo you want to create another visit log for the same site and date?'))return;
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const saveStatus=document.getElementById('visit-save-status');
