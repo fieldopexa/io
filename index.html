@@ -3986,7 +3986,9 @@ body:has(#spare-modal[style*="display:flex"]){
 .work-location-summary-track{height:4px;background:var(--line);border-radius:999px;overflow:hidden}.work-location-summary-track i{display:block;height:100%;background:var(--accent);border-radius:999px}
 .work-location-tag{font-size:10px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink-soft)}
 #log-work-location-filter{max-width:185px}
-#visit-site-fields[style*="none"],#visit-site-client-selector[hidden],#visit-site-cabinet-fields[hidden],#other-client-field[hidden]{display:none!important}
+#visit-site-fields[style*="none"],#visit-site-client-selector[hidden],#visit-site-cabinet-fields[hidden],#other-client-field[hidden],
+#panel-log #field-visit-support-mode[hidden]{display:none!important}
+#panel-log #visit-type-row.office-duty #visit-supporting-fses-field{grid-column:1/-1}
 @media(max-width:700px){.work-location-breakdown{padding:14px}.work-location-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#log-work-location-filter{max-width:none;width:100%}}
 </style>
 </head>
@@ -4135,7 +4137,15 @@ body:has(#spare-modal[style*="display:flex"]){
             <option value="EM Office">EM Office / OPD</option>
             <option value="Others">Others</option>
           </select>
-          <small id="work-location-hint" class="muted">Choose where the activity was performed. Activity Type stays separate.</small>
+          <small id="work-location-hint" class="muted">Choose where this activity was performed.</small>
+        </div>
+        <div class="field" id="field-visit-activity-type">
+          <label for="f-visit-type">Activity Type</label>
+          <select id="f-visit-type">
+            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option><option>Post-Op</option><option>Pre-Ops</option>
+            <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
+            <option hidden>Follow-up</option><option>Other</option>
+          </select>
         </div>
       </div>
       <div class="row" id="visit-type-row">
@@ -4146,13 +4156,12 @@ body:has(#spare-modal[style*="display:flex"]){
             <option>Remote</option>
           </select>
         </div>
-        <div class="field">
-          <label for="f-visit-type">Activity Type</label>
-          <select id="f-visit-type">
-            <option selected>Routine Visit</option><option>Breakdown / Incident</option><option>Preventive Maintenance</option><option>Installation</option><option>Post-Op</option><option>Pre-Ops</option>
-            <option>Pull-out</option><option>Transfer</option><option>Training</option><option>Ocular / Inspection</option>
-            <option hidden>Follow-up</option><option>Other</option>
-          </select>
+        <div class="field" id="visit-supporting-fses-field">
+          <label>Supporting FSEs <span class="muted">(optional)</span></label>
+          <div class="team-support-box">
+            <div class="team-support-head"><span>Who joined this activity?</span><small>Select everyone who supported the visit.</small></div>
+            <div id="f-supporting-options" class="team-chip-list"></div>
+          </div>
         </div>
       </div>
       <div class="row" id="visit-site-fields">
@@ -4194,13 +4203,6 @@ body:has(#spare-modal[style*="display:flex"]){
           <div class="field">
             <label for="f-ticket">Ticket / Incident # <span class="muted">(optional)</span></label>
             <input type="text" id="f-ticket" placeholder="e.g. 839251">
-          </div>
-          <div class="field">
-            <label>Supporting FSEs <span class="muted">(optional)</span></label>
-            <div class="team-support-box">
-              <div class="team-support-head"><span>Who joined this activity?</span><small>Select everyone who supported the visit.</small></div>
-              <div id="f-supporting-options" class="team-chip-list"></div>
-            </div>
           </div>
         </div>
       </details>
@@ -5641,6 +5643,10 @@ function updateWorkLocationUI(){
   const clientSelector=document.getElementById('visit-site-client-selector');
   const cabinetFields=document.getElementById('visit-site-cabinet-fields');
   const cabinet=document.getElementById('visit-cabinet-card');
+  const supportField=document.getElementById('field-visit-support-mode');
+  const supportRow=document.getElementById('visit-type-row');
+  if(supportField)supportField.hidden=location==='EM Office';
+  if(supportRow)supportRow.classList.toggle('office-duty',location==='EM Office');
   const otherClientField=document.getElementById('other-client-field');
   const showOtherClient=otherDuty||(onsite&&document.getElementById('f-site')?.value==='Others');
   if(siteFields)siteFields.style.display=(onsite||otherDuty)?'':'none';
@@ -6998,7 +7004,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:String(existing?.workLocationDetail||''),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:String(existing?.workLocationDetail||''),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:visitWorkLocation()==='EM Office'?(existing?.resolvedVia||''):(showExtra?document.getElementById('f-resolved-via').value:''),timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   entry.serviceForm=readServiceForm();
   entry.siteSelection=visitWorkLocation()==='On-Site Visit'&&document.getElementById('f-site').value==='Others'?'Others':'';
@@ -12061,6 +12067,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   #panel-log #field-asset > .field { flex: 0 1 420px; max-width: 420px; }
   #panel-log .visit-more-details { margin: 10px 0; }
   #panel-log .visit-additional-fields { margin: 4px 0 8px !important; }
+  #panel-log #visit-additional-details .visit-additional-fields > .field { flex: 0 1 calc(50% - 8px); max-width: calc(50% - 8px); }
   #panel-log #field-resolution-action textarea { min-height: 96px; }
   #panel-log .visit-attachments-box { margin-top: 10px; padding: 14px !important; }
   #panel-log #submit-btn {
