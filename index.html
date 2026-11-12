@@ -3988,7 +3988,11 @@ body:has(#spare-modal[style*="display:flex"]){
 #log-work-location-filter{max-width:185px}
 #visit-site-fields[style*="none"],#visit-site-client-selector[hidden],#visit-site-cabinet-fields[hidden],#other-client-field[hidden],
 #panel-log #field-visit-support-mode[hidden]{display:none!important}
-#panel-log #visit-type-row.office-duty #visit-supporting-fses-field{grid-column:1/-1}
+#panel-log #visit-type-row[hidden],
+#panel-log .visit-step-panel[data-visit-step="1"] > #visit-site-fields[style*="none"]{display:none!important}
+#panel-log #visit-type-row.solo-client > .field:first-child{grid-column:1/-1}
+#panel-log #visit-site-fields > .field{grid-column:1/-1}
+.work-location-method-split{display:block;font-size:10px;color:var(--ink-soft);line-height:1.45;margin:2px 0 8px}
 @media(max-width:700px){.work-location-breakdown{padding:14px}.work-location-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#log-work-location-filter{max-width:none;width:100%}}
 </style>
 </head>
@@ -4131,13 +4135,13 @@ body:has(#spare-modal[style*="display:flex"]){
       </div>
       <div class="row" id="visit-work-location-row">
         <div class="field">
-          <label for="f-work-location">Work Location / Duty Type <span class="field-required">Required</span></label>
+          <label for="f-work-location">Duty Type <span class="field-required">Required</span></label>
           <select id="f-work-location" aria-describedby="work-location-hint">
-            <option value="On-Site Visit" selected>On-Site Visit</option>
+            <option value="On-Site Visit" selected>Client / Site Support</option>
             <option value="EM Office">EM Office / OPD</option>
             <option value="Others">Others</option>
           </select>
-          <small id="work-location-hint" class="muted">Choose where this activity was performed.</small>
+          <small id="work-location-hint" class="muted">Choose the type of work being logged.</small>
         </div>
         <div class="field" id="field-visit-activity-type">
           <label for="f-visit-type">Activity Type</label>
@@ -4149,22 +4153,6 @@ body:has(#spare-modal[style*="display:flex"]){
         </div>
       </div>
       <div class="row" id="visit-type-row">
-        <div class="field" id="field-visit-support-mode">
-          <label for="f-resolved-via">Support type</label>
-          <select id="f-resolved-via">
-            <option>Site visit</option>
-            <option>Remote</option>
-          </select>
-        </div>
-        <div class="field" id="visit-supporting-fses-field">
-          <label>Supporting FSEs <span class="muted">(optional)</span></label>
-          <div class="team-support-box">
-            <div class="team-support-head"><span>Who joined this activity?</span><small>Select everyone who supported the visit.</small></div>
-            <div id="f-supporting-options" class="team-chip-list"></div>
-          </div>
-        </div>
-      </div>
-      <div class="row" id="visit-site-fields">
         <div class="field">
           <div id="visit-site-client-selector">
             <label for="f-site">Client <span class="field-required">Required</span></label>
@@ -4184,6 +4172,15 @@ body:has(#spare-modal[style*="display:flex"]){
             <small id="other-client-help" class="muted">Used for this log, service form and reports. This will not add a client to the directory.</small>
           </div>
         </div>
+        <div class="field" id="field-visit-support-mode">
+          <label for="f-resolved-via">Support Method</label>
+          <select id="f-resolved-via">
+            <option value="Site visit">On-Site</option>
+            <option value="Remote">Remote</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="visit-site-fields">
         <div class="field" id="visit-site-cabinet-fields">
           <label>Cabinet <span class="muted">(optional)</span></label>
           <select id="f-cabinet-quick" tabindex="-1" aria-hidden="true">
@@ -4204,6 +4201,13 @@ body:has(#spare-modal[style*="display:flex"]){
             <label for="f-ticket">Ticket / Incident # <span class="muted">(optional)</span></label>
             <input type="text" id="f-ticket" placeholder="e.g. 839251">
           </div>
+        <div class="field" id="visit-supporting-fses-field">
+          <label>Supporting FSEs <span class="muted">(optional)</span></label>
+          <div class="team-support-box">
+            <div class="team-support-head"><span>Who joined this activity?</span><small>Select everyone who supported the visit.</small></div>
+            <div id="f-supporting-options" class="team-chip-list"></div>
+          </div>
+        </div>
         </div>
       </details>
       </div>
@@ -4391,7 +4395,7 @@ body:has(#spare-modal[style*="display:flex"]){
   <div class="panel" id="panel-fieldlogs">
     <div class="section-head compact-head fieldlogs-create-action"><button class="btn-secondary" id="fieldlogs-new-btn">＋ New Visit</button></div>
     <div class="global-search"><span>⌕</span><input id="global-search" type="search" placeholder="Search tracking #, ticket #, site, FSE, notes, resolution…"></div>
-    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="log-work-location-filter" aria-label="Filter Field Logs by work location"><option value="">All work locations</option><option value="EM Office">EM Office / OPD</option><option>On-Site Visit</option><option>Others</option><option value="Legacy / Unclassified">Legacy / Unclassified</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
+    <div class="log-toolbar"><div class="work-toggle" id="work-toggle"><button class="active" data-work="all">All FSEs</button><button data-work="mine">My Work</button></div><select id="log-fse-filter" aria-label="Filter Field Logs by technician"><option value="">All technicians</option></select><select id="log-work-location-filter" aria-label="Filter Field Logs by duty type"><option value="">All duty types</option><option value="EM Office">EM Office / OPD</option><option value="On-Site Visit">Client / Site Support</option><option>Others</option><option value="Legacy / Unclassified">Legacy / Unclassified</option></select><select id="my-fse" style="display:none;max-width:180px;"></select></div>
     <div class="filters" id="filters">
       <span class="chip active" data-cat="All">All</span><span class="chip" data-cat="Backoffice">Back Office</span><span class="chip" data-cat="Software">Software</span><span class="chip" data-cat="Hardware">Hardware</span><span class="chip" data-cat="Network">Network</span><span class="chip" data-cat="General">General</span>
       <input type="date" id="date-from" title="From"><input type="date" id="date-to" title="To">
@@ -5619,10 +5623,10 @@ const FSM_WORK_LOCATIONS=['EM Office','On-Site Visit','Others'];
 const FSM_WORK_LOCATION_FALLBACK='Legacy / Unclassified';
 function normalizeWorkLocationValue(value){
   const name=String(value||'').trim();
-  return name==='OPD'||name==='EM Office / OPD'?'EM Office':(FSM_WORK_LOCATIONS.includes(name)?name:'');
+  return name==='OPD'||name==='EM Office / OPD'?'EM Office':(name==='Client / Site Support'?'On-Site Visit':(FSM_WORK_LOCATIONS.includes(name)?name:''));
 }
 function workLocationLabel(value){
-  return value==='EM Office'?'EM Office / OPD':value;
+  return value==='EM Office'?'EM Office / OPD':value==='On-Site Visit'?'Client / Site Support':value;
 }
 function visitWorkLocation(){
   return normalizeWorkLocationValue(document.getElementById('f-work-location')?.value)||'On-Site Visit';
@@ -5645,11 +5649,14 @@ function updateWorkLocationUI(){
   const cabinet=document.getElementById('visit-cabinet-card');
   const supportField=document.getElementById('field-visit-support-mode');
   const supportRow=document.getElementById('visit-type-row');
-  if(supportField)supportField.hidden=location==='EM Office';
-  if(supportRow)supportRow.classList.toggle('office-duty',location==='EM Office');
+  if(supportField)supportField.hidden=!onsite;
+  if(supportRow){
+    supportRow.hidden=!(onsite||otherDuty);
+    supportRow.classList.toggle('solo-client',otherDuty);
+  }
   const otherClientField=document.getElementById('other-client-field');
   const showOtherClient=otherDuty||(onsite&&document.getElementById('f-site')?.value==='Others');
-  if(siteFields)siteFields.style.display=(onsite||otherDuty)?'':'none';
+  if(siteFields)siteFields.style.display=onsite?'':'none';
   if(clientSelector)clientSelector.hidden=!onsite;
   if(cabinetFields)cabinetFields.hidden=!onsite;
   if(!onsite && cabinet)cabinet.style.display='none';
@@ -5664,9 +5671,17 @@ function updateWorkLocationUI(){
   if(combobox)combobox.setAttribute('aria-required',String(onsite));
   return location;
 }
+// The existing "On-Site Visit" value is retained in Sheets for compatibility.
+function supportMethodForEntry(entry){
+  if(workLocationForEntry(entry)!=='On-Site Visit')return '';
+  const method=String(entry?.resolvedVia||'').trim().toLowerCase();
+  if(method==='remote')return 'Remote';
+  if(['site visit','site','on-site','onsite'].includes(method))return 'On-Site';
+  return 'Unspecified';
+}
 function isSiteWorkLocation(entry){
-  // Only confirmed site visits count in site rankings and site risk metrics.
-  return workLocationForEntry(entry)==='On-Site Visit';
+  // Count physical visits only. Remote support never inflates site visit metrics.
+  return supportMethodForEntry(entry)==='On-Site';
 }
 function renderWorkLocationSummary(id, rows){
   const host=document.getElementById(id);
@@ -5674,9 +5689,15 @@ function renderWorkLocationSummary(id, rows){
   const source=Array.isArray(rows)?rows.filter(e=>e.status!=='Voided'):[];
   const groups=[...FSM_WORK_LOCATIONS,FSM_WORK_LOCATION_FALLBACK];
   const counts=Object.fromEntries(groups.map(name=>[name,0]));
-  source.forEach(entry=>{counts[workLocationForEntry(entry)]++;});
-  host.innerHTML='<div class="work-location-summary-heading"><h2>Work location breakdown</h2><small>'+source.length+' recorded activities</small></div>'+
-    '<div class="work-location-summary-grid">'+groups.map(name=>'<div class="work-location-summary-item"><span>'+escapeHtml(workLocationLabel(name))+'</span><b>'+counts[name]+'</b><div class="work-location-summary-track"><i style="width:'+(source.length?Math.round(counts[name]/source.length*100):0)+'%"></i></div></div>').join('')+'</div>';
+  const supportCounts={'On-Site':0,'Remote':0,'Unspecified':0};
+  source.forEach(entry=>{
+    const name=workLocationForEntry(entry);
+    counts[name]++;
+    if(name==='On-Site Visit')supportCounts[supportMethodForEntry(entry)]++;
+  });
+  const supportSplit='On-Site: '+supportCounts['On-Site']+' · Remote: '+supportCounts.Remote+(supportCounts.Unspecified?' · Unspecified: '+supportCounts.Unspecified:'');
+  host.innerHTML='<div class="work-location-summary-heading"><h2>Duty type breakdown</h2><small>'+source.length+' recorded activities</small></div>'+
+    '<div class="work-location-summary-grid">'+groups.map(name=>'<div class="work-location-summary-item"><span>'+escapeHtml(workLocationLabel(name))+'</span><b>'+counts[name]+'</b>'+(name==='On-Site Visit'?'<small class="work-location-method-split">'+escapeHtml(supportSplit)+'</small>':'')+'<div class="work-location-summary-track"><i style="width:'+(source.length?Math.round(counts[name]/source.length*100):0)+'%"></i></div></div>').join('')+'</div>';
 }
 function normalizeEntry(e){
   return {
@@ -6668,7 +6689,7 @@ function openRequestedFSMFieldLog(){
 function openDetail(id){
   const e=entries.find(x=>String(x.id)===String(id)); if(!e) return;
   const m=computeTrackingMap()[e.id]||'-';
-  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client / Location',e.site||'—'],['Work Location',workLocationLabel(workLocationForEntry(e))],['Duty Details',e.workLocationDetail||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support type',e.resolvedVia||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
+  const fields=[['Tracking #',m],['Ticket / Incident #',e.ticketNo||'—'],['Date',e.date||'—'],['Primary FSE',e.tech||'—'],['With / Supporting FSEs',parseSupportingFses(e.supportingFses).join(', ')||'—'],['Client / Location',e.site||'—'],['Work Location',workLocationLabel(workLocationForEntry(e))],['Duty Details',e.workLocationDetail||'—'],['Visit Type',e.visitType||'—'],['General Activity',e.generalType||'—'],['Category',catLabel[e.category]||e.category||'—'],['Issue Type',e.issueType||e.generalType||'—'],['Priority',e.priority||'—'],['Status',e.status||'—'],['Time In',e.timeIn||'—'],['Time Out',e.timeOut||'—'],['Duration',formatMinutes(minutesBetween(e.timeIn,e.timeOut))],['Time Resolved',e.timeResolved||'—'],['Support Method',supportMethodForEntry(e)||'—'],['Follow-up Date',e.followupDate||'—'],['Follow-up Reason',e.followupReason||'—'],['Parts / Materials',e.parts||'—'],['Issue / Notes',e.notes||'—'],['Resolution / Action Taken',e.resolution||'—'],['Resolution Type',e.resolutionType||'—'],['Machine / Equipment',e.machineNo||'—'],['Component',e.component||'—'],['Serial / Asset #',e.assetNo||'—'],['Last Updated',e.updatedAt?new Date(e.updatedAt).toLocaleString():'—']];
   document.getElementById('drawer-kicker').textContent=(e.status||'FIELD VISIT').toUpperCase(); document.getElementById('drawer-title').textContent=e.site||'Visit details';
   document.getElementById('drawer-content').innerHTML=visitDetailLayout(e,fields,m);
   if(isChatDiscussableVisit(e)){
@@ -6971,7 +6992,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   if(!site||(!simpleVisit&&!selectedCat)){
     err.style.display='block';
     if(!site){
-      err.textContent='Choose a client for the On-Site Visit.';
+      err.textContent='Choose a client for Client / Site Support.';
       window.setVisitWizardStep?.(1,false);
       const siteField=document.getElementById('location-combobox')||document.getElementById('f-site');siteField?.focus();siteField?.scrollIntoView({behavior:'smooth',block:'center'});
     }else{
@@ -6984,7 +7005,8 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const submitBtn=document.getElementById('submit-btn'); if(submitBtn.disabled)return;
   if(!validateServiceForm())return;
   const duplicateDate=document.getElementById('f-date').value||todayStr();
-  const duplicates=visitWorkLocation()==='On-Site Visit'?entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&workLocationForEntry(row)!=='EM Office'&&workLocationForEntry(row)!=='Others'&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)):[];
+  const selectedSupportMethod=visitWorkLocation()==='On-Site Visit'?document.getElementById('f-resolved-via').value:'';
+  const duplicates=selectedSupportMethod?entries.filter(row=>String(row.id)!==String(editingEntryId||'')&&String(row.status).toLowerCase()!=='voided'&&row.date===duplicateDate&&workLocationForEntry(row)==='On-Site Visit'&&supportMethodForEntry(row)===supportMethodForEntry({workLocation:'On-Site Visit',resolvedVia:selectedSupportMethod})&&normalizeSiteKey(canonicalSiteName(row.site))===normalizeSiteKey(site)):[];
   if(duplicates.length&&!confirm('Same-day visit warning: '+duplicates.length+' visit log'+(duplicates.length===1?' has':'s have')+' already been created for '+site+' on '+duplicateDate+'.\n\nDo you want to create another visit log for the same site and date?'))return;
   submitBtn.disabled=true;submitBtn.classList.add('syncing-btn');
   const saveStatus=document.getElementById('visit-save-status');
@@ -7004,7 +7026,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:String(existing?.workLocationDetail||''),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:visitWorkLocation()==='EM Office'?(existing?.resolvedVia||''):(showExtra?document.getElementById('f-resolved-via').value:''),timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:String(existing?.workLocationDetail||''),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:visitWorkLocation()==='On-Site Visit'?document.getElementById('f-resolved-via').value:(existing&&normalizeWorkLocationValue(existing.workLocation)===visitWorkLocation()?existing.resolvedVia||'':''),timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   entry.serviceForm=readServiceForm();
   entry.siteSelection=visitWorkLocation()==='On-Site Visit'&&document.getElementById('f-site').value==='Others'?'Others':'';
@@ -7841,7 +7863,7 @@ function renderReadableLog(e,tracking){
  const status=e.status||'Unspecified';const statusClass=status==='Resolved'?'resolved':status==='Pending'?'pending':status==='Follow-up'?'followup':'neutral';
  const issue=e.issueType||e.generalType||e.visitType||'Field visit';
  return `<article class="entry fieldlog-card readable-log" data-calm="true" data-entry-id="${safe(String(e.id))}">
-  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="work-location-tag">${safe(workLocationLabel(workLocationForEntry(e)))}</span><span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
+  <div class="readable-log-top"><span class="readable-log-category">${safe(catLabel[e.category]||e.category||e.visitType||'Visit')}</span><span class="work-location-tag">${safe(workLocationLabel(workLocationForEntry(e)))}</span>${workLocationForEntry(e)==='On-Site Visit'?'<span class="work-location-tag">'+safe(supportMethodForEntry(e))+'</span>':''}<span class="readable-log-status ${statusClass}"><i aria-hidden="true"></i>${safe(status)}</span></div>
   <div class="readable-log-content"><div class="readable-log-main"><button type="button" class="readable-log-site" onclick="event.stopPropagation();openSiteProfile('${escapeJs(e.site)}')">${safe(e.site||'Site not specified')}</button><div class="readable-log-issue">${safe(issue)}</div>${e.notes?`<p class="readable-log-note">${safe(e.notes)}</p>`:''}</div>
   <div class="readable-log-context"><span><small>Visit date</small>${safe(fieldLogDateParts(e.date).main)}</span><span><small>Technician</small>${safe(entryTeamLabel(e)||'Unassigned')}</span></div></div>
   <div class="readable-log-footer"><div class="readable-log-reference"><span>Visit #${safe(String(tracking||'—'))}</span>${e.ticketNo?`<span>Ticket ${safe(e.ticketNo)}</span>`:''}${Number(e.attachmentCount||0)>0?`<span>📎 ${safe(String(e.attachmentCount))}</span>`:''}${['Critical','High'].includes(e.priority)?`<span class="readable-log-urgent">${safe(e.priority)} priority</span>`:''}</div>
@@ -7861,7 +7883,7 @@ function fieldLogDateParts(dateStr){
 function fieldLogMode(e){
   const raw=String(e?.resolvedVia||'').trim().toLowerCase();
   if(raw==='remote')return {label:'Remote',cls:'fieldlog-mode-remote'};
-  if(raw==='site visit'||raw==='site')return {label:'Site Visit',cls:'fieldlog-mode-site'};
+  if(['site visit','site','on-site','onsite'].includes(raw))return {label:'On-Site',cls:'fieldlog-mode-site'};
   return {label:'Not specified',cls:'fieldlog-mode-unspecified'};
 }
 
@@ -8179,7 +8201,7 @@ document.getElementById('export-btn').addEventListener('click', ()=>{
     'Primary FSE': e.tech||'', 'Supporting FSEs': parseSupportingFses(e.supportingFses).join(', '),
     'Work location': workLocationLabel(workLocationForEntry(e)), 'Location / duty details': e.workLocationDetail||'', 'Visit type': e.visitType||'', Issue: (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'Site Monitoring':(e.notes||''), 'Resolution / Action Taken': (e.category==='General'&&(e.generalType||e.issueType)==='Site Monitoring')?'':(e.resolution||''),
     'Concern category': catLabel[e.category], 'Issue type': e.issueType||e.generalType||'', Priority: e.priority, Status: e.status,
-    'Visit / Support Mode': e.resolvedVia, 'Time in': e.timeIn, 'Time out': e.timeOut, 'Visit duration': formatMinutes(minutesBetween(e.timeIn,e.timeOut)),
+    'Support Method': supportMethodForEntry(e), 'Time in': e.timeIn, 'Time out': e.timeOut, 'Visit duration': formatMinutes(minutesBetween(e.timeIn,e.timeOut)),
     'Time resolved': e.timeResolved, 'Follow-up date': e.followupDate||'', 'Follow-up reason': e.followupReason||'',
     'Parts / Materials': e.parts||''
   }));
