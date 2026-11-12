@@ -3986,7 +3986,7 @@ body:has(#spare-modal[style*="display:flex"]){
 .work-location-summary-track{height:4px;background:var(--line);border-radius:999px;overflow:hidden}.work-location-summary-track i{display:block;height:100%;background:var(--accent);border-radius:999px}
 .work-location-tag{font-size:10px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink-soft)}
 #log-work-location-filter{max-width:185px}
-#visit-site-fields[style*="none"],#panel-log #visit-work-location-detail-row[hidden]{display:none!important}
+#visit-site-fields[style*="none"]{display:none!important}
 @media(max-width:700px){.work-location-breakdown{padding:14px}.work-location-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#log-work-location-filter{max-width:none;width:100%}}
 </style>
 </head>
@@ -4136,12 +4136,6 @@ body:has(#spare-modal[style*="display:flex"]){
             <option value="Others">Others</option>
           </select>
           <small id="work-location-hint" class="muted">Choose where the activity was performed. Activity Type stays separate.</small>
-        </div>
-      </div>
-      <div class="row" id="visit-work-location-detail-row" hidden>
-        <div class="field">
-          <label for="f-work-location-detail" id="work-location-detail-label">Location / Duty Details (optional)</label>
-          <input type="text" id="f-work-location-detail" maxlength="200" placeholder="Optional location, unit, or activity details">
         </div>
       </div>
       <div class="row" id="visit-type-row">
@@ -5642,17 +5636,8 @@ function updateWorkLocationUI(){
   const onsite=location==='On-Site Visit';
   const siteFields=document.getElementById('visit-site-fields');
   const cabinet=document.getElementById('visit-cabinet-card');
-  const detailRow=document.getElementById('visit-work-location-detail-row');
-  const detail=document.getElementById('f-work-location-detail');
-  const label=document.getElementById('work-location-detail-label');
   if(siteFields)siteFields.style.display=onsite?'':'none';
   if(!onsite && cabinet)cabinet.style.display='none';
-  if(detailRow)detailRow.hidden=onsite;
-  if(detail){
-    detail.required=location==='Others';
-    detail.placeholder=location==='EM Office'?'Office / OPD department, activity or work area (optional)':'Enter the location or duty performed';
-  }
-  if(label)label.textContent=location==='Others'?'Location / Duty Details (required)':'Location / Duty Details (optional)';
   const otherClient=document.getElementById('f-other-client');
   if(otherClient)otherClient.required=onsite&&document.getElementById('f-site')?.value==='Others';
   const siteProfile=document.getElementById('site-profile');
@@ -5662,14 +5647,6 @@ function updateWorkLocationUI(){
   const combobox=document.getElementById('location-combobox');
   if(combobox)combobox.setAttribute('aria-required',String(onsite));
   return location;
-}
-function validateWorkLocationDetail(){
-  if(visitWorkLocation()!=='Others')return true;
-  const detail=document.getElementById('f-work-location-detail');
-  if(detail?.value.trim())return true;
-  window.setVisitWizardStep?.(1,false);
-  detail?.focus();detail?.reportValidity();
-  return false;
 }
 function isSiteWorkLocation(entry){
   // Only confirmed site visits count in site rankings and site risk metrics.
@@ -6969,7 +6946,7 @@ document.querySelectorAll('#cat-picker .cat-opt').forEach(el=>{
 });
 
 document.getElementById('submit-btn').addEventListener('click', async ()=>{
-  if(!validateWorkLocationDetail()||!validateOtherClient())return;
+  if(!validateOtherClient())return;
   const site=visitClientName();
   const err=document.getElementById('err-msg');
   const visitType=document.getElementById('f-visit-type').value;
@@ -7011,7 +6988,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
   const trackedSpare={partId:document.getElementById('f-spare-part')?.value||'',quantity:Number(document.getElementById('f-spare-qty')?.value||1),actionType:document.getElementById('f-spare-action')?.value||'Installed / Used',removedSerial:document.getElementById('f-removed-serial')?.value.trim()||'',removedDisposition:document.getElementById('f-removed-disposition')?.value||'',removedLocation:document.getElementById('f-removed-location')?.value.trim()||''};
   const entry={
     ...(existing||{}), id:isEdit?editingEntryId:Date.now().toString(36),
-    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:(visitWorkLocation()==='On-Site Visit'?'':document.getElementById('f-work-location-detail').value.trim()),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
+    date,week:weekKey(date),month:monthKey(date),quarter:quarterKey(date),workLocation:visitWorkLocation(),workLocationDetail:String(existing?.workLocationDetail||''),tech:document.getElementById('f-tech').value,supportingFses:getSupportingFses().join(', '),ticketNo:document.getElementById('f-ticket').value.trim(),visitType,site,status:simpleVisit?'Resolved':document.getElementById('f-status').value,category:isAutoGeneralActivity(visitType)?'General':(simpleVisit?'':selectedCat),issueType:simpleVisit?'':(document.getElementById('f-issue-type')?.value||''),generalType:(simpleVisit||selectedCat==='General')?visitType:'',notes:document.getElementById('f-notes').value.trim(),timeIn:document.getElementById('f-time-in').value,timeOut:document.getElementById('f-time-out').value,resolvedVia:showExtra?document.getElementById('f-resolved-via').value:'',timeResolved:isResolved?document.getElementById('f-time-resolved').value:'',priority:document.getElementById('f-priority').value,resolution:simpleVisit?'':((selectedCat==='General'&&document.getElementById('f-issue-type')?.value==='Site Monitoring')?'':document.getElementById('f-resolution').value.trim()),resolutionType:simpleVisit?'':document.getElementById('f-resolution-type').value,machineNo:simpleVisit?'':document.getElementById('f-machine').value.trim(),component:simpleVisit?'':document.getElementById('f-component').value.trim(),assetNo:simpleVisit?'':document.getElementById('f-asset').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now,audit:[...(existing?.audit||[]),{at:now,by:(currentUser?.role==='management'?(currentUser.name||currentUser.username||'Management'):document.getElementById('f-tech').value),action:isEdit?'Visit updated':'Visit created'}],followupDate:simpleVisit?'':document.getElementById('f-followup-date').value,followupReason:simpleVisit?'':document.getElementById('f-followup-reason').value.trim(),parts:simpleVisit?'':document.getElementById('f-parts').value.trim()
   };
   entry.serviceForm=readServiceForm();
   entry.siteSelection=visitWorkLocation()==='On-Site Visit'&&document.getElementById('f-site').value==='Others'?'Others':'';
@@ -7064,7 +7041,7 @@ document.getElementById('submit-btn').addEventListener('click', async ()=>{
       saveWarning||(filesToUpload.length?`${filesToUpload.length} attachment${filesToUpload.length===1?' is':'s are'} uploading in the background.`:`${entry.date} · ${entry.site} · ${catLabel[entry.category]||entry.category||entry.visitType||'Visit'}`),
       saveWarning?'bad':'ok'
     );
-    cancelVisitEdit();restoreServiceForm(null);restoreOtherClient();document.getElementById('f-work-location').value='On-Site Visit';document.getElementById('f-work-location-detail').value='';updateWorkLocationUI();
+    cancelVisitEdit();restoreServiceForm(null);restoreOtherClient();document.getElementById('f-work-location').value='On-Site Visit';updateWorkLocationUI();
     document.getElementById('f-notes').value='';document.getElementById('f-ticket').value='';document.getElementById('f-time-out').value='';document.getElementById('f-duration').value='';document.getElementById('f-resolution').value='';document.getElementById('f-resolution-type').value='';document.getElementById('f-machine').value='';document.getElementById('f-component').value='';document.getElementById('f-asset').value='';document.getElementById('f-followup-date').value='';document.getElementById('f-followup-reason').value='';document.getElementById('f-parts').value='';document.getElementById('f-time-resolved').value='';document.getElementById('f-time-in').value='';
     clearPendingVisitAttachments();
     if(document.getElementById('f-spare-part'))document.getElementById('f-spare-part').value='';if(document.getElementById('f-spare-qty'))document.getElementById('f-spare-qty').value='1';renderSupportingFses('');document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');document.getElementById('cat-desc').textContent='';selectedCat=null;document.getElementById('issue-type-options').style.display='none';document.getElementById('f-issue-type').innerHTML='';document.getElementById('resolution-extra').style.display='none';updateVisitTypeFlow(false);window.resetVisitWizard?.();
@@ -7111,7 +7088,7 @@ document.getElementById('log-fse-filter').addEventListener('change',render);
 document.getElementById('log-work-location-filter').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';document.getElementById('f-work-location').value=normalizeWorkLocationValue(e.workLocation)||'On-Site Visit';document.getElementById('f-work-location-detail').value=e.workLocationDetail||'';updateWorkLocationUI();renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';document.getElementById('f-work-location').value=normalizeWorkLocationValue(e.workLocation)||'On-Site Visit';updateWorkLocationUI();renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
   window.setVisitWizardStep?.(1,false);
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
@@ -7127,7 +7104,7 @@ function editFieldLog(id){
   document.getElementById('f-time-out').value=e.timeOut||'';
   document.getElementById('f-tech').value=e.tech||'';
   document.getElementById('f-work-location').value=normalizeWorkLocationValue(e.workLocation)||'On-Site Visit';
-  document.getElementById('f-work-location-detail').value=e.workLocationDetail||'';
+  
   updateWorkLocationUI();
   renderSupportingFses(e.supportingFses||'');
   renderSiteOptions(canonicalSiteName(e.site||''));
@@ -11718,7 +11695,7 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(siteError){siteError.textContent='Choose a client before continuing.';siteError.style.display='block';}
       (document.getElementById('location-combobox')||document.getElementById('f-site'))?.focus();return;
     }
-    if(activeStep===1&&(!validateWorkLocationDetail()||!validateOtherClient()))return;
+    if(activeStep===1&&!validateOtherClient())return;
     if(activeStep===2&&!isSimple()&&!isAutoGeneralActivity()&&!document.querySelector('#cat-picker .cat-opt[aria-pressed="true"]')){
       if(error){error.textContent='Choose a concern to continue.';error.style.display='block';}
       document.querySelector('#cat-picker .cat-opt')?.focus();return;

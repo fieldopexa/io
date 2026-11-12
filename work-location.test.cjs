@@ -17,7 +17,10 @@ assert.match(html, /id="f-visit-type"/);
 assert.match(html, /id="log-work-location-filter"/);
 assert.match(html, /visitWorkLocation\(\)==='On-Site Visit'&&!document.getElementById\('f-site'\)/);
 assert.match(html, /workLocation:visitWorkLocation\(\)/);
-assert.match(html, /workLocationDetail:\(visitWorkLocation\(\)==='On-Site Visit'/);
+assert.doesNotMatch(html, /id="f-work-location-detail"/);
+assert.doesNotMatch(html, /id="visit-work-location-detail-row"/);
+assert.doesNotMatch(html, /validateWorkLocationDetail/);
+assert.match(html, /workLocationDetail:String\(existing\?\.workLocationDetail\|\|''\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-dashboard',period\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
 
@@ -26,8 +29,7 @@ assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
 const clients = vm.createContext({
   document:{getElementById:id=>({
     'f-site':{value:''},
-    'f-other-client':{value:'',trim:()=>''},
-    'f-work-location-detail':{value:''}
+    'f-other-client':{value:'',trim:()=>''}
   }[id])},
   canonicalSiteName:v=>v,
   visitWorkLocation:()=> 'EM Office'
