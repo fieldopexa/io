@@ -21,14 +21,19 @@ assert.match(locationMarkup, /id="f-work-location"/);
 assert.match(locationMarkup, /id="f-visit-type"/);
 assert.doesNotMatch(locationMarkup, /id="f-resolved-via"/);
 assert.match(supportMarkup, /id="f-resolved-via"/);
-assert.match(supportMarkup, /id="f-supporting-options"/);
+assert.match(supportMarkup, /id="f-site"/);
+assert.match(supportMarkup, /id="f-other-client"/);
+assert.doesNotMatch(supportMarkup, /id="f-supporting-options"/);
 assert.doesNotMatch(supportMarkup, /id="f-visit-type"/);
 assert.match(additionalMarkup, /id="f-ticket"/);
-assert.doesNotMatch(additionalMarkup, /id="f-supporting-options"/);
+assert.match(additionalMarkup, /id="f-supporting-options"/);
+assert.match(html, /<option value="On-Site Visit" selected>Client \/ Site Support<\/option>/);
+assert.match(html, /<option value="Site visit">On-Site<\/option>/);
 assert.equal((html.match(/id="f-supporting-options"/g)||[]).length,1);
 assert.match(html, /#panel-log #field-visit-support-mode\[hidden\]\{display:none!important\}/);
-assert.match(html, /if\(supportField\)supportField\.hidden=location==='EM Office'/);
-assert.match(html, /resolvedVia:visitWorkLocation\(\)==='EM Office'\?\(existing\?\.resolvedVia\|\|''\)/);
+assert.match(html, /if\(supportField\)supportField\.hidden=!onsite/);
+assert.match(html, /if\(supportRow\)\{/);
+assert.match(html, /resolvedVia:visitWorkLocation\(\)==='On-Site Visit'\?document\.getElementById\('f-resolved-via'\)\.value/);
 assert.match(html, /id="log-work-location-filter"/);
 assert.match(html, /id="visit-site-client-selector"/);
 assert.match(html, /id="visit-site-cabinet-fields"/);
@@ -53,7 +58,7 @@ const supportNodes={
   'visit-site-cabinet-fields':{hidden:false},
   'visit-cabinet-card':{style:{}},
   'field-visit-support-mode':{hidden:false},
-  'visit-type-row':{classList:{classes:new Set(),toggle(name,state){if(state)this.classes.add(name);else this.classes.delete(name);}}},
+  'visit-type-row':{hidden:false,classList:{classes:new Set(),toggle(name,state){if(state)this.classes.add(name);else this.classes.delete(name);}}},
   'other-client-field':{hidden:true,style:{}},
   'f-other-client':{required:false},
   'f-site':{value:''},
@@ -69,14 +74,16 @@ vm.runInContext(html.slice(html.indexOf('function updateWorkLocationUI(){'),html
 supportNodes['f-work-location'].value='EM Office';
 workUI.updateWorkLocationUI();
 assert.equal(supportNodes['field-visit-support-mode'].hidden,true);
-assert.equal(supportNodes['visit-type-row'].classList.classes.has('office-duty'),true);
+assert.equal(supportNodes['visit-type-row'].hidden,true);
 supportNodes['f-work-location'].value='On-Site Visit';
 workUI.updateWorkLocationUI();
 assert.equal(supportNodes['field-visit-support-mode'].hidden,false);
-assert.equal(supportNodes['visit-type-row'].classList.classes.has('office-duty'),false);
+assert.equal(supportNodes['visit-type-row'].hidden,false);
 supportNodes['f-work-location'].value='Others';
 workUI.updateWorkLocationUI();
-assert.equal(supportNodes['field-visit-support-mode'].hidden,false);
+assert.equal(supportNodes['field-visit-support-mode'].hidden,true);
+assert.equal(supportNodes['visit-type-row'].hidden,false);
+assert.equal(supportNodes['visit-type-row'].classList.classes.has('solo-client'),true);
 
 // Office work needs no client. Others requires just a typed name, and
 // On-Site Visit still allows both an existing client and custom location.
@@ -128,6 +135,14 @@ vm.runInContext(html.slice(html.indexOf('function normalizeSiteKey('), html.inde
 assert.equal(locations.workLocationForEntry({workLocation:'OPD'}),'EM Office');
 assert.equal(locations.workLocationForEntry({workLocation:'EM Office'}),'EM Office');
 assert.equal(locations.workLocationLabel('EM Office'),'EM Office / OPD');
+assert.equal(locations.workLocationLabel('On-Site Visit'),'Client / Site Support');
+assert.equal(locations.normalizeWorkLocationValue('Client / Site Support'),'On-Site Visit');
+assert.equal(locations.supportMethodForEntry({workLocation:'On-Site Visit',resolvedVia:'Remote'}),'Remote');
+assert.equal(locations.supportMethodForEntry({workLocation:'On-Site Visit',resolvedVia:'Site visit'}),'On-Site');
+assert.equal(locations.supportMethodForEntry({workLocation:'On-Site Visit'}),'Unspecified');
+assert.equal(locations.isSiteWorkLocation({workLocation:'On-Site Visit',resolvedVia:'Remote'}),false);
+assert.equal(locations.isSiteWorkLocation({workLocation:'On-Site Visit',resolvedVia:'Site visit'}),true);
+assert.equal(locations.isSiteWorkLocation({site:'Big A Gaming Corp. Quezon City'}),false);
 assert.equal(locations.isSiteWorkLocation({workLocation:'OPD'}),false);
 locations.renderWorkLocationSummary('work-location-dashboard',[
   {workLocation:'OPD',status:'Resolved'},
@@ -149,14 +164,23 @@ assert.equal(locations.workLocationForEntry({site:'Big A Gaming Corp. Quezon Cit
 assert.equal(locations.workLocationForEntry({site:'Unknown location'}),'Legacy / Unclassified');
 assert.equal(locations.workLocationForEntry({site:'EM Office'}),'Legacy / Unclassified');
 assert.equal(locations.isSiteWorkLocation({site:'Unknown location'}),false);
-assert.equal(locations.isSiteWorkLocation({site:'ECP Lipa'}),true);
+assert.equal(locations.isSiteWorkLocation({site:'ECP Lipa'}),false);
+assert.equal(locations.isSiteWorkLocation({site:'ECP Lipa',resolvedVia:'Site visit'}),true);
+assert.equal(locations.isSiteWorkLocation({site:'ECP Lipa',resolvedVia:'Remote'}),false);
 locations.renderWorkLocationSummary('work-location-dashboard',[
   {site:'ECP Angono',status:'Resolved'},
   {site:'Big A Gaming Corp. Quezon City',status:'Resolved'},
   {site:'ECP Lipa',workLocation:'Others',status:'Resolved'},
   {site:'Unrecognized',status:'Resolved'}
 ]);
-assert.match(summaryNode.innerHTML, /On-Site Visit<\/span><b>2<\/b>/);
+assert.match(summaryNode.innerHTML, /Client \/ Site Support<\/span><b>2<\/b>/);
+assert.match(summaryNode.innerHTML, /Unspecified: 2/);
+locations.renderWorkLocationSummary('work-location-dashboard',[
+  {site:'ECP Angono',resolvedVia:'Site visit',status:'Resolved'},
+  {site:'ECP Lipa',resolvedVia:'Remote',status:'Resolved'},
+  {site:'Big A Gaming Corp. Quezon City',status:'Resolved'}
+]);
+assert.match(summaryNode.innerHTML, /On-Site: 1 · Remote: 1 · Unspecified: 1/);
 assert.match(summaryNode.innerHTML, /Others<\/span><b>1<\/b>/);
 assert.match(summaryNode.innerHTML, /Legacy \/ Unclassified<\/span><b>1<\/b>/);
 
