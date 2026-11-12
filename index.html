@@ -3986,7 +3986,7 @@ body:has(#spare-modal[style*="display:flex"]){
 .work-location-summary-track{height:4px;background:var(--line);border-radius:999px;overflow:hidden}.work-location-summary-track i{display:block;height:100%;background:var(--accent);border-radius:999px}
 .work-location-tag{font-size:10px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink-soft)}
 #log-work-location-filter{max-width:185px}
-#visit-site-fields[style*="none"]{display:none!important}
+#visit-site-fields[style*="none"],#visit-site-client-selector[hidden],#visit-site-cabinet-fields[hidden],#other-client-field[hidden]{display:none!important}
 @media(max-width:700px){.work-location-breakdown{padding:14px}.work-location-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#log-work-location-filter{max-width:none;width:100%}}
 </style>
 </head>
@@ -4157,8 +4157,9 @@ body:has(#spare-modal[style*="display:flex"]){
       </div>
       <div class="row" id="visit-site-fields">
         <div class="field">
+          <div id="visit-site-client-selector">
             <label for="f-site">Client <span class="field-required">Required</span></label>
-          <div style="display:flex; gap:6px;">
+            <div style="display:flex; gap:6px;">
             <select id="f-site" style="flex:1;"></select>
             <button type="button" id="add-site-btn" title="Add new site" style="width:36px; border:1px solid var(--line); border-radius:9px; background:var(--input-bg); font-size:16px; cursor:pointer; color:var(--ink-soft);">+</button>
           </div>
@@ -4166,14 +4167,15 @@ body:has(#spare-modal[style*="display:flex"]){
             <input type="text" id="new-site-input" placeholder="New site name" style="flex:1;">
             <button type="button" id="save-site-btn" class="btn-secondary">Save</button>
           </div>
-          <div class="err" id="site-err" style="display:none;">Enter a site name first.</div>
+            <div class="err" id="site-err" style="display:none;">Enter a site name first.</div>
+          </div>
           <div id="other-client-field" hidden style="margin-top:12px">
             <label for="f-other-client">Client / site name <span class="field-required">Required</span></label>
             <input id="f-other-client" type="text" maxlength="200" placeholder="Enter the client or site visited" aria-describedby="other-client-help">
             <small id="other-client-help" class="muted">Used for this log, service form and reports. This will not add a client to the directory.</small>
           </div>
         </div>
-        <div class="field">
+        <div class="field" id="visit-site-cabinet-fields">
           <label>Cabinet <span class="muted">(optional)</span></label>
           <select id="f-cabinet-quick" tabindex="-1" aria-hidden="true">
             <option value="">No cabinet selected</option>
@@ -5634,12 +5636,20 @@ function workLocationForEntry(entry){
 function updateWorkLocationUI(){
   const location=visitWorkLocation();
   const onsite=location==='On-Site Visit';
+  const otherDuty=location==='Others';
   const siteFields=document.getElementById('visit-site-fields');
+  const clientSelector=document.getElementById('visit-site-client-selector');
+  const cabinetFields=document.getElementById('visit-site-cabinet-fields');
   const cabinet=document.getElementById('visit-cabinet-card');
-  if(siteFields)siteFields.style.display=onsite?'':'none';
+  const otherClientField=document.getElementById('other-client-field');
+  const showOtherClient=otherDuty||(onsite&&document.getElementById('f-site')?.value==='Others');
+  if(siteFields)siteFields.style.display=(onsite||otherDuty)?'':'none';
+  if(clientSelector)clientSelector.hidden=!onsite;
+  if(cabinetFields)cabinetFields.hidden=!onsite;
   if(!onsite && cabinet)cabinet.style.display='none';
+  if(otherClientField){otherClientField.hidden=!showOtherClient;otherClientField.style.marginTop=otherDuty?'0':'12px';}
   const otherClient=document.getElementById('f-other-client');
-  if(otherClient)otherClient.required=onsite&&document.getElementById('f-site')?.value==='Others';
+  if(otherClient)otherClient.required=showOtherClient;
   const siteProfile=document.getElementById('site-profile');
   if(!onsite&&siteProfile)siteProfile.style.display='none';
   const err=document.getElementById('site-err');
@@ -7088,7 +7098,7 @@ document.getElementById('log-fse-filter').addEventListener('change',render);
 document.getElementById('log-work-location-filter').addEventListener('change',render);
 
 function copyTracking(id){const e=entries.find(x=>x.id===id);if(!e)return;const n=computeTrackingMap()[id]||'';navigator.clipboard?.writeText('#'+n);}
-function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';document.getElementById('f-work-location').value=normalizeWorkLocationValue(e.workLocation)||'On-Site Visit';updateWorkLocationUI();renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
+function duplicateEntry(id){const e=entries.find(x=>x.id===id);if(!e)return;if(!canEditFieldLog(e)){fieldLogEditDenied();return;}clearPendingVisitAttachments();if(document.getElementById('f-cabinet-quick'))document.getElementById('f-cabinet-quick').value='';renderVisitCabinetCard(null);document.querySelector('.tab[data-tab="log"]')?.click();document.getElementById('f-date').value=e.date;document.getElementById('f-time-in').value=e.timeIn||'';document.getElementById('f-tech').value=e.tech||'';document.getElementById('f-work-location').value=normalizeWorkLocationValue(e.workLocation)||'On-Site Visit';updateWorkLocationUI();renderSupportingFses(e.supportingFses||'');renderSiteOptions(e.site);restoreOtherClient(e);document.getElementById('f-ticket').value=e.ticketNo||'';document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';document.getElementById('f-status').value=e.status==='Voided'?'Pending':e.status;document.getElementById('f-operation-stopped').checked=!!e.operationStopped;document.getElementById('f-priority').value=e.priority||'Medium';document.getElementById('f-notes').value=e.notes||'';document.getElementById('f-resolution').value=e.resolution||'';document.getElementById('f-resolution-type').value=e.resolutionType||'';document.getElementById('f-machine').value=e.machineNo||'';document.getElementById('f-component').value=e.component||'';document.getElementById('f-asset').value=e.assetNo||'';selectedCat=e.category;document.querySelectorAll('#cat-picker .cat-opt').forEach(o=>o.className='cat-opt');const c=document.querySelector(`#cat-picker .cat-opt[data-cat="${e.category}"]`);if(c)c.classList.add('cat-opt','sel-'+e.category);document.getElementById('cat-desc').textContent=catDesc[e.category]||'';renderIssueTypeOptions(e.issueType||e.generalType||'');updateVisitTypeFlow(false);closeDetail();}
 function editFieldLog(id){
   window.setVisitWizardStep?.(1,false);
   const e=entries.find(x=>String(x.id)===String(id)); if(!e)return;
@@ -7108,7 +7118,7 @@ function editFieldLog(id){
   updateWorkLocationUI();
   renderSupportingFses(e.supportingFses||'');
   renderSiteOptions(canonicalSiteName(e.site||''));
-  if(visitWorkLocation()==='On-Site Visit')restoreOtherClient(e);
+  if(visitWorkLocation()==='On-Site Visit'||visitWorkLocation()==='Others')restoreOtherClient(e);
   document.getElementById('f-ticket').value=e.ticketNo||'';
   document.getElementById('f-visit-type').value=e.visitType||'Breakdown / Incident';
   document.getElementById('f-status').value=e.status==='Voided'?'Pending':(e.status||'Pending');
@@ -11356,7 +11366,7 @@ html{scrollbar-gutter:stable}
 <script id="other-visit-location-hint">
 (function(){
  const site=document.getElementById('f-site');
- function update(){const other=site.value==='Others';document.getElementById('other-client-field').hidden=!other;document.getElementById('f-other-client').required=other&&visitWorkLocation()==='On-Site Visit';}
+ function update(){updateWorkLocationUI();}
  site.addEventListener('change',update);new MutationObserver(update).observe(site,{childList:true});update();
 })();
 </script>
@@ -12389,7 +12399,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 #panel-log #visit-additional-details{border:0!important;background:transparent!important;padding:0!important;margin-top:14px!important;box-shadow:none!important}
 #panel-log #visit-additional-details .visit-additional-fields{padding:0!important}
 </style>
-<script src="service-form.js"></script>
+<script src="service-form.js?v=20261112-others-client"></script>
 
 <style id="desktop-dashboard-banner">
 @media(max-width:900px){body #panel-dashboard .dashboard-head-premium{display:none!important}}
