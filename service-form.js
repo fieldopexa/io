@@ -1,24 +1,27 @@
 /* Optional service forms share the field visit's save and audit lifecycle. */
 function visitClientName() {
-  // Internal and miscellaneous duties are not client site visits.
   const workLocation=visitWorkLocation();
-  if(workLocation!=='On-Site Visit')return workLocation;
+  if(workLocation==='EM Office')return workLocation;
+  // Other duties name the client/location directly, without a site dropdown.
+  if(workLocation==='Others')return document.getElementById('f-other-client').value.trim();
   const selected=document.getElementById('f-site').value;
   return selected==='Others' ? document.getElementById('f-other-client').value.trim() : canonicalSiteName(selected);
 }
 function validateOtherClient() {
   const input=document.getElementById('f-other-client');
-  if(visitWorkLocation()!=='On-Site Visit'||document.getElementById('f-site').value!=='Others'||input.value.trim())return true;
+  const location=visitWorkLocation();
+  const required=location==='Others'||(location==='On-Site Visit'&&document.getElementById('f-site').value==='Others');
+  if(!required||input.value.trim())return true;
   window.setVisitWizardStep?.(1,false);
   input.required=true; input.focus(); input.reportValidity(); return false;
 }
 function restoreOtherClient(entry) {
   const selection=entry?.siteSelection ?? [...(entry?.audit||[])].reverse().find(item=>Object.prototype.hasOwnProperty.call(item,'siteSelection'))?.siteSelection;
-  const other=selection==='Others';
-  document.getElementById('f-other-client').value=other ? entry.site : '';
-  if(other)document.getElementById('f-site').value='Others';
-  document.getElementById('other-client-field').hidden=document.getElementById('f-site').value!=='Others';
-  document.getElementById('f-other-client').required=visitWorkLocation()==='On-Site Visit'&&document.getElementById('f-site').value==='Others';
+  const location=visitWorkLocation();
+  const other=location==='Others'||(location==='On-Site Visit'&&selection==='Others');
+  document.getElementById('f-other-client').value=other ? (entry?.site||'') : '';
+  if(location==='On-Site Visit'&&selection==='Others')document.getElementById('f-site').value='Others';
+  updateWorkLocationUI();
 }
 function serviceFormForEntry(entry) {
   const decode=value=>{
