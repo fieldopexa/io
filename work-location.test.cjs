@@ -42,7 +42,7 @@ assert.match(html, /id="log-work-location-filter"/);
 assert.match(html, /id="visit-site-client-selector"/);
 assert.match(html, /id="visit-site-cabinet-fields"/);
 assert.match(html, /const showOtherClient=otherDuty\|\|\(onsite/);
-assert.match(html, /siteFields\.style\.display=\(onsite\|\|otherDuty\)/);
+assert.match(html, /siteFields\.style\.display=onsite\?/);
 assert.match(html, /if\(clientSelector\)clientSelector\.hidden=!onsite/);
 assert.match(html, /if\(cabinetFields\)cabinetFields\.hidden=!onsite/);
 assert.match(html, /visitWorkLocation\(\)==='On-Site Visit'&&!document.getElementById\('f-site'\)/);
@@ -54,7 +54,7 @@ assert.match(html, /workLocationDetail:String\(existing\?\.workLocationDetail\|\
 assert.match(html, /renderWorkLocationSummary\('work-location-dashboard',period\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
 
-// Support Type is hidden for office duty, visible for on-site and Others.
+// Support Method is visible only for Client / Site Support.
 const supportNodes={
   'f-work-location':{value:'On-Site Visit'},
   'visit-site-fields':{style:{}},
