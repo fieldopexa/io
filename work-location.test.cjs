@@ -30,7 +30,7 @@ assert.match(additionalMarkup, /id="f-supporting-options"/);
 assert.match(html, /<option value="On-Site Visit" selected>Client \/ Site Support<\/option>/);
 assert.match(html, /<option value="Site visit">On-Site<\/option>/);
 assert.match(html, /<option value="Remote">Remote<\/option>/);
-assert.match(html, /#visit-site-fields\[style\*="none"\]\{display:none!important\}/);
+assert.match(html, /#panel-log \.visit-step-panel\[data-visit-step="1"\] > #visit-site-fields\[style\*="none"\]\{display:none!important\}/);
 assert.match(html, /const selectedSupportMethod=visitWorkLocation\(\)==='On-Site Visit'/);
 assert.match(html, /supportMethodForEntry\(row\)===supportMethodForEntry\(/);
 assert.equal((html.match(/id="f-supporting-options"/g)||[]).length,1);
