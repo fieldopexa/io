@@ -5,8 +5,8 @@ const html = fs.readFileSync('index.html', 'utf8');
 const service = fs.readFileSync('service-form.js', 'utf8');
 const src = fs.readFileSync('api.gs', 'utf8');
 
-// Browser: New Visit distinguishes work location from activity and only
-// requires a client when the duty is an on-site visit.
+// Browser: On-site work uses a client selector; miscellaneous duty requires
+// only a free-text Client / site name field, with no duplicate dropdown.
 for (const location of ['EM Office', 'On-Site Visit', 'Others']) {
   assert.match(html, new RegExp('<option value="' + location + '"'));
 }
@@ -15,6 +15,12 @@ assert.doesNotMatch(html, /<option value="OPD">/);
 assert.match(html, /id="f-work-location"/);
 assert.match(html, /id="f-visit-type"/);
 assert.match(html, /id="log-work-location-filter"/);
+assert.match(html, /id="visit-site-client-selector"/);
+assert.match(html, /id="visit-site-cabinet-fields"/);
+assert.match(html, /const showOtherClient=otherDuty\|\|\(onsite/);
+assert.match(html, /siteFields\.style\.display=\(onsite\|\|otherDuty\)/);
+assert.match(html, /if\(clientSelector\)clientSelector\.hidden=!onsite/);
+assert.match(html, /if\(cabinetFields\)cabinetFields\.hidden=!onsite/);
 assert.match(html, /visitWorkLocation\(\)==='On-Site Visit'&&!document.getElementById\('f-site'\)/);
 assert.match(html, /workLocation:visitWorkLocation\(\)/);
 assert.doesNotMatch(html, /id="f-work-location-detail"/);
@@ -24,19 +30,44 @@ assert.match(html, /workLocationDetail:String\(existing\?\.workLocationDetail\|\
 assert.match(html, /renderWorkLocationSummary\('work-location-dashboard',period\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
 
-// Site validation is skipped for combined office/OPD/other duties; these activities
-// use a stable synthetic site label while preserving the actual duty type.
-const clients = vm.createContext({
-  document:{getElementById:id=>({
-    'f-site':{value:''},
-    'f-other-client':{value:'',trim:()=>''}
-  }[id])},
+// Office work needs no client. Others requires just a typed name, and
+// On-Site Visit still allows both an existing client and custom location.
+let dutyType='EM Office', focused=false;
+const clientFields={
+  'f-site':{value:''},
+  'f-other-client':{value:'',required:false,focus(){focused=true;},reportValidity(){return false;}},
+  'other-client-field':{hidden:true}
+};
+const clients=vm.createContext({
+  document:{getElementById:id=>clientFields[id]},
   canonicalSiteName:v=>v,
-  visitWorkLocation:()=> 'EM Office'
+  visitWorkLocation:()=>dutyType,
+  updateWorkLocationUI:()=>{},
+  window:{setVisitWizardStep:()=>{}}
 });
-vm.runInContext(service.slice(service.indexOf('function visitClientName()'),service.indexOf('function restoreOtherClient(')), clients);
-assert.equal(clients.visitClientName(), 'EM Office');
-assert.equal(clients.validateOtherClient(), true);
+vm.runInContext(service.slice(service.indexOf('function visitClientName()'),service.indexOf('function serviceFormForEntry(')), clients);
+assert.equal(clients.visitClientName(),'EM Office');
+assert.equal(clients.validateOtherClient(),true);
+dutyType='Others';
+assert.equal(clients.visitClientName(),'');
+assert.equal(clients.validateOtherClient(),false);
+assert.equal(focused,true);
+clientFields['f-other-client'].value='Offsite Meeting';
+assert.equal(clients.visitClientName(),'Offsite Meeting');
+assert.equal(clients.validateOtherClient(),true);
+clients.restoreOtherClient({site:'Supplier Workshop',workLocation:'Others'});
+assert.equal(clientFields['f-other-client'].value,'Supplier Workshop');
+dutyType='On-Site Visit';
+clientFields['f-site'].value='ECP Lipa';
+assert.equal(clients.visitClientName(),'ECP Lipa');
+assert.equal(clients.validateOtherClient(),true);
+clientFields['f-site'].value='Others';
+clientFields['f-other-client'].value='';
+assert.equal(clients.validateOtherClient(),false);
+clients.restoreOtherClient({site:'New Site',siteSelection:'Others'});
+assert.equal(clients.visitClientName(),'New Site');
+assert.equal(clients.validateOtherClient(),true);
+dutyType='EM Office';assert.equal(clients.validateOtherClient(),true);
 
 // Historic OPD records are grouped with EM Office without changing stored Sheets rows.
 const summaryNode={innerHTML:''};
