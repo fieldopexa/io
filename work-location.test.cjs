@@ -14,6 +14,21 @@ assert.match(html, /<option value="EM Office">EM Office \/ OPD<\/option>/);
 assert.doesNotMatch(html, /<option value="OPD">/);
 assert.match(html, /id="f-work-location"/);
 assert.match(html, /id="f-visit-type"/);
+const locationMarkup=html.slice(html.indexOf('<div class="row" id="visit-work-location-row">'),html.indexOf('<div class="row" id="visit-type-row">'));
+const supportMarkup=html.slice(html.indexOf('<div class="row" id="visit-type-row">'),html.indexOf('<div class="row" id="visit-site-fields">'));
+const additionalMarkup=html.slice(html.indexOf('<details class="visit-more-details" id="visit-additional-details"'),html.indexOf('<div class="visit-step-panel" data-visit-step="2">'));
+assert.match(locationMarkup, /id="f-work-location"/);
+assert.match(locationMarkup, /id="f-visit-type"/);
+assert.doesNotMatch(locationMarkup, /id="f-resolved-via"/);
+assert.match(supportMarkup, /id="f-resolved-via"/);
+assert.match(supportMarkup, /id="f-supporting-options"/);
+assert.doesNotMatch(supportMarkup, /id="f-visit-type"/);
+assert.match(additionalMarkup, /id="f-ticket"/);
+assert.doesNotMatch(additionalMarkup, /id="f-supporting-options"/);
+assert.equal((html.match(/id="f-supporting-options"/g)||[]).length,1);
+assert.match(html, /#panel-log #field-visit-support-mode\[hidden\]\{display:none!important\}/);
+assert.match(html, /if\(supportField\)supportField\.hidden=location==='EM Office'/);
+assert.match(html, /resolvedVia:visitWorkLocation\(\)==='EM Office'\?\(existing\?\.resolvedVia\|\|''\)/);
 assert.match(html, /id="log-work-location-filter"/);
 assert.match(html, /id="visit-site-client-selector"/);
 assert.match(html, /id="visit-site-cabinet-fields"/);
@@ -29,6 +44,39 @@ assert.doesNotMatch(html, /validateWorkLocationDetail/);
 assert.match(html, /workLocationDetail:String\(existing\?\.workLocationDetail\|\|''\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-dashboard',period\)/);
 assert.match(html, /renderWorkLocationSummary\('work-location-report',rows\)/);
+
+// Support Type is hidden for office duty, visible for on-site and Others.
+const supportNodes={
+  'f-work-location':{value:'On-Site Visit'},
+  'visit-site-fields':{style:{}},
+  'visit-site-client-selector':{hidden:false},
+  'visit-site-cabinet-fields':{hidden:false},
+  'visit-cabinet-card':{style:{}},
+  'field-visit-support-mode':{hidden:false},
+  'visit-type-row':{classList:{classes:new Set(),toggle(name,state){if(state)this.classes.add(name);else this.classes.delete(name);}}},
+  'other-client-field':{hidden:true,style:{}},
+  'f-other-client':{required:false},
+  'f-site':{value:''},
+  'site-profile':{style:{}},
+  'site-err':{style:{}},
+  'location-combobox':{setAttribute(){}}
+};
+const workUI=vm.createContext({
+  document:{getElementById:id=>supportNodes[id]},
+  visitWorkLocation:()=>supportNodes['f-work-location'].value
+});
+vm.runInContext(html.slice(html.indexOf('function updateWorkLocationUI(){'),html.indexOf('function isSiteWorkLocation(entry){')),workUI);
+supportNodes['f-work-location'].value='EM Office';
+workUI.updateWorkLocationUI();
+assert.equal(supportNodes['field-visit-support-mode'].hidden,true);
+assert.equal(supportNodes['visit-type-row'].classList.classes.has('office-duty'),true);
+supportNodes['f-work-location'].value='On-Site Visit';
+workUI.updateWorkLocationUI();
+assert.equal(supportNodes['field-visit-support-mode'].hidden,false);
+assert.equal(supportNodes['visit-type-row'].classList.classes.has('office-duty'),false);
+supportNodes['f-work-location'].value='Others';
+workUI.updateWorkLocationUI();
+assert.equal(supportNodes['field-visit-support-mode'].hidden,false);
 
 // Office work needs no client. Others requires just a typed name, and
 // On-Site Visit still allows both an existing client and custom location.
