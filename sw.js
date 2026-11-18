@@ -1,6 +1,6 @@
 'use strict';
 const CACHE_PREFIX='opexa-io-shell-';
-const CACHE=CACHE_PREFIX+'20261118-photo-upload-timestamps';
+const CACHE=CACHE_PREFIX+'20261118-remove-photo-timestamps';
 const ROOT=new URL('./',self.location.href);
 /* Firebase Cloud Messaging support in FSM's EXISTING service worker.
    Data-only push is displayed only after the user has opted in with a public
